@@ -26,7 +26,7 @@ class Robot:
         self.positions = None
         self.offsets = None
 
-        self.move_to(config.p_ready)
+        self.move_to(config.p_home)
 
     def _offsets_from_positions(self, positions: np.ndarray):
         offsets = np.zeros((4,3))
@@ -58,4 +58,4 @@ class Robot:
 robot = Robot()
 print('offsets', robot.offsets)
 print('position', robot.positions)
-print('command', robot.move_to(config.p_ready))
+print('command', robot.move_to(config.p_home))
