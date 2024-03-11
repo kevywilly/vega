@@ -7,7 +7,7 @@ tibia = 114
 servos = np.array([[11,12,13],[21,22,23],[31,32,33],[41,42,43]])
 servo_ids = servos.reshape(-1)
 
-a_zero = np.radians(np.array([2, -90, 90]))
+a_zero = np.radians(np.array([2, 90, 90]))
 
 a_home = np.zeros((4,3))
 p_ready = np.array([[0, 0, 3*tibia/4], [0, 0, 3*tibia/4], [0, 0, 3*tibia/4], [0, 0, 3*tibia/4]])
