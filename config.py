@@ -25,3 +25,4 @@ class Positions:
     home = np.array([[0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height]])
     ready = home * 0.75
     crouch = home * 0.33
+    step = ready + ([[0,0,0],[0,0,0],[0,0,0],[0,0,30]])
