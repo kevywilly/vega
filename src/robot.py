@@ -39,7 +39,7 @@ class Robot:
     def _move_command_from_offsets(self, offsets: np.ndarray):
         return dict(
             zip(
-                config.servos.reshape(-1),
+                config.SERVOS.reshape(-1),
                 ((offsets*config.flip*1000/240)+500).reshape(-1).astype(int)
             )
         )

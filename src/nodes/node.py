@@ -13,8 +13,8 @@ class Node(Configurable):
     frequency = traitlets.Float(default_value=10).tag(config=True)
     _running = traitlets.Bool(default_value=False)
 
-    def __init__(self, **kwargs):
-        super(Node, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Node, self).__init__(*args, **kwargs)
         print("\n")
         self.logger.info(f"******************************************************************\n")
         self.logger.info(f"*\tStarting {self.__class__.__name__} Node @ {self.frequency}Hz\n")

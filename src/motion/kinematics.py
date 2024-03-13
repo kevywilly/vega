@@ -11,10 +11,10 @@ class Kinematics:
 
     def ik(self, pos: np.ndarray):
         """ https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/ """
-        _, x, y = pos
-        cosq2 = (x * x + y * y - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
+        x, y, z = pos
+        cosq2 = (x * x + z * z - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
         q2 = acos(cosq2)
-        q1 = atan2(y, x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cosq2))
+        q1 = atan2(z, x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cosq2))
         return np.array([0, q1, q2])
 
     def fk(self, angles: np.ndarray):
@@ -33,5 +33,6 @@ class Kinematics:
         y: Y-coordinate of the end effector position
         """
         x = self.femur * np.cos(theta1) + self.tibia * np.cos(theta1 + theta2)
-        y = self.femur * np.sin(theta1) + self.tibia * np.sin(theta1 + theta2)
-        return np.array([0, x, y])
+        z = self.femur * np.sin(theta1) + self.tibia * np.sin(theta1 + theta2)
+        h = np.sqrt(x**2 + z**2)
+        return np.array([x,0,z])

@@ -2,13 +2,15 @@ import numpy as np
 
 serial_port = '/dev/serial0'
 
-servos = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
-servo_ids = servos.reshape(-1)
-flip = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
+SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
+SERVO_IDS = SERVOS.reshape(-1)
+FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
 
+
+DEBUG = True
 
 class Dims:
-    coxa = 50
+    coxa = 53
     femur = 102
     tibia = 114
     max_height = femur + tibia
@@ -16,7 +18,7 @@ class Dims:
 
 
 class Angles:
-    zero = np.radians(np.array([[2, 90, 30], [2, 90, 30], [2, 90, 30], [2, 90, 30]]))
+    zero = np.radians(np.array([[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]))
 
 
 class Positions:

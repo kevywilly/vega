@@ -1,7 +1,7 @@
 import numpy as np
 
 import config
-from src.servo_controller import ServoController
+from src.motion.servo_controller import ServoController
 
 controller = ServoController(serial=config.serial_port)
 
@@ -24,7 +24,7 @@ step3 = step2 + [[0,0,0],[0,0,0],[0,0,-30],[0,0,0]]
 
 
 def goto_position(pos: np.ndarray):
-        move2 = dict(zip(servos.reshape(-1),((pos*4*flip)+500).reshape(-1)))
+        move2 = dict(zip(SERVOS.reshape(-1),((pos*4*flip)+500).reshape(-1)))
         controller.move(move2, 800)
         return move2
 
