@@ -3,6 +3,7 @@ import serial
 import config
 from kinematics import Kinematics
 from servo_controller import ServoController
+import time
 
 """
 x = front-back
@@ -26,7 +27,7 @@ class Robot:
         self.positions = None
         self.offsets = None
 
-        self.move_to(config.p_home)
+        self.move_to(config.p_ready)
 
     def _offsets_from_positions(self, positions: np.ndarray):
         offsets = np.zeros((4,3))
@@ -43,12 +44,12 @@ class Robot:
             )
         )
 
-    def move_to(self, positions: np.ndarray, millis = 500):
+    def move_to(self, positions: np.ndarray, millis = 800):
         offsets = self._offsets_from_positions(positions)
         cmd = self._move_command_from_offsets(offsets)
 
         if controller is not None:
-            controller.move(cmd, millis/1000.0)
+            controller.move(cmd, millis)
 
         self.offsets = offsets
         self.positions = positions
@@ -58,4 +59,13 @@ class Robot:
 robot = Robot()
 print('offsets', robot.offsets)
 print('position', robot.positions)
-print('command', robot.move_to(config.p_home))
+time.sleep(2)
+while 1:
+    print('ready', robot.move_to(config.p_home,400))
+    time.sleep(2)
+    print('ready', robot.move_to(config.p_ready,400))
+    time.sleep(2)
+    print('crouch', robot.move_to(config.p_crouch,400))
+    time.sleep(2)
+    print('ready', robot.move_to(config.p_ready,400))
+    time.sleep(2)

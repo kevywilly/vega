@@ -15,6 +15,8 @@ servo_ids = servos.reshape(-1)
 positions = controller.get_positions(servo_ids)
 print(positions)
 
+print(controller.get_battery_voltage())
+"""
 home = np.zeros((4,3))
 ready = np.array([[2,-65,65],[2,-65,65],[2,-65,65],[2,-65,65]])
 crouch = np.array([[2,-90,90],[2,-90,90],[2,-90,90],[2,-90,90]])
@@ -37,7 +39,7 @@ while True:
         time.sleep(1)
         goto_position(crouch)
         time.sleep(1)
-
+"""
 
 """
 q1 = 1
