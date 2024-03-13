@@ -18,11 +18,11 @@ class Dims:
 
 
 class Angles:
-    zero = np.radians(np.array([[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]))
+    zero = np.radians(np.array([[2, 90, 30], [2, 90, 30], [2, 90, 30], [2, 90, 30]]))
 
 
 class Positions:
     home = np.array([[0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height]])
     ready = home * 0.75
     crouch = home * 0.33
-    step = ready + ([[0,0,0],[0,0,0],[0,0,0],[0,0,30]])
+    step = ready + ([[0,50,-40],[0,0,0],[0,0,0],[0,0,0]])

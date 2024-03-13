@@ -37,12 +37,9 @@ print(controller.pose.target_positions)
 print(np.degrees(controller.pose.target_angles))
 time.sleep(2)
 
-controller.set_target(Positions.step)
-print('step', controller.move_to_target())
-print(controller.pose.target_positions)
-print(np.degrees(controller.pose.target_angles))
-time.sleep(2)
 
+while 1:
+	pass
 """
 command {11: 491, 12: 500, 13: 375, 21: 508, 22: 500, 23: 625, 31: 508, 32: 500, 33: 625, 41: 491, 42: 500, 43: 375}
 ready {11: 491, 12: 315, 13: 720, 21: 508, 22: 684, 23: 279, 31: 508, 32: 684, 33: 279, 41: 491, 42: 315, 43: 720}
