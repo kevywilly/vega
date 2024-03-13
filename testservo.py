@@ -1,20 +1,15 @@
-from math import sin, cos
-from servo_controller import ServoController
-import time
 import numpy as np
-from serial import Serial
 
-port = Serial('/dev/serial0')
+import config
+from src.servo_controller import ServoController
 
-controller = ServoController(serial=port)
+controller = ServoController(serial=config.serial_port)
 
-
-servos = np.array([[11,12,13],[21,22,23],[31,32,33],[41,42,43]])
+servos = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 servo_ids = servos.reshape(-1)
 
 positions = controller.get_positions(servo_ids)
 print(positions)
-
 print(controller.get_battery_voltage())
 """
 home = np.zeros((4,3))

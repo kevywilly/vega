@@ -9,7 +9,6 @@ class Kinematics:
         self.femur = femur
         self.tibia = tibia
 
-
     def ik(self, pos: np.ndarray):
         """ https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/ """
         _, x, y = pos
@@ -18,9 +17,8 @@ class Kinematics:
         q1 = atan2(y, x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cosq2))
         return np.array([0, q1, q2])
 
-
     def fk(self, angles: np.ndarray):
-        _,theta1,theta2 = angles
+        _, theta1, theta2 = angles
         """
         Calculate the end effector position (x, y) for a two-link arm given the joint angles (theta1, theta2).
 
