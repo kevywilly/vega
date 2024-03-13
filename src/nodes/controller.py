@@ -2,13 +2,15 @@ import atexit
 
 import numpy as np
 import serial
-
+import traitlets
 import config
 from config import Positions, Angles, Dims, SERVO_IDS, FLIP
+from src.interfaces.msgs import Twist, Odometry, Vector3
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.node import Node
+from src.sensors.imu import Imu
 
 _km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
 
@@ -52,17 +54,34 @@ def _servo_positions_to_numpy(servo_positions):
     return np.array(list(servo_positions.values())).reshape((4, -1))
 
 
+def millis_or_default(millis):
+    return DEFAULT_MILLIS if millis is None else millis
+
+
 class Controller(Node):
+    cmd_vel = traitlets.Instance(Twist, allow_none=True)
+    nav_target = traitlets.Instance(Odometry, allow_none=True)
+    publish_frequency_hz = traitlets.Int(default_value=10, config=True)
+    camera_image = traitlets.Any(allow_none=True)
+
+    attitude_data = traitlets.Any()
+    magnometer_data = traitlets.Any()
+    gyroscope_data = traitlets.Any()
+    accelerometer_data = traitlets.Any()
+    motion_data = traitlets.Any()
+
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
-
+        self._imu = Imu()
         self._sc = None
         self.positions = None
         self.offsets = None
         self.pose = Pose()
-        self.read_positions()
+        self.cmd = None
+        self._read_positions()
         self.set_target(Positions.ready)
         self.move_to(self.pose.target_positions)
+
 
         atexit.register(self.shutdown)
 
@@ -71,6 +90,13 @@ class Controller(Node):
         except:
             self._sc = None
             self.logger.debug(f"Robot will not move - couldn't open serial port.")
+
+    def _apply_cmd_vel(self, cmd: Twist):
+        pass
+
+    @traitlets.observe('cmd_vel')
+    def _cmd_val_change(self, change):
+        self._apply_cmd_vel(change.new)
 
     def shutdown(self):
         self.move_to(Positions.crouch)
@@ -82,21 +108,21 @@ class Controller(Node):
         self.pose.target_angles = _angles_from_positions(positions)
 
     def move_to_target(self, millis=DEFAULT_MILLIS):
-        return self.move_to(self.pose.target_positions, millis)
+        return self.move_to(self.pose.target_positions, millis_or_default(millis))
 
     def move_to(self, positions: np.ndarray, millis=800):
         angles = _angles_from_positions(positions)
         cmd = _servo_positions_from_angles(angles)
 
         if self._sc is not None:
-            self._sc.move(cmd, millis)
+            self._sc.move(cmd, millis_or_default(millis))
 
         self.pose.angles = angles
         self.pose.positions = positions
-
+        self.pose.cmd = cmd
         return cmd
 
-    def read_positions(self):
+    def _read_positions(self):
         if self._sc:
             self.pose.servo_positions = _servo_positions_to_numpy(self._sc.get_positions(SERVO_IDS))
             self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
@@ -104,3 +130,15 @@ class Controller(Node):
             return
 
         return np.zeros((4, 3))
+
+    def get_imu_data(self):
+        self.attitude_data = Vector3.from_tuple(self._bot.get_imu_attitude_data())
+        self.magnometer_data = Vector3.from_tuple(self._bot.get_magnetometer_data())
+        self.gyroscope_data = Vector3.from_tuple(self._bot.get_gyroscope_data())
+        self.accelerometer_data = Vector3.from_tuple(self._bot.get_accelerometer_data())
+        self.motion_data = Vector3.from_tuple(self._bot.get_motion_data())
+
+    def spinner(self):
+        self._imu.read()
+        self._read_positions()
+

@@ -10,6 +10,7 @@ class Pose:
         self.angles = np.zeros((4, 3))
         self.target_angles = np.zeros((4,3))
         self.servo_positions = np.zeros((4,3))
+        self.cmd = None
 
     def at_target(self):
         return bool(sum(sum(self.offsets == self.target_offsets)) == self.num_links)

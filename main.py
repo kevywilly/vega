@@ -4,42 +4,25 @@ import numpy as np
 
 from config import Positions
 from src.nodes.controller import Controller
+from src.nodes.robot import Robot
 
 logger = logging.getLogger('VEGA')
 
-controller = Controller()
 
-print('offsets', controller.offsets)
-print('position', controller.positions)
-time.sleep(2)
-
-controller.set_target(Positions.home)
-print('home', controller.move_to_target())
-print(controller.pose.target_positions)
-print(np.degrees(controller.pose.target_angles))
-time.sleep(2)
-
-controller.set_target(Positions.ready)
-print('ready', controller.move_to_target())
-print(controller.pose.target_positions)
-print(np.degrees(controller.pose.target_angles))
-time.sleep(2)
-
-controller.set_target(Positions.crouch)
-print('crouch', controller.move_to_target())
-print(controller.pose.target_positions)
-print(np.degrees(controller.pose.target_angles))
-time.sleep(2)
-
-controller.set_target(Positions.ready)
-print('ready', controller.move_to_target())
-print(controller.pose.target_positions)
-print(np.degrees(controller.pose.target_angles))
-time.sleep(2)
+robot = Robot()
 
 
-while 1:
-	pass
+time.sleep(1)
+
+positions = [Positions.ready, Positions.crouch, Positions.ready]
+
+for p in positions:
+	robot.set_target(p)
+	robot.move_to_target()
+	robot.print_stats()
+	time.sleep(2)
+
+
 """
 command {11: 491, 12: 500, 13: 375, 21: 508, 22: 500, 23: 625, 31: 508, 32: 500, 33: 625, 41: 491, 42: 500, 43: 375}
 ready {11: 491, 12: 315, 13: 720, 21: 508, 22: 684, 23: 279, 31: 508, 32: 684, 33: 279, 41: 491, 42: 315, 43: 720}
