@@ -56,6 +56,10 @@ def _target():
     pos = Pos3d(**data)
     return data
 
+@app.get('/stream')
+def stream():
+    return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 if __name__ == "__main__":
     app.robot.spin(frequency=50)
     app.run(host='0.0.0.0', debug=False)
