@@ -37,7 +37,9 @@ Adafruit_CircuitPython_BNO055 \
 pillow \
 numpy \
 traitlets \
-opencv-python
+opencv-python \
+flask \
+flask-cors
 
 
 

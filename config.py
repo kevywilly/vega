@@ -4,7 +4,15 @@ serial_port = '/dev/serial0'
 
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
-FLIP = np.array([[1, 0.9, 1.1], [-1, -0.9, -1.1], [-1, -1.1, -0.9], [1, 1.1, 0.9]])
+# FLIP = np.array([[1, 0.9, 1.1], [-1, -0.9, -1.1], [-1, -1.1, -0.9], [1, 1.1, 0.9]])
+FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
+
+POSITION_OFFSETS = np.array([
+    [0,0,0],
+    [0,0,0],
+    [0,0,10],
+    [0,0,10]
+])
 
 DEFAULT_SENSOR_MODE = CameraSensor.MODE1640x1232X29
 

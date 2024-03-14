@@ -3,9 +3,10 @@ import atexit
 import numpy as np
 import serial
 import traitlets
+
 import config
-from config import Positions, Angles, Dims, SERVO_IDS, FLIP
-from src.interfaces.msgs import Twist, Odometry, Vector3
+from config import Positions, Angles, Dims, SERVO_IDS, FLIP, POSITION_OFFSETS
+from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
@@ -77,9 +78,8 @@ class Controller(Node):
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_target(Positions.ready)
+        self.set_targets(Positions.ready)
         self.move_to(self.pose.target_positions)
-
 
         atexit.register(self.shutdown)
 
@@ -101,11 +101,15 @@ class Controller(Node):
         if self._sc:
             self._sc.unload(SERVO_IDS)
 
-    def set_target(self, positions: np.ndarray):
-        self.pose.target_positions = positions
-        self.pose.target_angles = _angles_from_positions(positions)
+    def set_targets(self, positions: np.ndarray):
+        self.pose.target_positions = positions + POSITION_OFFSETS
+        self.pose.target_angles = _angles_from_positions(self.pose.target_positions)
 
-    def move_to_target(self, millis=DEFAULT_MILLIS):
+    def set_target(self, index: int, positions: np.ndarray):
+        self.pose.target_positions[index] = positions + POSITION_OFFSETS[index]
+        self.pose.target_angles = _angles_from_positions(self.pose.target_positions)
+
+    def move_to_targets(self, millis=DEFAULT_MILLIS):
         return self.move_to(self.pose.target_positions, millis_or_default(millis))
 
     def move_to(self, positions: np.ndarray, millis=800):
@@ -131,4 +135,3 @@ class Controller(Node):
 
     def spinner(self):
         self._read_positions()
-

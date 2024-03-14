@@ -22,7 +22,8 @@ class Vector3(ABC):
     def __repr__(self):
         return f'({self.x},{self.y},{self.z})'
 
-
+class Pos3d(Vector3):
+    pass
 class Angle3(Vector3):
     pass
 

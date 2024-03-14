@@ -80,14 +80,11 @@ class Robot(Node):
     def set_cmd_vel(self, msg: Twist):
         self.controller.cmd_vel = msg
 
-    def set_target(self, positions: np.ndarray):
-        return self.controller.set_target(positions)
+    def set_targets(self, positions: np.ndarray):
+        return self.controller.set_targets(positions)
 
-    def move_to_target(self, millis=None):
-        return self.controller.move_to_target(millis)
-
-    def move_to_position(self, positions: np.ndarray, millis=None):
-        return self.controller.move_to(positions, millis)
+    def move_to_targets(self, millis=None):
+        return self.controller.move_to_targets(millis)
 
     def get_stream(self):
         while True:
