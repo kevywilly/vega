@@ -6,6 +6,7 @@ import traitlets
 from src.interfaces.msgs import Twist
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
+from src.nodes.imu import IMU
 from src.nodes.node import Node
 from src.vision.image import Image, ImageUtils
 
@@ -42,32 +43,34 @@ class Robot(Node):
 
         # initialize nodes
         try:
-            self._camera: Camera = Camera()
+            self.camera: Camera = Camera()
         except:
-            self._camera = None
+            self.camera = None
 
+        self.imu = IMU()
         self.controller: Controller = Controller(frequency=30)
 
-        # start nodes
-        self.controller.spin()
-        if self._camera:
-            self._camera.spin()
-
-        # self._video_viewer: VideoViewer = VideoViewer()
+        self._start_nodes()
         self._setup_subscriptions()
 
         self.loaded()
 
+    def _start_nodes(self):
+        self.imu.spin()
+        self.controller.spin()
+        if self.camera:
+            self.camera.spin()
+
     def _setup_subscriptions(self):
-        if self._camera:
-            traitlets.dlink((self._camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
-            traitlets.dlink((self._camera, 'value'), (self.controller, 'camera_image'))
+        if self.camera:
+            traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
+            traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
         traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
-        # traitlets.dlink((self._camera, 'value'), (self._video_viewer, 'camera_image'))
+        # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
     def shutdown(self):
-        if self._camera:
-            self._camera.unobserve_all()
+        if self.camera:
+            self.camera.unobserve_all()
         self.controller.unobserve_all()
 
     def get_image(self):
