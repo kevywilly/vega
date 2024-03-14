@@ -47,8 +47,9 @@ class Robot(Node):
         except:
             self.camera = None
 
-        self.imu = IMU()
         self.controller: Controller = Controller(frequency=30)
+        self.imu = IMU()
+
 
         self._start_nodes()
         self._setup_subscriptions()
