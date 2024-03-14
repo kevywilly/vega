@@ -71,7 +71,6 @@ class Controller(Node):
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
-        self._imu = Imu()
         self._sc = None
         self.positions = None
         self.offsets = None
@@ -130,14 +129,6 @@ class Controller(Node):
 
         return np.zeros((4, 3))
 
-    def get_imu_data(self):
-        self.attitude_data = Vector3.from_tuple(self._bot.get_imu_attitude_data())
-        self.magnometer_data = Vector3.from_tuple(self._bot.get_magnetometer_data())
-        self.gyroscope_data = Vector3.from_tuple(self._bot.get_gyroscope_data())
-        self.accelerometer_data = Vector3.from_tuple(self._bot.get_accelerometer_data())
-        self.motion_data = Vector3.from_tuple(self._bot.get_motion_data())
-
     def spinner(self):
-        self._imu.read()
         self._read_positions()
 
