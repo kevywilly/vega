@@ -1,6 +1,7 @@
 import cv2
 import traitlets
 
+from src.vision.sensors import CameraSensor
 from config import DEFAULT_SENSOR_MODE, CAMERA_MATRIX, DISTORTION_COEFFICIENTS
 from src.nodes.node import Node
 
@@ -19,7 +20,7 @@ class Camera(Node):
 
     def __init__(self, **kwargs):
         super(Camera, self).__init__(**kwargs)
-        self.sensor_mode = DEFAULT_SENSOR_MODE
+        self.sensor_mode = CameraSensor.mode(DEFAULT_SENSOR_MODE)
         self.frequency = self.sensor_mode.framerate
         self.cap = self._init_camera()
 
