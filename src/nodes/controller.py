@@ -10,7 +10,6 @@ from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.node import Node
-from src.sensors.imu import Imu
 
 _km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
 
