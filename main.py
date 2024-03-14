@@ -5,8 +5,6 @@ from flask_cors import CORS
 from flask import Flask, Response, request
 
 from src.interfaces.vector import Pos3d
-from src.nodes.robot import Robot
-from settings import settings
 
 from config import Positions
 from src.nodes.robot import Robot
