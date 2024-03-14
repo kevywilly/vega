@@ -134,4 +134,7 @@ class Controller(Node):
         return np.zeros((4, 3))
 
     def spinner(self):
-        self._read_positions()
+        try:
+            self._read_positions()
+        except:
+            pass
