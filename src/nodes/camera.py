@@ -1,5 +1,6 @@
 import cv2
 import traitlets
+from picamera2 import Picamera2, Preview
 
 from src.vision.sensors import CameraSensor
 from config import DEFAULT_SENSOR_MODE, CAMERA_MATRIX, DISTORTION_COEFFICIENTS
@@ -7,7 +8,9 @@ from src.nodes.node import Node
 
 
 def _convert_color(frame):
-    return cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
+    return frame
+    # XBGR8888  - SBGR10_CSI2P is what we get
+    # return cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
 
 
 def _un_distort(frame):
@@ -20,22 +23,31 @@ class Camera(Node):
 
     def __init__(self, **kwargs):
         super(Camera, self).__init__(**kwargs)
-        self.sensor_mode = CameraSensor.mode(DEFAULT_SENSOR_MODE)
         self.frequency = self.sensor_mode.framerate
         self.cap = self._init_camera()
+        self.log_camera_info()
 
         self.loaded()
 
-    def _init_camera(self) -> cv2.VideoCapture:
-        cap = cv2.VideoCapture(self.sensor_mode.to_nvargus_string(self.sensor_id))
-        ret, frame = cap.read()
-        if not ret:
+    def log_camera_info(self):
+        if self.cap:
+            self.logger.debug('camera', self.cap.camera_properties)
+            self.logger.debug('video', self.cap.video_configuration)
+            self.logger.debug('still', self.cap.still_configuration)
+
+    def _init_camera(self) -> Picamera2:
+        cap = Picamera2()
+
+
+        cap.start()
+        frame = cap.capture_array()
+        if frame is None:
             raise Exception("Could not initialize camera")
         else:
             self.value = frame
             return cap
 
-    def _read(self, cap: cv2.VideoCapture):
+    def _read(self, cap: Picamera2):
 
         if not cap.isOpened():
             return
@@ -64,8 +76,9 @@ class Camera(Node):
 
     def shutdown(self):
         try:
-            cv2.destroyAllWindows()
+            self.logger.info("stopping camera")
+            self.cap.stop()
+            self.cap.close()
+            self.logger.info("camera stopped")
         except:
             pass
-        if self.cap:
-            self.cap.release()
