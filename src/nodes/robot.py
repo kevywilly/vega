@@ -44,7 +44,8 @@ class Robot(Node):
         # initialize nodes
         try:
             self.camera: Camera = Camera()
-        except:
+        except Exception as ex:
+            self.logger.error(ex.__str__())
             self.camera = None
 
         self.controller: Controller = Controller(frequency=30)

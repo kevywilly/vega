@@ -23,7 +23,7 @@ class Camera(Node):
 
     def __init__(self, **kwargs):
         super(Camera, self).__init__(**kwargs)
-        self.frequency = self.sensor_mode.framerate
+        self.frequency = 30
         self.cap = self._init_camera()
         self.log_camera_info()
 
@@ -37,8 +37,6 @@ class Camera(Node):
 
     def _init_camera(self) -> Picamera2:
         cap = Picamera2()
-
-
         cap.start()
         frame = cap.capture_array()
         if frame is None:
@@ -49,27 +47,12 @@ class Camera(Node):
 
     def _read(self, cap: Picamera2):
 
-        if not cap.isOpened():
-            return
-
-        ret, frame = cap.read()
-
-        if not ret:
-            self.logger.warn(f"Can't receive frame for cap{self.sensor_id}")
-        else:
+        try:
+            frame = cap.capture_array()
             frame = _convert_color(frame)
-            frame = _un_distort(frame)
             self.value = frame
-            """
-            try:
-                cv2.namedWindow("felix", cv2.WINDOW_NORMAL)
-                i2 = cv2.resize(frame, (300,300), cv2.INTER_LINEAR)
-                cv2.imshow("felix", i2)
-                cv2.waitKey(0)
-            except Exception as ex:
-                raise ex
-                pass
-            """
+        except:
+            self.logger.warn(f"Can't receive frame from camera")
 
     def spinner(self):
         self._read(self.cap)
