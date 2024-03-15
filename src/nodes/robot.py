@@ -72,13 +72,6 @@ class Robot(Node):
             traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
-    def shutdown(self):
-        if self.camera:
-            self.camera.unobserve_all()
-
-        if self.controller:
-            self.controller.unobserve_all()
-
     def get_image(self):
         return self.image.value
 
