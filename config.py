@@ -4,7 +4,6 @@ serial_port = '/dev/serial0'
 
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
-# FLIP = np.array([[1, 0.9, 1.1], [-1, -0.9, -1.1], [-1, -1.1, -0.9], [1, 1.1, 0.9]])
 FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
 
 POSITION_OFFSETS = np.array([
@@ -39,6 +38,6 @@ class Angles:
 
 class Positions:
     home = np.array([[0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height]])
-    ready = home * 0.75
+    ready = home * 0.66
     crouch = home * 0.33
     step = ready + ([[0,50,-40],[0,0,0],[0,0,0],[0,0,0]])
