@@ -14,7 +14,7 @@ sensor = adafruit_bno055.BNO055_I2C(i2c)
 sensor.mode = IMUMode.NDOF_MODE
 sensor.axis_remap = BNO_AXIS_REMAP
 
-while not sensor.calibrated():
+while not sensor.calibrated:
 
     status = sensor.calibration_status
     print(f"Calibration: {status}")
