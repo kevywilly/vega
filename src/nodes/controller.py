@@ -128,9 +128,10 @@ class Controller(Node):
 
     def _read_positions(self):
         if _sc:
-            self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
-            self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
-            self.pose.positions = _positions_from_angles(self.pose.angles)
+            self.logger.info(_sc.get_positions(SERVO_IDS))
+            #self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
+            #self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
+            #self.pose.positions = _positions_from_angles(self.pose.angles)
             return
 
         return np.zeros((4, 3))
