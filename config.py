@@ -17,7 +17,7 @@ serial_port = '/dev/serial0'
 
 # BNO_AXIS_REMAP = (0,1,2,0,0,0)
 
-BNO_AXIS_REMAP = (1,0,2,0,0,1)
+BNO_AXIS_REMAP = (0,1,2,0,0,0)
 
                    
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
