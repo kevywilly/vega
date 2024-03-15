@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 
 import numpy as np
 import traitlets
@@ -20,7 +21,7 @@ class CmdVel(traitlets.HasTraits):
 
     def numpy(self):
         if self.value is None:
-            return np.zeros((3))
+            return np.zeros(3)
         else:
             return np.array([self.value.linear.x, self.value.linear.y, self.value.angular.z])
 
@@ -43,14 +44,13 @@ class Robot(Node):
 
         # initialize nodes
         try:
-            self.camera: Camera = None #Camera()
+            self.camera: Optional[Camera] = None  # Camera()
         except Exception as ex:
             self.logger.error(ex.__str__())
             self.camera = None
 
         self.controller: Controller = Controller(frequency=30)
         self.imu = IMU()
-
 
         self._start_nodes()
         self._setup_subscriptions()
@@ -95,7 +95,7 @@ class Robot(Node):
                         b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n\r\n' + self.get_image() + b'\r\n'
                 )  # concat frame one by one and show result
-            except Exception as ex:
+            except Exception:
                 pass
 
     def print_stats(self):

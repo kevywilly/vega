@@ -1,9 +1,8 @@
 import cv2
 import traitlets
-from picamera2 import Picamera2, Preview
+from picamera2 import Picamera2
 
-from src.vision.sensors import CameraSensor
-from config import DEFAULT_SENSOR_MODE, CAMERA_MATRIX, DISTORTION_COEFFICIENTS
+from config import CAMERA_MATRIX, DISTORTION_COEFFICIENTS
 from src.nodes.node import Node
 
 
@@ -50,7 +49,7 @@ class Camera(Node):
         try:
             frame = cap.capture_array()
             frame = _convert_color(frame)
-            frame = cv2.flip(frame,0)
+            frame = cv2.flip(frame, 0)
             self.value = frame
         except:
             self.logger.warn(f"Can't receive frame from camera")
