@@ -8,6 +8,20 @@ import traitlets
 
 from src.nodes.node import Node
 
+class IMUMode:
+    CONFIG_MODE = 0x00
+    ACCONLY_MODE = 0x01
+    MAGONLY_MODE = 0x02
+    GYRONLY_MODE = 0x03
+    ACCMAG_MODE = 0x04
+    ACCGYRO_MODE = 0x05
+    MAGGYRO_MODE = 0x06
+    AMG_MODE = 0x07
+    IMUPLUS_MODE = 0x08
+    COMPASS_MODE = 0x09
+    M4G_MODE = 0x0A
+    NDOF_FMC_OFF_MODE = 0x0B
+    NDOF_MODE = 0x0C
 
 class IMU(Node):
     acceleration = traitlets.Any()

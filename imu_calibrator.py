@@ -24,6 +24,8 @@ import time
 import board
 import adafruit_bno055
 
+from config import BNO_AXIS_REMAP
+
 
 # pylint: disable=too-few-public-methods
 class Mode:
@@ -51,6 +53,7 @@ i2c = board.I2C()  # For board.SCL and board.SDA
 # i2c = board.STEMMA_I2C()  # For the built-in STEMMA QT connection
 sensor = adafruit_bno055.BNO055_I2C(i2c)
 sensor.mode = Mode.NDOF_MODE  # Set the sensor to NDOF_MODE
+sensor.axis_remap = BNO_AXIS_REMAP
 
 print("Magnetometer: Perform the figure-eight calibration dance.")
 while not sensor.calibration_status[3] == 3:

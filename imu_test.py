@@ -6,12 +6,14 @@ import time
 import adafruit_bno055
 import board
 
-from config import ImuOffsets
+from config import ImuOffsets, BNO_AXIS_REMAP
+from src.nodes.imu import IMUMode
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 sensor = adafruit_bno055.BNO055_I2C(i2c)
-
+sensor.mode = IMUMode.NDOF_MODE
+sensor.axis_remap = BNO_AXIS_REMAP
 sensor.offsets_gyroscope = ImuOffsets.gyro
 sensor.offsets_magnetometer = ImuOffsets.magnetic
 sensor.offsets_accelerometer = ImuOffsets.accel
