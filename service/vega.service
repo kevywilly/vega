@@ -1,0 +1,11 @@
+[Unit]
+Description=Vega
+After=multi-user.target
+
+[Service]
+Type=simple
+User=zero1
+ExecStart=/home/zero1/run.sh
+[Install]
+WantedBy=multi-user.target
+

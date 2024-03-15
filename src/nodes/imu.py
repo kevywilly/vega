@@ -38,5 +38,6 @@ class IMU(Node):
         self.heading = math.atan2(self.gravity[1], self.gravity[0])
         self.heading_degrees = np.degrees(self.heading)
 
+
     def spinner(self):
         self.read_measurements()
