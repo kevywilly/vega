@@ -45,6 +45,8 @@ class Camera(Node):
             return cap
 
     def _read(self, cap: Picamera2):
+        if not self._running:
+            return
 
         try:
             frame = cap.capture_array()

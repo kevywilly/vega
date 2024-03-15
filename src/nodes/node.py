@@ -11,7 +11,6 @@ from traitlets.config.configurable import Configurable
 class Node(Configurable):
     logger = logging.getLogger('VEGA')
     frequency = traitlets.Float(default_value=10).tag(config=True)
-    _running = traitlets.Bool(default_value=False)
 
     def __init__(self, *args, **kwargs):
         super(Node, self).__init__(*args, **kwargs)
@@ -20,7 +19,7 @@ class Node(Configurable):
         self.logger.info(f"*\tStarting {self.__class__.__name__} Node @ {self.frequency}Hz\n")
         self.logger.info(f"******************************************************************\n")
         self._thread = None
-
+        self._running = False
         atexit.register(self._shutdown)
 
     def loaded(self):
@@ -60,4 +59,4 @@ class Node(Configurable):
         try:
             self._thread.join()
         except Exception as ex:
-            print(f'{ex.str}')
+            print(f'{ex.__str__()}')
