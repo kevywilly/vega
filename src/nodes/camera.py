@@ -60,7 +60,6 @@ class Camera(Node):
         self._read(self.cap)
 
     def _shutdown(self):
-
         self.logger.info("stopping camera")
         self.cap.stop()
         self.cap.close()
