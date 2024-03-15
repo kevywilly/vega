@@ -34,7 +34,7 @@ class Dims:
 
 
 class Angles:
-    zero = np.radians(np.array([[2, 90, 30], [2, 90, 30], [2, 90, 30], [2, 90, 30]]))
+    zero = np.radians(np.array([[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]))
 
 
 class Positions:

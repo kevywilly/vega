@@ -102,11 +102,11 @@ class Controller(Node):
             self._sc.unload(SERVO_IDS)
 
     def set_targets(self, positions: np.ndarray):
-        self.pose.target_positions = positions + POSITION_OFFSETS
+        self.pose.target_positions = positions
         self.pose.target_angles = _angles_from_positions(self.pose.target_positions)
 
     def set_target(self, index: int, positions: np.ndarray):
-        self.pose.target_positions[index] = positions + POSITION_OFFSETS[index]
+        self.pose.target_positions[index] = positions
         self.pose.target_angles = _angles_from_positions(self.pose.target_positions)
 
     def move_to_targets(self, millis=DEFAULT_MILLIS):

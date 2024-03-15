@@ -45,7 +45,7 @@ class TimeoutError(RuntimeError):
     pass
 
 
-LOGGER = logging.getLogger('lewansoul.SERVOS.lx16a')
+LOGGER = logging.getLogger('lewansoul.servos.lx16a')
 
 
 class ServoController(object):
@@ -113,7 +113,7 @@ class ServoController(object):
             return self._wait_for_response(command, timeout=timeout)
 
     def move(self, positions, time=0):
-        """Command multiple SERVOS to move to given positions in given time.
+        """Command multiple servos to move to given positions in given time.
 
         Args:
             positoins - dict mapping servo IDs to corresponding positions
@@ -132,7 +132,7 @@ class ServoController(object):
         )
 
     def get_positions(self, servo_ids):
-        """Reads positions of SERVOS with given IDs and returns a map
+        """Reads positions of servos with given IDs and returns a map
         from servo ID to corresponding position.
 
         Args:
@@ -148,7 +148,7 @@ class ServoController(object):
         }
 
     def unload(self, servo_ids):
-        """Switches off motors of SERVOS with given IDs.
+        """Switches off motors of servos with given IDs.
 
         Args:
             servo_ids - list of servo IDs (ints)

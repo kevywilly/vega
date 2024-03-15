@@ -1,17 +1,18 @@
+import time
 import numpy as np
-
+from serial import Serial
 import config
 from src.motion.servo_controller import ServoController
 
-controller = ServoController(serial=config.serial_port)
+controller = ServoController(serial=Serial(config.serial_port))
 
-servos = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
-servo_ids = servos.reshape(-1)
+SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
+SERVO_IDS = SERVOS.reshape(-1)
 
-positions = controller.get_positions(servo_ids)
+positions = controller.get_positions(SERVO_IDS)
 print(positions)
 print(controller.get_battery_voltage())
-"""
+
 home = np.zeros((4,3))
 ready = np.array([[2,-65,65],[2,-65,65],[2,-65,65],[2,-65,65]])
 crouch = np.array([[2,-90,90],[2,-90,90],[2,-90,90],[2,-90,90]])
@@ -34,7 +35,6 @@ while True:
         time.sleep(1)
         goto_position(crouch)
         time.sleep(1)
-"""
 
 """
 q1 = 1

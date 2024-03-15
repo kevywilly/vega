@@ -35,4 +35,4 @@ class Kinematics:
         x = self.femur * np.cos(theta1) + self.tibia * np.cos(theta1 + theta2)
         z = self.femur * np.sin(theta1) + self.tibia * np.sin(theta1 + theta2)
         # h = np.sqrt(x**2 + z**2)
-        return np.array([x, 0, z])
+        return np.array([x, np.radians(3), z])
