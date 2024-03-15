@@ -21,6 +21,9 @@ class IMU(Node):
     def __init__(self, *args, **kwargs):
         super(IMU, self).__init__(*args, **kwargs)
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
+        self.sensor.offsets_gyroscope = ImuOffsets.gyro
+        self.sensor.offsets_magnetometer = ImuOffsets.magnetic
+        self.sensor.offsets_accelerometer = ImuOffsets.accel
         self.read_measurements()
 
         atexit.register(self.shutdown)
