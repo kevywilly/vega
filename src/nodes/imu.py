@@ -10,8 +10,6 @@ from src.nodes.node import Node
 
 
 class IMU(Node):
-    heading = traitlets.Any()
-    heading_degrees = traitlets.Any()
     acceleration = traitlets.Any()
     magnetic = traitlets.Any()
     gyro = traitlets.Any()
@@ -35,8 +33,6 @@ class IMU(Node):
         self.quaternion = np.array(self.sensor.quaternion)
         self.linear_acceleration = np.array(self.sensor.linear_acceleration)
         self.gravity = np.array(self.sensor.gravity)
-        self.heading = math.atan2(self.gravity[1], self.gravity[0])
-        self.heading_degrees = np.degrees(self.heading)
 
 
     def spinner(self):
