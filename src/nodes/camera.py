@@ -57,11 +57,11 @@ class Camera(Node):
     def spinner(self):
         self._read(self.cap)
 
-    def shutdown(self):
+    def _shutdown(self):
         try:
             self.logger.info("stopping camera")
             self.cap.stop()
             self.cap.close()
             self.logger.info("camera stopped")
-        except:
-            pass
+        finally:
+            super()._shutdown()
