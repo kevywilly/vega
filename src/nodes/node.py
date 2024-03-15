@@ -46,6 +46,7 @@ class Node(Configurable):
         self.frequency = frequency
         self._running = True
         self._thread = threading.Thread(target=self._spin)
+        self._thread.daemon = True
         self._thread.start()
 
     def spin_once(self):
