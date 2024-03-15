@@ -66,14 +66,18 @@ class Robot(Node):
     def _setup_subscriptions(self):
         if self.camera:
             traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
-            traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
-        traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
+            if self.controller:
+                traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
+        if self.controller:
+            traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
     def shutdown(self):
         if self.camera:
             self.camera.unobserve_all()
-        self.controller.unobserve_all()
+
+        if self.controller:
+            self.controller.unobserve_all()
 
     def get_image(self):
         return self.image.value

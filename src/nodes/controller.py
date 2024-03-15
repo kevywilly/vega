@@ -127,14 +127,14 @@ class Controller(Node):
         return cmd
 
     def _read_positions(self):
-        if _sc:
+        try:
             self.logger.info(_sc.get_positions(SERVO_IDS))
             #self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             #self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
             #self.pose.positions = _positions_from_angles(self.pose.angles)
-            return
+        except:
+            pass
 
-        return np.zeros((4, 3))
 
     def spinner(self):
         pass
