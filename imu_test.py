@@ -45,6 +45,6 @@ while True:
     print("Quaternion: {}".format(sensor.quaternion))
     print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
     print("Gravity (m/s^2): {}".format(sensor.gravity))
-    print()
+    print(f"Calibration: {sensor.calibration_status}")
 
     time.sleep(1)
