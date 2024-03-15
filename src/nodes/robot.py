@@ -43,7 +43,7 @@ class Robot(Node):
 
         # initialize nodes
         try:
-            self.camera: Camera = Camera()
+            self.camera: Camera = None #Camera()
         except Exception as ex:
             self.logger.error(ex.__str__())
             self.camera = None
@@ -65,8 +65,9 @@ class Robot(Node):
 
     def _setup_subscriptions(self):
         if self.camera:
-            traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
-            traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
+            pass
+            # traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
+            # traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
         traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 

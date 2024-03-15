@@ -16,8 +16,6 @@ log.setLevel(logging.ERROR)
 OK = {"status": "ok"}
 
 app = Flask(__name__)
-robot = Robot()
-app.robot = robot
 
 CORS(app, resource={
     r"/*": {
@@ -30,9 +28,9 @@ def demo():
     positions = [Positions.ready, Positions.crouch, Positions.ready]
 
     for p in positions:
-        robot.set_targets(p)
-        robot.move_to_targets()
-        robot.print_stats()
+        app.robot.set_targets(p)
+        app.robot.move_to_targets()
+        app.robot.print_stats()
         time.sleep(2)
 
     """
@@ -61,5 +59,6 @@ def stream():
     return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
+    app.robot = Robot()
     app.robot.spin(frequency=50)
     app.run(host='0.0.0.0', debug=False)
