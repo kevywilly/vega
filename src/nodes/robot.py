@@ -44,7 +44,7 @@ class Robot(Node):
 
         # initialize nodes
         try:
-            self.camera: Optional[Camera] = None  # Camera()
+            self.camera: Optional[Camera] = Camera()
         except Exception as ex:
             self.logger.error(ex.__str__())
             self.camera = None
