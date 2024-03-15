@@ -50,6 +50,7 @@ class Robot(Node):
             self.camera = None
 
         self.controller: Controller = Controller(frequency=30)
+
         self.imu = IMU()
 
         self._start_nodes()
