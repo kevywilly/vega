@@ -9,7 +9,7 @@ from src.nodes.node import Node
 def _convert_color(frame):
     return frame
     # XBGR8888  - SBGR10_CSI2P is what we get
-    # return cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
 def _un_distort(frame):
