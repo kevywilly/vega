@@ -26,9 +26,10 @@ DEBUG = True
 
 
 class ImuOffsets:
-    magnetic = (-305, -363, 685)
-    gyro = (-1, -2, 1)
-    accel = (-36, 19, -21)
+    magnetic = (32442, 32439, 939)
+    gyro = (0, -2, 1)
+    accel = (-47, -5, -39)
+
 
 class Dims:
     coxa = 53
