@@ -8,10 +8,10 @@ SERVO_IDS = SERVOS.reshape(-1)
 FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
 
 POSITION_OFFSETS = np.array([
-    [0,0,0],
-    [0,0,0],
-    [0,0,10],
-    [0,0,10]
+    [0,0,-2.5],
+    [0,0,-2.5],
+    [0,0,2.5],
+    [0,0,2.5]
 ])
 
 DEFAULT_SENSOR_MODE = CameraSensor.MODE1640x1232X29

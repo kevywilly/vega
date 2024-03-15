@@ -15,7 +15,7 @@ class Kinematics:
         cos_q2 = (x * x + z * z - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
         q2 = acos(cos_q2)
         q1 = atan2(z, x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cos_q2))
-        return np.array([0, q1, q2])
+        return np.array([np.radians(3), q1, q2])
 
     def fk(self, angles: np.ndarray):
         _, theta1, theta2 = angles
@@ -35,4 +35,4 @@ class Kinematics:
         x = self.femur * np.cos(theta1) + self.tibia * np.cos(theta1 + theta2)
         z = self.femur * np.sin(theta1) + self.tibia * np.sin(theta1 + theta2)
         # h = np.sqrt(x**2 + z**2)
-        return np.array([x, np.radians(3), z])
+        return np.array([x, 0, z])
