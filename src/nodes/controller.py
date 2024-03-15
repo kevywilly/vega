@@ -11,9 +11,17 @@ from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.node import Node
+import logging
+logger = logging.getLogger('VEGA')
 
 _km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
 
+try:
+    _sc = ServoController(serial.Serial(config.serial_port))
+except:
+    _sc = None
+    logger.debug(f"Robot will not move - couldn't open serial port.")
+    
 DEFAULT_MILLIS = 800
 SERVO_MAX_ANGLE = np.radians(240)
 
@@ -72,7 +80,6 @@ class Controller(Node):
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
-        self._sc = None
         self.positions = None
         self.offsets = None
         self.pose = Pose()
@@ -83,11 +90,6 @@ class Controller(Node):
 
         atexit.register(self.shutdown)
 
-        try:
-            self._sc = ServoController(serial.Serial(config.serial_port))
-        except:
-            self._sc = None
-            self.logger.debug(f"Robot will not move - couldn't open serial port.")
 
     def _apply_cmd_vel(self, cmd: Twist):
         pass
@@ -98,8 +100,8 @@ class Controller(Node):
 
     def shutdown(self):
         self.move_to(Positions.crouch)
-        if self._sc:
-            self._sc.unload(SERVO_IDS)
+        if _sc:
+            _sc.unload(SERVO_IDS)
 
     def set_targets(self, positions: np.ndarray):
         self.pose.target_positions = positions
@@ -116,8 +118,8 @@ class Controller(Node):
         angles = _angles_from_positions(positions)
         cmd = _servo_positions_from_angles(angles)
 
-        if self._sc is not None:
-            self._sc.move(cmd, millis_or_default(millis))
+        if _sc is not None:
+            _sc.move(cmd, millis_or_default(millis))
 
         self.pose.angles = angles
         self.pose.positions = positions
@@ -125,8 +127,8 @@ class Controller(Node):
         return cmd
 
     def _read_positions(self):
-        if self._sc:
-            self.pose.servo_positions = _servo_positions_to_numpy(self._sc.get_positions(SERVO_IDS))
+        if _sc:
+            self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
             self.pose.positions = _positions_from_angles(self.pose.angles)
             return
@@ -134,7 +136,4 @@ class Controller(Node):
         return np.zeros((4, 3))
 
     def spinner(self):
-        try:
-            self._read_positions()
-        except:
-            pass
+        pass

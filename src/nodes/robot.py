@@ -65,9 +65,8 @@ class Robot(Node):
 
     def _setup_subscriptions(self):
         if self.camera:
-            pass
-            # traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
-            # traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
+            traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
+            traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
         traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
