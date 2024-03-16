@@ -50,7 +50,7 @@ def quaternion_to_euler(q):
     pitch = np.arcsin(2 * (w * y - z * x))
     yaw = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
 
-    return yaw, roll, pitch
+    return yaw, pitch, roll
 while True:
     # print("Temperature: {} degrees C".format(sensor.temperature))
 
