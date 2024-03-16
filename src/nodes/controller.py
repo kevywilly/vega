@@ -130,6 +130,7 @@ class Controller(Node):
     def _read_positions(self):
         try:
             self.logger.info(_sc.get_positions(SERVO_IDS))
+            self.logger.info(f"battery: {_sc.get_battery_voltage()}")
             #self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             #self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
             #self.pose.positions = _positions_from_angles(self.pose.angles)
