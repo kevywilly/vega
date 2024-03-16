@@ -63,6 +63,6 @@ class Angles:
 
 class Positions:
     home = np.array([[0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height], [0, 0, Dims.max_height]])
-    ready = home * 0.66
-    crouch = home * 0.33
+    ready = home * 0.6 + np.array([[20,0,0],[20,0,0],[20,0,0],[20,0,0]])
+    crouch = ready / 2
     step = ready + ([[0,50,-40],[0,0,0],[0,0,0],[0,0,0]])
