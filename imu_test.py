@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import time
-
+import numpy as np
 import adafruit_bno055
 import board
 
@@ -38,6 +38,19 @@ def temperature():
 
 count = 0
 
+def quaternion_to_euler(q):
+    """
+    Convert quaternion (w, x, y, z) to Euler angles (roll, pitch, yaw)
+    """
+    # Extract components
+    w, x, y, z = q
+
+    # Calculate Euler angles
+    roll = np.arctan2(2 * (w * x + y * z), 1 - 2 * (x**2 + y**2))
+    pitch = np.arcsin(2 * (w * y - z * x))
+    yaw = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
+
+    return yaw, roll, pitch
 while True:
     # print("Temperature: {} degrees C".format(sensor.temperature))
 
@@ -48,8 +61,10 @@ while True:
     print("Magnetometer (microteslas): {}".format(sensor.magnetic))
     print("Gyroscope (rad/sec): {}".format(sensor.gyro))
     print("Euler angle: {}".format(sensor.euler))
+    print(f"Calculated Euler: {quaternion_to_euler(sensor.quaternion)}")
     print("Quaternion: {}".format(sensor.quaternion))
     print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
     print("Gravity (m/s^2): {}".format(sensor.gravity))
+
     
     time.sleep(1)
