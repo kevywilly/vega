@@ -61,7 +61,7 @@ while True:
     print("Magnetometer (microteslas): {}".format(sensor.magnetic))
     print("Gyroscope (rad/sec): {}".format(sensor.gyro))
     print("Euler angle: {}".format(sensor.euler))
-    print(f"Calculated Euler: {quaternion_to_euler(sensor.quaternion)}")
+    print(f"Calculated Euler: {np.degrees(quaternion_to_euler(sensor.quaternion))}")
     print("Quaternion: {}".format(sensor.quaternion))
     print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
     print("Gravity (m/s^2): {}".format(sensor.gravity))
