@@ -17,7 +17,7 @@ serial_port = '/dev/serial0'
 
 # BNO_AXIS_REMAP = (0,1,2,0,0,0)
 
-BNO_AXIS_REMAP = (0,1,2,1,1,0)
+BNO_AXIS_REMAP = (0,1,2,1,0,1)
 
                    
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
@@ -25,10 +25,10 @@ SERVO_IDS = SERVOS.reshape(-1)
 FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
 
 POSITION_OFFSETS = np.array([
-    [0,0,-4.5],
-    [0,0,-4.5],
-    [0,0,4.5],
-    [0,0,4.5]
+    [0,0,-4],
+    [0,0,-4],
+    [0,0,4],
+    [0,0,4]
 ])
 
 DEFAULT_SENSOR_MODE = CameraSensor.MODE1640x1232X29
@@ -44,9 +44,10 @@ DEBUG = True
 
 
 class ImuOffsets:
-    magnetic = (396, 370, 746)
-    gyro = (1, 3, 1)
-    accel = (19, -14, -2)
+    magnetic = (419, -250, -597)
+    gyro = (0, -2, -1)
+    accel = (16, -31, 14)
+
 
 class Dims:
     coxa = 53
