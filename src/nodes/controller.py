@@ -71,6 +71,7 @@ class Controller(Node):
     nav_target = traitlets.Instance(Odometry, allow_none=True)
     publish_frequency_hz = traitlets.Int(default_value=10, config=True)
     camera_image = traitlets.Any(allow_none=True)
+    euler = traitlets.Any(allow_none=True)
 
     attitude_data = traitlets.Any()
     magnometer_data = traitlets.Any()
@@ -134,6 +135,10 @@ class Controller(Node):
             #self.pose.positions = _positions_from_angles(self.pose.angles)
         except:
             pass
+
+    @traitlets.observe('euler')
+    def _on_euler(self, change):
+        self.logger.info(f'euler: {self.euler}')
 
 
     def spinner(self):

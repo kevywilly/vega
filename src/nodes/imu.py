@@ -5,7 +5,7 @@ import adafruit_bno055
 import board
 import numpy as np
 import traitlets
-
+from config import ImuOffsets, BNO_AXIS_REMAP
 from src.nodes.node import Node
 
 class IMUMode:

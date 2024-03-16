@@ -71,6 +71,8 @@ class Robot(Node):
                 traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
         if self.controller:
             traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
+            traitlets.dlink((self.imu, 'euler'), (self.controller, 'euler'))
+
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
     def get_image(self):
