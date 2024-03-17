@@ -139,8 +139,8 @@ class Controller(Node):
 
     @traitlets.observe('euler')
     def _on_euler(self, change):
-        self.logger.info(f'euler: {self.euler}')
-
+        # self.logger.info(f'euler: {self.euler}')
+        pass
 
     def spinner(self):
         pass
