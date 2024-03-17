@@ -15,7 +15,7 @@ class Trotter:
 
         y_steps = np.full((self.num_steps), self.y_mag)
 
-        z_steps = np.sin(np.radians(np.arange(90,180,self.step_size/2)))*z_mag
+        z_steps = np.sin(np.radians(np.arange(40,180,int(step_size*.8))))*self.z_mag
         z_steps = np.hstack([z_steps, np.zeros(int((180) * 2 / self.step_size))])
 
         steps = np.array(([x_steps, y_steps, z_steps]))
