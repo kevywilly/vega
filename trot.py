@@ -1,37 +1,40 @@
+from src.nodes.robot import Robot 
+from src.motion.gaits.trot import Trotter, Trot
+from config import Positions
+robot = Robot()
+
+import time
+target = Positions.crouch
+num_steps = 54
 import numpy as np
 
-class Leg:
-    def __init__(self, name, femur_length, tibia_length):
-        self.name = name
-        self.femur_length = femur_length
-        self.tibia_length = tibia_length
-        # Initialize leg parameters (angles, positions, etc.)
+trotter = Trot(mag_x=60, mag_y=0, mag_z=60, step_size=15)
 
-    def move(self, femur_angle, tibia_angle):
-        # Calculate joint positions based on angles and leg geometry
-        # Move the leg segments accordingly
-        print(f"{self.name}: Femur Angle: {np.degrees(femur_angle)}, Tibia Angle: {np.degrees(tibia_angle)}")
+def demo():
+    positions = [Positions.ready, Positions.crouch, Positions.ready]
+    print(positions)
+    for p in positions:
+        robot.set_targets(p)
+        robot.move_to_targets()
+        robot.print_stats()
+        time.sleep(2)
+
+def walk():
+    p = Positions.ready
+    
+    for i in range(num_steps):
+        position = np.array([trotter.get_step(i) + p[0], p[1],p[2],p[3]])
+        print(position)
+        robot.controller.move_to(position,1)
+            
+
+def walk2():
+    p = Positions.ready
+    while 1:
+        for position in trotter.step_generator():
+            position = position + Positions.ready
+            
+            robot.controller.move_to(position,50)        
 
 
-class Quadruped:
-    def __init__(self, leg_params):
-        self.legs = []
-        for params in leg_params:
-            name, femur_length, tibia_length = params
-            self.legs.append(Leg(name, femur_length, tibia_length))
-
-    def trot_gait(self, cycle_time):
-        # Calculate joint angles for trot gait
-        # Implement coordination between legs for stability
-        time_periods = np.linspace(0, 2 * np.pi, cycle_time, endpoint=False)
-        for t in time_periods:
-            femur_angle = np.sin(t)
-            tibia_angle = np.sin(t + np.pi / 2)
-            for leg in self.legs:
-                leg.move(femur_angle, tibia_angle)
-            # Adjust timings for synchronization between diagonal legs
-
-# Example usage
-leg_params = [("Front Left", 102, 114), ("Front Right", 102, 114), ("Back Left", 102, 114), ("Back Right", 102, 114)]
-spot = Quadruped(leg_params)
-spot.trot_gait(cycle_time=10)
+walk2()

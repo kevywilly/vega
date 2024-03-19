@@ -116,7 +116,7 @@ class Controller(Node):
         return self.move_to(self.pose.target_positions, millis_or_default(millis))
 
     def move_to(self, positions: np.ndarray, millis=800):
-        angles = _angles_from_positions(positions+POSITION_OFFSETS)
+        angles = _angles_from_positions(positions)
         cmd = _servo_positions_from_angles(angles)
 
         if _sc is not None:
