@@ -1,17 +1,18 @@
 import atexit
+import logging
 
 import numpy as np
 import serial
 import traitlets
 
 import config
-from config import Positions, Angles, Dims, SERVO_IDS, FLIP, POSITION_OFFSETS
+from config import Positions, Angles, Dims, SERVO_IDS, FLIP
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.node import Node
-import logging
+
 logger = logging.getLogger('VEGA')
 
 _km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
@@ -21,7 +22,7 @@ try:
 except:
     _sc = None
     logger.debug(f"Robot will not move - couldn't open serial port.")
-    
+
 DEFAULT_MILLIS = 800
 SERVO_MAX_ANGLE = np.radians(240)
 
@@ -91,7 +92,6 @@ class Controller(Node):
 
         atexit.register(self.shutdown)
 
-
     def _apply_cmd_vel(self, cmd: Twist):
         pass
 
@@ -116,7 +116,7 @@ class Controller(Node):
         return self.move_to(self.pose.target_positions, millis_or_default(millis))
 
     def move_to(self, positions: np.ndarray, millis=800):
-        angles = _angles_from_positions(positions)
+        angles = _angles_from_positions(positions + config.POSITION_OFFSETS)
         cmd = _servo_positions_from_angles(angles)
 
         if _sc is not None:
@@ -131,11 +131,14 @@ class Controller(Node):
         try:
             self.logger.info(_sc.get_positions(SERVO_IDS))
             self.logger.info(f"battery: {_sc.get_battery_voltage()}")
-            #self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
-            #self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
-            #self.pose.positions = _positions_from_angles(self.pose.angles)
+            # self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
+            # self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
+            # self.pose.positions = _positions_from_angles(self.pose.angles)
         except:
             pass
+
+    def voltage(self):
+        return _sc.get_battery_voltage()
 
     @traitlets.observe('euler')
     def _on_euler(self, change):

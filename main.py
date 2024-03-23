@@ -7,7 +7,7 @@ import os
 from flask_cors import CORS
 from flask import Flask, Response, request
 
-from src.interfaces.vector import Pos3d
+from src.interfaces.vector import Pos3d, Vector3
 
 from config import Positions
 from src.nodes.robot import Robot
@@ -60,6 +60,21 @@ def _target():
 @app.get('/stream')
 def stream():
     return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.get('/stats')
+def stats():
+    heading, pitch, yaw = app.robot.imu.euler
+    voltage = app.robot.controller.voltage()
+    return {
+        "stats" : {
+            "heading": heading,
+            "pitch": pitch,
+            "yaw": yaw,
+            "voltage": voltage
+        }
+    }
+
+
 
 if __name__ == "__main__":
     app.robot = Robot()

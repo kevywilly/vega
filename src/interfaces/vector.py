@@ -19,6 +19,9 @@ class Vector3(ABC):
     def from_numpy(cls, array):
         return Vector3(*array)
 
+    def json(self):
+        return self.__dict__
+
     def __repr__(self):
         return f'({self.x},{self.y},{self.z})'
 

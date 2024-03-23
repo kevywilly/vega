@@ -24,12 +24,7 @@ SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
 FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
 
-POSITION_OFFSETS = np.array([
-    [0,0,0],
-    [0,0,0],
-    [0,0,0],
-    [0,0,0]
-])
+
 
 DEFAULT_SENSOR_MODE = CameraSensor.MODE1640x1232X29
 
@@ -62,9 +57,17 @@ class Angles:
 
 
 class Positions:
-    h = [0, 0, Dims.max_height]
-    home = np.array([h,h,h,h])
-    r = [20,10,0]
-    ready = home * 0.6 + np.array([r,r,r,r])
+
+    home = np.zeros((4,3)).astype(np.float16) + [0, 0, Dims.max_height]
+    ready = home * 0.6 + [20.0, 10.0, 0.0]
+    ready2 = home * 0.6 + [20.0, 5.0, 0.0]
     crouch = ready / 2
-    step = ready + ([[0,50,-40],[0,0,0],[0,0,0],[0,0,0]])
+
+
+
+POSITION_OFFSETS = np.array([
+    [0,0,0],
+    [0,0,0],
+    [0,0,0],
+    [0,0,0]
+])

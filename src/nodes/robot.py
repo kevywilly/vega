@@ -78,6 +78,9 @@ class Robot(Node):
     def get_image(self):
         return self.image.value
 
+    def get_imu(self):
+        return self.imu.euler
+
     def set_cmd_vel(self, msg: Twist):
         self.controller.cmd_vel = msg
 
