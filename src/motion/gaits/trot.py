@@ -1,54 +1,94 @@
 import numpy as np
 
-class Trot:
-    def __init__(self, mag_x=60, mag_y=20, mag_z=60, step_size=30):
-        self.mag_x = mag_x
-        self.mag_y = mag_y
-        self.mag_z = mag_z
-        self.step_size = step_size
-        steps = int(90/step_size)
-        half_steps = int(steps/2)
-        double_steps = steps*2
+from src.motion.gaits.gait import Gait
+import numpy as np
 
-        phase1_x = np.sin(np.radians(np.linspace(0,90, steps))) * self.mag_x      # 90
-        phase2_x = np.cos(np.radians(np.linspace(0,90, steps))) * mag_x         # 90
-        phase1_z = np.sin(np.radians(np.linspace(0,180, steps))) * self.mag_x   # 90
-        phase2_z = np.zeros(int(steps))                                      # 90
+from src.motion.gaits.gait import Gait
 
+class BasicTrot(Gait):
+    def build_steps(self):
 
-        self.x = np.hstack([phase1_x, phase2_x])
-        self.y = np.full(self.x.size, -mag_y)
-        self.z = np.hstack([phase1_z, phase2_z])
+        l1_x = np.hstack([
+            np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
+            np.sin(np.radians(np.linspace(90, 180, self.num_steps))),
+        ]) * -self.mag_x
 
-        phase3_x = np.cos(np.radians(np.linspace(90,180,steps*2))) * self.mag_x # 180
-        phase3_y = np.full(phase3_x.size,-mag_y)
-        phase3_z = np.zeros(phase3_x.size)
+        l1_y = np.hstack([
+            np.zeros(self.num_steps*2)
+        ]) * -self.mag_y
 
-        self.x2 = phase3_x
-        self.y2 = phase3_y
-        self.z2 = phase3_z
+        l1_z = np.hstack([
+                np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
+                np.hstack(np.zeros(self.num_steps))
+        ]) * -self.mag_z
 
-        self.steps = np.array([self.x, self.y, self.z])
-        self.steps = -self.steps.reshape(-1, self.x.size).transpose(1, 0).astype(int)
+        l2_x = np.hstack([
+            np.cos(np.radians(np.linspace(90, 180, self.num_steps * 2))),
+        ]) * -self.mag_x
 
-        self.steps2 = np.array([self.x2, self.y2, self.z2])
-        self.steps2 = -self.steps2.reshape(-1, self.x2.size).transpose(1, 0).astype(int)
+        l2_y = np.hstack([
+            np.zeros(self.num_steps*2)
+        ]) * -self.mag_y
+
+        l2_z = np.hstack([
+                np.zeros(self.num_steps * 2)
+        ]) * -self.mag_z
+
+        self.steps1 = np.array([l1_x, l1_y, l1_z]).reshape(-1, self.num_steps * 2).transpose(1, 0).astype(int)
+
+        self.steps2 = np.array([l2_x, l2_y, l2_z]).reshape(-1, self.num_steps * 2).transpose(1, 0).astype(int)
+
+        self.steps3 = self.steps1 #* np.array([-1, -1, 1])
+
+        self.steps4 = self.steps2 #* np.array([-1, -1, 1])
 
     def step_generator(self, reverse=False):
 
-        direction = np.array([-1,1,1]) if reverse else np.array([1,1,1])
+        for phase in [0, 1]:
+            for i in range(self.steps1.shape[0]):
+                offsets = np.array([self.steps1[i], self.steps2[i], self.steps3[i],self.steps4[i]])
 
-        for i in range(self.x.size):
+                if phase == 0:
+                    yield self.p0 + offsets
+                else:
+                    yield self.p0 + np.roll(offsets,1,0)
 
-            l1_3 = self.steps[i] * direction
-            l2_4 = self.steps2[i] * direction
 
-            yield np.array([l1_3, l2_4, l1_3, l2_4])
+class Trot(Gait):
+    def build_steps(self):
 
-        for i in range(self.x.size):
+        x0 = np.hstack(
+            [
+                np.sin(np.radians(np.linspace(45, 90, self.num_steps))) * -self.mag_x,
+                np.cos(np.radians(np.linspace(0, 90, self.num_steps))) * -self.mag_x
+            ]
+        )
 
-            l1_3 = self.steps2[i] * direction
-            l2_4 = self.steps[i] * direction
+        y0 = np.zeros(self.num_steps * 2)
 
-            yield np.array([l1_3, l2_4, l1_3, l2_4])
+        z0 = np.hstack(
+            [
+                np.sin(np.radians(np.linspace(90, 180, self.num_steps))) * -self.mag_z,
+                np.zeros(int(self.num_steps))
+            ]
+        )
 
+        x1 = np.cos(np.radians(np.linspace(90, 180, self.num_steps * 2))) * -self.mag_x  # 180
+        y1 = np.zeros(self.num_steps * 2)
+        z1 = np.zeros(self.num_steps * 2)
+
+        self.steps1 = np.array([x0, y0, z0]).reshape(-1, self.num_steps * 2).transpose(1, 0).astype(int)
+        self.steps2 = np.array([x1, y1, z1]).reshape(-1, self.num_steps * 2).transpose(1, 0).astype(int)
+
+    def step_generator(self, reverse=False):
+
+        direction = np.array([-1, 1, 1]) if reverse else np.array([1, 1, 1])
+
+        for phase in [0, 1]:
+            for i in range(self.steps1.shape[0]):
+                s0 = self.steps1[i] * direction
+                s1 = self.steps2[i] * direction
+                if phase == 0:
+                    yield np.array([s0, s1, s0, s1]) + self.p0
+                else:
+                    yield np.array([s1, s0, s1, s0]) + self.p0

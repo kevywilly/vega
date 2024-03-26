@@ -45,6 +45,8 @@ class ImuOffsets:
 
 
 class Dims:
+    width = 142
+    length = 252
     coxa = 53
     femur = 102
     tibia = 114
