@@ -1,7 +1,7 @@
 from src.motion.gaits.sideways import Sideways
 from src.motion.gaits.turn import Turn
 from src.nodes.robot import Robot
-from src.motion.gaits.trot import Trot, BasicTrot
+from src.motion.gaits.trot import Trot
 from config import Positions
 robot = Robot()
 
@@ -23,8 +23,8 @@ def demo():
 
 
 def trot():
-    gait = Trot(p0 = Positions.ready2, mag_x=60, mag_y=0, mag_z=60, step_size=15)
-    robot.controller.move_to(Positions.ready2)
+    gait = Trot(p0 = Positions.ready, stride=60, clearance=65, step_size=15)
+    robot.controller.move_to(Positions.ready)
     time.sleep(0.5)
     while 1:
         for position in gait.step_generator(reverse=False):
@@ -32,20 +32,22 @@ def trot():
 
 
 def side():
-    trotter = Sideways(p0 = Positions.ready2, mag_x=0, mag_y=-30, mag_z=50, step_size=15)
-    robot.controller.move_to(Positions.ready2)
+    trotter = Sideways(p0 = Positions.ready, stride=30, clearance=50, step_size=15)
+    robot.controller.move_to(Positions.ready)
     time.sleep(0.5)
     while 1:
-        for position in trotter.step_generator(reverse=True):
+        for position in trotter.step_generator():
             robot.controller.move_to(position, 80)
 
+
 def turn():
-    gait = Turn(p0 = Positions.ready2, mag_x=20, mag_y=20, mag_z=40, step_size=15)
-    robot.controller.move_to(Positions.ready2)
+    gait = Turn(degrees=-20, p0=Positions.ready, clearance=80, step_size=10)
+    robot.controller.move_to(Positions.ready)
     time.sleep(0.5)
     while 1:
         for position in gait.step_generator(reverse=False):
-            robot.controller.move_to(position, 50)
+            robot.controller.move_to(position, 80)
+
 
 
 

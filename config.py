@@ -22,7 +22,7 @@ BNO_AXIS_REMAP = (0,1,2,1,0,1)
                    
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
-FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
+FLIP = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
 
 
 
@@ -61,8 +61,14 @@ class Angles:
 class Positions:
 
     home = np.zeros((4,3)).astype(np.float16) + [0, 0, Dims.max_height]
-    ready = home * 0.6 + [20.0, 10.0, 0.0]
-    ready2 = home * 0.6 + [20.0, 5.0, 0.0]
+    ready = home * 0.6 + np.array([
+        [20.0, -5.0, 0.0],
+        [20.0, 5.0, 0.0],
+        [20.0, 5.0, 0.0],
+        [20.0, -5.0, 0.0]
+    ])
+
+
     crouch = ready / 2
 
 

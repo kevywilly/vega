@@ -3,10 +3,17 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 class Gait(ABC):
-    def __init__(self, p0: np.ndarray, mag_x=60, mag_y=20, mag_z=60, step_size=15):
-        self.mag_x = mag_x
-        self.mag_y = mag_y
-        self.mag_z = mag_z
+
+    y_flip = np.array([
+        [1,-1, 1],
+        [1, -1, 1],
+        [1, -1, 1],
+        [1, -1, 1]
+    ])
+
+    def __init__(self, p0: np.ndarray, stride=60, clearance=60, step_size=15):
+        self.stride = stride
+        self.clearance = clearance
         self.step_size = step_size
         self.p0 = p0
         self.num_steps = int(90 / self.step_size)
@@ -17,6 +24,9 @@ class Gait(ABC):
         self.size = 0
 
         self.build_steps()
+
+    def reshape_steps(self, step: np.ndarray, total_steps: int):
+        return step.reshape(-1, total_steps).transpose(1, 0).astype(int)
 
     @abstractmethod
     def build_steps(self):

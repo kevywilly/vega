@@ -13,9 +13,10 @@ class Kinematics:
     def ik(self, pos: np.ndarray):
         """ https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/ """
         x, y, z = pos
+
         cos_q2 = (x * x + z * z - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
         q2 = acos(cos_q2)
-        q1 = atan2(z, x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cos_q2))
+        q1 = atan2(z , x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cos_q2))
 
         q3 = atan2(y,z)
 
