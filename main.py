@@ -46,22 +46,28 @@ def demo():
 def _index():
     return OK
 
-@app.get('/demo')
+@app.get('/api/demo')
 def _demo():
     demo()
     return OK
 
-@app.post('/target')
+@app.post('/api/target')
 def _target():
     data = request.get_json()
     pos = Pos3d(**data)
     return data
 
-@app.get('/stream')
+@app.post('/api/joy/<id>')
+def _joy(id: str):
+    data =  request.get_json()
+    data["id"] = int(id)
+    return data
+
+@app.get('/api/stream')
 def stream():
     return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.get('/stats')
+@app.get('/api/stats')
 def stats():
     heading, pitch, yaw = app.robot.imu.euler
     voltage = app.robot.controller.voltage()
@@ -73,7 +79,6 @@ def stats():
             "voltage": voltage
         }
     }
-
 
 
 if __name__ == "__main__":
