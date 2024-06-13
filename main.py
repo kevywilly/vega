@@ -49,8 +49,8 @@ def _index():
     return render_template('index.html',
                            message=message)
 
-@app.get('/status')
-def _index():
+@app.get('/health')
+def health():
     return OK
 
 
