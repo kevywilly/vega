@@ -1,19 +1,17 @@
 import cv2
 import traitlets
 from picamera2 import Picamera2
-
-from config import CAMERA_MATRIX, DISTORTION_COEFFICIENTS
-from src.nodes.node import Node
-
+from robolib.nodes.node import Node
+from robolib.settings import settings
 
 def _convert_color(frame):
-    #return frame
+    # return frame
     # XBGR8888  - SBGR10_CSI2P is what we get
     return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
 def _un_distort(frame):
-    return cv2.undistort(frame, CAMERA_MATRIX, DISTORTION_COEFFICIENTS)
+    return cv2.undistort(frame, settings.camera.calibration.camera_matrix, settings.camera.calibration.distortion_coefficients)
 
 
 class Camera(Node):
@@ -26,7 +24,7 @@ class Camera(Node):
         self.cap = self._init_camera()
         self.log_camera_info()
 
-        self.loaded()
+        self._loaded()
 
     def log_camera_info(self):
         if self.cap:
@@ -63,5 +61,3 @@ class Camera(Node):
         self.logger.info("stopping camera")
         self.cap.stop()
         self.cap.close()
-
-

@@ -4,12 +4,12 @@ from typing import Optional
 import numpy as np
 import traitlets
 
-from src.interfaces.msgs import Twist
+from robolib.interfaces.msgs import Twist
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
-from src.nodes.node import Node
-from src.vision.image import Image, ImageUtils
+from robolib.nodes.node import Node
+from robolib.vision.image import Image, ImageUtils
 
 
 class Measurement(traitlets.HasTraits):
@@ -56,7 +56,7 @@ class Robot(Node):
         self._start_nodes()
         self._setup_subscriptions()
 
-        self.loaded()
+        self._loaded()
 
     def _start_nodes(self):
         self.imu.spin()

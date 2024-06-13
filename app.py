@@ -4,10 +4,10 @@ import logging
 import os
 import time
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, render_template
 from flask_cors import CORS
-
 from robolib.settings import settings
+
 from robolib.interfaces.vector import Pos3d
 from src.nodes.robot import Robot
 
@@ -44,7 +44,9 @@ def demo():
 
 @app.get('/')
 def _index():
-    return OK
+    message = "Hello, World"
+    return render_template('index.html',
+                           message=message)
 
 
 @app.get('/api/demo')
@@ -56,14 +58,6 @@ def _demo():
 @app.post('/api/target')
 def _target():
     data = request.get_json()
-    pos = Pos3d(**data)
-    return data
-
-
-@app.post('/api/joy/<id>')
-def _joy(id: str):
-    data = request.get_json()
-    data["id"] = int(id)
     return data
 
 

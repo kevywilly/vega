@@ -6,17 +6,17 @@ import numpy as np
 import adafruit_bno055
 import board
 
-from config import ImuOffsets, BNO_AXIS_REMAP
+from robolib.settings import settings
 from src.nodes.imu import IMUMode
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 sensor = adafruit_bno055.BNO055_I2C(i2c)
 sensor.mode = IMUMode.NDOF_MODE
-sensor.axis_remap = BNO_AXIS_REMAP
-sensor.offsets_gyroscope = ImuOffsets.gyro
-sensor.offsets_magnetometer = ImuOffsets.magnetic
-sensor.offsets_accelerometer = ImuOffsets.accel
+sensor.axis_remap = settings.bn0_axis_remap
+sensor.offsets_gyroscope = settings.offsets.gyro
+sensor.offsets_magnetometer = settings.offsets.magnetic
+sensor.offsets_accelerometer = settings.offsets.accel
 
 # If you are going to use UART uncomment these lines
 # uart = board.UART()

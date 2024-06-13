@@ -39,3 +39,7 @@ traitlets==5.14.1
 typing-extensions==4.9.0
 werkzeug==3.0.1
 zipp==3.18.0
+robolib @ git+https://github.com/kevywilly/robolib.git@v1.0.0
+
+
+

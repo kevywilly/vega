@@ -4,21 +4,20 @@ import logging
 import numpy as np
 import serial
 import traitlets
+from robolib.interfaces.msgs import Twist, Odometry
+from robolib.interfaces.pose import Pose
+from robolib.motion.quadruped_kinematics import QuadrupedKinematics as Kinematics
+from robolib.nodes.node import Node
+from robolib.settings import settings
 
-import config
-from config import Positions, Angles, Dims, SERVO_IDS, FLIP
-from src.interfaces.msgs import Twist, Odometry
-from src.interfaces.pose import Pose
-from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
-from src.nodes.node import Node
 
 logger = logging.getLogger('VEGA')
 
-_km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
+_km = Kinematics(settings.quadruped.dims.coxa, settings.quadruped.dims.femur, settings.quadruped.dims.tibia)
 
 try:
-    _sc = ServoController(serial.Serial(config.serial_port))
+    _sc = ServoController(serial.Serial(settings.serial_port))
 except:
     _sc = None
     logger.debug(f"Robot will not move - couldn't open serial port.")
@@ -44,19 +43,20 @@ def _positions_from_angles(angles: np.ndarray):
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
-    adjusted_angles = angles - Angles.zero
+    adjusted_angles = angles - settings.quadruped.actuator_angle_zero
     return dict(
         zip(
-            config.SERVOS.reshape(-1),
-            ((adjusted_angles * FLIP * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
+            settings.quadruped.servos.reshape(-1),
+            ((adjusted_angles * settings.quadruped.actuator_angle_flip * 1000 / SERVO_MAX_ANGLE) + 500).reshape(
+                -1).astype(int)
         )
     )
 
 
 def _angles_from_servo_positions(servo_positions):
     pos = _servo_positions_to_numpy(servo_positions)
-    angles = (pos - 500) * SERVO_MAX_ANGLE / (FLIP * 1000)
-    return angles + Angles.zero
+    angles = (pos - 500) * SERVO_MAX_ANGLE / (settings.quadruped.actuator_angle_flip * 1000)
+    return angles + settings.quadruped.actuator_angle_zero
 
 
 def _servo_positions_to_numpy(servo_positions):
@@ -87,8 +87,8 @@ class Controller(Node):
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_targets(Positions.ready)
-        self.move_to(Positions.ready)
+        self.set_targets(settings.quadruped.position_ready.numpy)
+        self.move_to(settings.quadruped.position_ready.numpy)
 
         atexit.register(self.shutdown)
 
@@ -100,9 +100,9 @@ class Controller(Node):
         self._apply_cmd_vel(change.new)
 
     def shutdown(self):
-        self.move_to(Positions.crouch)
+        self.move_to(settings.quadruped.position_ready)
         if _sc:
-            _sc.unload(SERVO_IDS)
+            _sc.unload(settings.quadruped.servo_ids)
 
     def set_targets(self, positions: np.ndarray):
         self.pose.target_positions = positions
@@ -129,7 +129,7 @@ class Controller(Node):
 
     def _read_positions(self):
         try:
-            self.logger.info(_sc.get_positions(SERVO_IDS))
+            self.logger.info(_sc.get_positions(settings.quadruped.servo_ids))
             self.logger.info(f"battery: {_sc.get_battery_voltage()}")
             # self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             # self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
@@ -137,7 +137,8 @@ class Controller(Node):
         except:
             pass
 
-    def voltage(self):
+    @staticmethod
+    def voltage():
         return _sc.get_battery_voltage()
 
     @traitlets.observe('euler')
