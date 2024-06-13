@@ -87,8 +87,8 @@ class Controller(Node):
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_targets(settings.quadruped.position_ready.numpy)
-        self.move_to(settings.quadruped.position_ready.numpy)
+        self.set_targets(settings.quadruped.position_ready)
+        self.move_to(settings.quadruped.position_ready)
 
         atexit.register(self.shutdown)
 
