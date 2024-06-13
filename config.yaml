@@ -1,0 +1,99 @@
+---
+serial_port: '/dev/serial0'
+quadruped:
+  dims:
+    width: 142
+    length: 252
+    coxa: 53
+    femur: 102
+    tibia: 114
+  servo_ids:
+    rows: 1
+    cols: 12
+    data: [ 11, 12, 13,
+            21, 22, 23,
+            31, 32, 33,
+            41, 42, 43 ]
+  actuator_angle_zero:
+    rows: 4
+    cols: 3
+    data: [ 0, 90, 30,
+            0, 90, 30,
+            0, 90, 30,
+            0, 90, 30 ]
+  actuator_angle_flip:
+    rows: 4
+    cols: 3
+    data: [ -1, 1, 1,
+            -1, -1, -1,
+            -1, -1, -1,
+            -1, 1, 1 ]
+  home_position_offsets:
+    rows: 4
+    cols: 3
+    data: [ 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0 ]
+  ready_position_height_pct: 0.6
+  ready_position_offsets:
+    rows: 4
+    cols: 3
+    data: [ 20.0, -5.0, 0.0,
+            20.0, 5.0, 0.0,
+            20.0, 5.0, 0.0,
+            20.0, -5.0, 0.0 ]
+imu:
+  bn0_axis_remap:
+    - 0
+    - 1
+    - 2
+    - 1
+    - 0
+    - 1
+  offsets:
+    magnetic:
+      - 419
+      - -250
+      - -597
+    gyro:
+      - 0,
+      - -2,
+      - -1
+    accel:
+      - 16,
+      - -31,
+      - 14
+
+camera:
+  sensor_mode: 3
+  calibration:
+    image_width: 1640
+    image_height: 1232
+    camera_name: narrow_stereo
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [
+        848.72138, 0., 939.50914,
+        0., 848.9676 , 596.15355,
+        0., 0., 1.
+      ]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [ -0.296850, 0.061372, 0.002562, -0.002645, 0.000000 ]
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [ 1., 0., 0.,
+              0., 1., 0.,
+              0., 0., 1. ]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [ 562.32599,   0.     , 833.99395,   0.     ,
+              0.     , 619.90656, 640.45111,   0.     ,
+              0.     ,   0.     ,   1.     ,   0. ]
+
