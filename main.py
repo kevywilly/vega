@@ -4,7 +4,7 @@ import logging
 import os
 import time
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, render_template
 from flask_cors import CORS
 
 from robolib.settings import settings
@@ -42,7 +42,14 @@ def demo():
     """
 
 
+
 @app.get('/')
+def _index():
+    message = "Hello, World"
+    return render_template('index.html',
+                           message=message)
+
+@app.get('/status')
 def _index():
     return OK
 
