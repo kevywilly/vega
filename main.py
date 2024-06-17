@@ -30,11 +30,12 @@ def demo():
     positions = [settings.quadruped.position_ready, settings.quadruped.position_crouch,
                  settings.quadruped.position_ready]
 
-    for p in positions:
-        app.robot.set_targets(p)
-        app.robot.move_to_targets()
-        app.robot.print_stats()
-        time.sleep(2)
+    for i in range(10):
+        for p in positions:
+            app.robot.set_targets(p)
+            app.robot.move_to_targets()
+            app.robot.print_stats()
+            time.sleep(2)
 
     """
     command {11: 491, 12: 500, 13: 375, 21: 508, 22: 500, 23: 625, 31: 508, 32: 500, 33: 625, 41: 491, 42: 500, 43: 375}
