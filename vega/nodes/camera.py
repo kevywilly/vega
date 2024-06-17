@@ -1,8 +1,13 @@
 import cv2
 import traitlets
-from picamera2 import Picamera2
+
+try:
+    from picamera2 import Picamera2
+except:
+    from mocks.picamera2 import Picamera2
 from robolib.nodes.node import Node
 from robolib.settings import settings
+
 
 def _convert_color(frame):
     # return frame
@@ -11,7 +16,8 @@ def _convert_color(frame):
 
 
 def _un_distort(frame):
-    return cv2.undistort(frame, settings.camera.calibration.camera_matrix, settings.camera.calibration.distortion_coefficients)
+    return cv2.undistort(frame, settings.camera.calibration.camera_matrix,
+                         settings.camera.calibration.distortion_coefficients)
 
 
 class Camera(Node):
@@ -51,7 +57,7 @@ class Camera(Node):
             frame = _convert_color(frame)
             frame = cv2.flip(frame, 0)
             self.value = frame
-        except:
+        except Exception as ex:
             self.logger.warn(f"Can't receive frame from camera")
 
     def spinner(self):

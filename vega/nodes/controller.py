@@ -10,7 +10,7 @@ from robolib.motion.quadruped_kinematics import QuadrupedKinematics as Kinematic
 from robolib.nodes.node import Node
 from robolib.settings import settings
 
-from src.motion.servo_controller import ServoController
+from vega.motion.servo_controller import ServoController
 
 logger = logging.getLogger('VEGA')
 
@@ -125,6 +125,7 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
+        print(self.pose)
         return cmd
 
     def _read_positions(self):

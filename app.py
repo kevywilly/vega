@@ -9,7 +9,7 @@ from flask_cors import CORS
 from robolib.settings import settings
 
 from robolib.interfaces.vector import Pos3d
-from src.nodes.robot import Robot
+from vega.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger('werkzeug')

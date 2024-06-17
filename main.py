@@ -3,13 +3,13 @@
 import logging
 import os
 import time
-
+import uvicorn
 from flask import Flask, Response, request, render_template
 from flask_cors import CORS
-
-from robolib.settings import settings
 from robolib.interfaces.vector import Pos3d
-from src.nodes.robot import Robot
+from robolib.settings import settings
+
+from vega.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger('werkzeug')
@@ -27,7 +27,8 @@ CORS(app, resource={
 
 
 def demo():
-    positions = [settings.quadruped.position_ready, settings.quadruped.position_crouch, settings.quadruped.position_ready]
+    positions = [settings.quadruped.position_ready, settings.quadruped.position_crouch,
+                 settings.quadruped.position_ready]
 
     for p in positions:
         app.robot.set_targets(p)
@@ -42,12 +43,12 @@ def demo():
     """
 
 
-
 @app.get('/')
 def _index():
     message = "Hello, World"
     return render_template('index.html',
                            message=message)
+
 
 @app.get('/health')
 def health():
@@ -93,7 +94,13 @@ def stats():
     }
 
 
+@app.get('/api/config')
+def config():
+    return settings.dict()
+
+
 if __name__ == "__main__":
+    #uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=False)
     app.robot = Robot()
     app.robot.spin(frequency=50)
     app.run(host='0.0.0.0', debug=False)

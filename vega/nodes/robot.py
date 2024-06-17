@@ -5,9 +5,9 @@ import numpy as np
 import traitlets
 
 from robolib.interfaces.msgs import Twist
-from src.nodes.camera import Camera
-from src.nodes.controller import Controller
-from src.nodes.imu import IMU
+from vega.nodes.camera import Camera
+from vega.nodes.controller import Controller
+from vega.nodes.imu import IMU
 from robolib.nodes.node import Node
 from robolib.vision.image import Image, ImageUtils
 

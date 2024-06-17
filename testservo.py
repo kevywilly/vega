@@ -3,7 +3,7 @@ import numpy as np
 from serial import Serial
 
 from robolib.settings import settings
-from src.motion.servo_controller import ServoController
+from vega.motion.servo_controller import ServoController
 
 controller = ServoController(serial=Serial(settings.serial_port))
 

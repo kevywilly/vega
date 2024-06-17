@@ -7,7 +7,7 @@ import adafruit_bno055
 import board
 
 from robolib.settings import settings
-from src.nodes.imu import IMUMode
+from vega.nodes.imu import IMUMode
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller

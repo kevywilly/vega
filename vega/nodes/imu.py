@@ -1,7 +1,15 @@
 import atexit
 
-import adafruit_bno055
-import board
+try:
+    from adafruit_bno055 import BNO055_I2C
+except:
+    from mocks.adafruit_bno055 import BNO055_I2C
+
+try:
+    import board
+except:
+    from mocks.board import board
+
 import numpy as np
 import traitlets
 from robolib.nodes.node import Node
@@ -35,7 +43,7 @@ class IMU(Node):
 
     def __init__(self, *args, **kwargs):
         super(IMU, self).__init__(*args, **kwargs)
-        self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
+        self.sensor = BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
         self.sensor.axis_remap = settings.imu.bn0_axis_remap
         self.sensor.offsets_gyroscope = settings.imu.offsets.gyro

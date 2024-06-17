@@ -3,7 +3,7 @@ from robolib.motion.gaits.trot import Trot
 from robolib.motion.gaits.turn import Turn
 from robolib.settings import settings
 
-from src.nodes.robot import Robot
+from vega.nodes.robot import Robot
 
 robot = Robot()
 
