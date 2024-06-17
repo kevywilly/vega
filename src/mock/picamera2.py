@@ -12,7 +12,7 @@ class Picamera2:
 
     @cached_property
     def frame(self):
-        return cv2.imread("mocks/camera_image.jpg")
+        return cv2.imread("src/mock/camera_image.jpg")
 
     def start(self):
         self.running = True

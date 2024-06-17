@@ -6,7 +6,7 @@ import numpy as np
 import adafruit_bno055
 import board
 
-from config import ImuOffsets, BNO_AXIS_REMAP
+from config import IMU_OFFSETS, BNO_AXIS_REMAP
 from src.nodes.imu import IMUMode
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
@@ -14,9 +14,9 @@ i2c = board.I2C()  # uses board.SCL and board.SDA
 sensor = adafruit_bno055.BNO055_I2C(i2c)
 sensor.mode = IMUMode.NDOF_MODE
 sensor.axis_remap = BNO_AXIS_REMAP
-sensor.offsets_gyroscope = ImuOffsets.gyro
-sensor.offsets_magnetometer = ImuOffsets.magnetic
-sensor.offsets_accelerometer = ImuOffsets.accel
+sensor.offsets_gyroscope = IMU_OFFSETS.GYRO
+sensor.offsets_magnetometer = IMU_OFFSETS.MAGNETIC
+sensor.offsets_accelerometer = IMU_OFFSETS.ACCEL
 
 # If you are going to use UART uncomment these lines
 # uart = board.UART()

@@ -4,12 +4,6 @@ import numpy as np
 
 
 class Gait(ABC):
-    y_flip = np.array([
-        [1, -1, 1],
-        [1, -1, 1],
-        [1, -1, 1],
-        [1, -1, 1]
-    ])
 
     def __init__(self, p0: np.ndarray, stride=60, clearance=60, step_size=15):
         self.stride = stride

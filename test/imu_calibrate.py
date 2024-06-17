@@ -4,8 +4,7 @@
 import time
 import board
 import adafruit_bno055
-import math
-from config import ImuOffsets, BNO_AXIS_REMAP
+from config import BNO_AXIS_REMAP
 from src.nodes.imu import IMUMode
 
 i2c = board.I2C()  # uses board.SCL and board.SDA

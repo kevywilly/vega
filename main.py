@@ -8,7 +8,6 @@ from flask import Flask, Response, request
 from flask_cors import CORS
 
 from config import POSITIONS
-from src.interfaces.vector import Pos3d
 from src.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))

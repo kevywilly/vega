@@ -58,7 +58,7 @@ sensor.axis_remap = BNO_AXIS_REMAP
 print("Magnetometer: Perform the figure-eight calibration dance.")
 while not sensor.calibration_status[3] == 3:
     # Calibration Dance Step One: Magnetometer
-    #   Move sensor away from magnetic interference or shields
+    #   Move sensor away from MAGNETIC interference or shields
     #   Perform the figure-eight until calibrated
     print(f"Mag Calib Status: {100 / 3 * sensor.calibration_status[3]:3.0f}%")
     time.sleep(1)

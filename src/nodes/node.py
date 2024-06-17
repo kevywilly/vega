@@ -32,7 +32,6 @@ class Node(Configurable):
     def spinner(self):
         pass
 
-    @abstractmethod
     def shutdown(self):
         pass
 

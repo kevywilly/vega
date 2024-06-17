@@ -120,7 +120,7 @@ class Twist(DataModel):
         return np.concatenate((self.linear.numpy, self.angular.numpy))
 
     def csv(self):
-        return ",".join([self.linear.csv(), self.angular().csv()])
+        return ",".join([self.linear.csv(), self.angular.csv()])
 
     def dict(self):
         return {'linear': self.linear.dict(), 'angular': self.angular.dict()}
@@ -141,7 +141,7 @@ class Pose(DataModel):
         self.orientation = orientation
 
     def csv(self):
-        return ",".join([self.position.csv(), self.orientation().csv()])
+        return ",".join([self.position.csv(), self.orientation.csv()])
 
     def numpy(self):
         return np.concatenate((self.position.numpy, self.orientation.numpy))

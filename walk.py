@@ -1,3 +1,5 @@
+import time
+
 from config import POSITIONS
 from src.motion.gaits.sideways import Sideways
 from src.motion.gaits.trot import Trot
@@ -5,8 +7,6 @@ from src.motion.gaits.turn import Turn
 from src.nodes.robot import Robot
 
 robot = Robot()
-
-import time
 
 target = POSITIONS.CROUCH
 num_steps = 54

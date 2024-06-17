@@ -9,7 +9,7 @@ except:
 
 import numpy as np
 import traitlets
-from config import ImuOffsets, BNO_AXIS_REMAP
+from config import IMU_OFFSETS, BNO_AXIS_REMAP
 from src.nodes.node import Node
 
 
@@ -43,9 +43,9 @@ class IMU(Node):
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
         self.sensor.axis_remap = BNO_AXIS_REMAP
-        self.sensor.offsets_gyroscope = ImuOffsets.gyro
-        self.sensor.offsets_magnetometer = ImuOffsets.magnetic
-        self.sensor.offsets_accelerometer = ImuOffsets.accel
+        self.sensor.offsets_gyroscope = IMU_OFFSETS.GYRO
+        self.sensor.offsets_magnetometer = IMU_OFFSETS.MAGNETIC
+        self.sensor.offsets_accelerometer = IMU_OFFSETS.ACCEL
         self.read_measurements()
 
         atexit.register(self.shutdown)

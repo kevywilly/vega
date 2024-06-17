@@ -29,13 +29,14 @@ CAMERA_MATRIX = np.array([
     0., 0., 1.
 ]).reshape(3, 3)
 DISTORTION_COEFFICIENTS = np.array([-0.296850, 0.061372, 0.002562, -0.002645, 0.000000]).reshape(1, 5)
+
 DEBUG = True
 
 
-class ImuOffsets:
-    magnetic = (419, -250, -597)
-    gyro = (0, -2, -1)
-    accel = (16, -31, 14)
+class IMU_OFFSETS:
+    MAGNETIC = (419, -250, -597)
+    GYRO = (0, -2, -1)
+    ACCEL = (16, -31, 14)
 
 
 class DIMS:
