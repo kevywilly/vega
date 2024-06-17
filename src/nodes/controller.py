@@ -6,7 +6,7 @@ import serial
 import traitlets
 
 import config
-from config import Positions, Angles, Dims, SERVO_IDS, FLIP
+from config import POSITIONS, ANGLES, DIMS, SERVO_IDS, FLIP
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
@@ -15,7 +15,7 @@ from src.nodes.node import Node
 
 logger = logging.getLogger('VEGA')
 
-_km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
+_km = Kinematics(DIMS.COXA, DIMS.FEMUR, DIMS.TIBIA)
 
 try:
     _sc = ServoController(serial.Serial(config.serial_port))
@@ -44,7 +44,7 @@ def _positions_from_angles(angles: np.ndarray):
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
-    adjusted_angles = angles - Angles.zero
+    adjusted_angles = angles - ANGLES.ZERO
     return dict(
         zip(
             config.SERVOS.reshape(-1),
@@ -56,7 +56,7 @@ def _servo_positions_from_angles(angles: np.ndarray):
 def _angles_from_servo_positions(servo_positions):
     pos = _servo_positions_to_numpy(servo_positions)
     angles = (pos - 500) * SERVO_MAX_ANGLE / (FLIP * 1000)
-    return angles + Angles.zero
+    return angles + ANGLES.ZERO
 
 
 def _servo_positions_to_numpy(servo_positions):
@@ -87,8 +87,8 @@ class Controller(Node):
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_targets(Positions.ready)
-        self.move_to(Positions.ready)
+        self.set_targets(POSITIONS.READY)
+        self.move_to(POSITIONS.READY)
 
         atexit.register(self.shutdown)
 
@@ -100,7 +100,7 @@ class Controller(Node):
         self._apply_cmd_vel(change.new)
 
     def shutdown(self):
-        self.move_to(Positions.crouch)
+        self.move_to(POSITIONS.CROUCH)
         if _sc:
             _sc.unload(SERVO_IDS)
 

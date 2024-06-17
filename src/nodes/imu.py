@@ -1,8 +1,15 @@
 import atexit
 import math
 
-import adafruit_bno055
-import board
+from src.mock import adafruit_bno055
+
+try:
+    import adafruit_bno055
+    import board
+except:
+    from src.mock import adafruit_bno055
+    from src.mock.board import board
+
 import numpy as np
 import traitlets
 from config import ImuOffsets, BNO_AXIS_REMAP

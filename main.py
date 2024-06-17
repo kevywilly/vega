@@ -9,7 +9,7 @@ from flask import Flask, Response, request
 
 from src.interfaces.vector import Pos3d, Vector3
 
-from config import Positions
+from config import POSITIONS
 from src.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -28,7 +28,7 @@ CORS(app, resource={
 
 
 def demo():
-    positions = [Positions.ready, Positions.crouch, Positions.ready]
+    positions = [POSITIONS.READY, POSITIONS.CROUCH, POSITIONS.READY]
 
     for p in positions:
         app.robot.set_targets(p)

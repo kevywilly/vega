@@ -1,13 +1,17 @@
 import cv2
 import traitlets
-from picamera2 import Picamera2
+
+try:
+    from picamera2 import Picamera2
+except:
+    from src.mock.picamera2 import Picamera2
 
 from config import CAMERA_MATRIX, DISTORTION_COEFFICIENTS
 from src.nodes.node import Node
 
 
 def _convert_color(frame):
-    #return frame
+    # return frame
     # XBGR8888  - SBGR10_CSI2P is what we get
     return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -63,5 +67,3 @@ class Camera(Node):
         self.logger.info("stopping camera")
         self.cap.stop()
         self.cap.close()
-
-

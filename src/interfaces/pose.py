@@ -1,10 +1,10 @@
 from typing import Optional
 
 import numpy as np
-from config import Dims
+from config import DIMS
 
 _quadrant_matrix = np.array([[1, 1, 1], [1, -1, 1], [-1, -1, 1], [-1, 1, 1]])
-_dimensions = np.array([Dims.length / 2, Dims.width / 2, 0])
+_dimensions = np.array([DIMS.LENGTH / 2, DIMS.WIDTH / 2, 0])
 def _3d_rotate(corners: np.ndarray, degrees: float):
     """
     rotation_matrix = np.array([
