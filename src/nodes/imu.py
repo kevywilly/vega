@@ -51,13 +51,16 @@ class IMU(Node):
         atexit.register(self.shutdown)
 
     def read_measurements(self):
-        self.acceleration = np.array(self.sensor.acceleration)
-        self.magnetic = np.array(self.sensor.magnetic)
-        self.gyro = np.array(self.sensor.gyro)
-        self.euler = np.array(self.sensor.euler)
-        self.quaternion = np.array(self.sensor.quaternion)
-        self.linear_acceleration = np.array(self.sensor.linear_acceleration)
-        self.gravity = np.array(self.sensor.gravity)
+        try:
+            self.acceleration = np.array(self.sensor.acceleration)
+            self.magnetic = np.array(self.sensor.magnetic)
+            self.gyro = np.array(self.sensor.gyro)
+            self.euler = np.array(self.sensor.euler)
+            self.quaternion = np.array(self.sensor.quaternion)
+            self.linear_acceleration = np.array(self.sensor.linear_acceleration)
+            self.gravity = np.array(self.sensor.gravity)
+        except Exception as e:
+            self.logger.error(f"could not read imu {e.__str__()}")
 
     def spinner(self):
         self.read_measurements()
