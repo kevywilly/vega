@@ -51,3 +51,10 @@ class Pose:
         self.servo_positions = np.zeros((4,3))
         self.cmd = None
 
+
+    def __repr__(self):
+        return f"""
+        positions: {list(np.asarray(self.positions))}
+        angles: {list(np.asarray(self.positions))}
+        servos: {list(np.asarray(self.servo_positions))}
+        """
