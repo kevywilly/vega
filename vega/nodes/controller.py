@@ -115,7 +115,7 @@ class Controller(Node):
     def move_to_targets(self, millis=DEFAULT_MILLIS):
         return self.move_to(self.pose.target_positions, millis_or_default(millis))
 
-    def move_to(self, positions: np.ndarray, millis=800):
+    def move_to(self, positions: np.ndarray, millis=80):
         angles = _angles_from_positions(positions)
         cmd = _servo_positions_from_angles(angles)
 
@@ -125,7 +125,6 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
-        print(self.pose)
         return cmd
 
     def _read_positions(self):
