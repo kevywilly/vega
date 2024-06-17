@@ -25,12 +25,12 @@ def demo():
 
 
 def trot():
-    gait = Trot(p0=settings.quadruped.position_ready, stride=60, clearance=65, step_size=50)
+    gait = Trot(p0=settings.quadruped.position_ready, stride=60, clearance=65, step_size=15)
     robot.controller.move_to(settings.quadruped.position_ready)
     time.sleep(0.5)
     while 1:
         for position in gait.step_generator(reverse=False):
-            robot.controller.move_to(position, 50)
+            robot.controller.move_to(position, 10)
 
 
 def side():
