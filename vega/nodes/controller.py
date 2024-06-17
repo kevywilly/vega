@@ -125,6 +125,7 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
+        print(self.pose)
         return cmd
 
     def _read_positions(self):

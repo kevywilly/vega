@@ -29,9 +29,8 @@ def trot():
     robot.controller.move_to(settings.quadruped.position_ready)
     time.sleep(0.5)
     while 1:
-        pass
-        # for position in gait.step_generator(reverse=False):
-        #    robot.controller.move_to(position, 10)
+        for position in gait.step_generator(reverse=False):
+            robot.controller.move_to(position, 10)
 
 
 def side():
@@ -44,12 +43,12 @@ def side():
 
 
 def turn():
-    gait = Turn(degrees=-20, p0=settings.quadruped.position_ready, clearance=80, step_size=10)
+    gait = Turn(degrees=-20, p0=settings.quadruped.position_ready, clearance=80, step_size=15)
     robot.controller.move_to(settings.quadruped.position_ready)
     time.sleep(0.5)
     while 1:
-        pass
-        # for position in gait.step_generator(reverse=False):
-        #    robot.controller.move_to(position, 80)
+        for position in gait.step_generator(reverse=False):
+            robot.controller.move_to(position, 80)
+
 
 trot()
