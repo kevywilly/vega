@@ -22,7 +22,7 @@ except:
     _sc = None
     logger.debug(f"Robot will not move - couldn't open serial port.")
 
-DEFAULT_MILLIS = 800
+DEFAULT_MILLIS = 50
 SERVO_MAX_ANGLE = np.radians(240)
 
 

@@ -50,5 +50,4 @@ def turn():
         for position in gait.step_generator(reverse=False):
             robot.controller.move_to(position, 80)
 
-
-trot()
+side()
