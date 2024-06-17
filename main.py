@@ -19,7 +19,7 @@ OK = {"status": "ok"}
 
 app = Flask(__name__)
 
-CORS(app, resource={
+CORS(app, resources={
     r"/*": {
         "origins": "*"
     }

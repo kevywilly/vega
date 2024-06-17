@@ -59,6 +59,7 @@ class Robot(Node):
         self._loaded()
 
     def _start_nodes(self):
+
         self.imu.spin()
         self.controller.spin()
         if self.camera:
