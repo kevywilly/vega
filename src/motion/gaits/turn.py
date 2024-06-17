@@ -13,7 +13,7 @@ class Turn(Gait):
     def build_steps(self):
 
         mag_z = -self.clearance
-        
+
         self.num_steps = int(45 / self.step_size)
         p1 = Position(self.p0)
         pr = p1.rotated(self.degrees)
@@ -74,13 +74,13 @@ class Turn(Gait):
             np.zeros(num_steps),
         ])
 
-        self.steps1 = self.reshape_steps(np.array([l1_x, l1_y, l1_z]), total_steps=num_steps*4)
+        self.steps1 = self.reshape_steps(np.array([l1_x, l1_y, l1_z]), total_steps=num_steps * 4)
 
-        self.steps2 = self.reshape_steps(np.array([l2_x, l2_y, l2_z]), total_steps=num_steps*4)
+        self.steps2 = self.reshape_steps(np.array([l2_x, l2_y, l2_z]), total_steps=num_steps * 4)
 
-        self.steps3 = self.reshape_steps(np.array([l3_x, l3_y, l3_z]), total_steps=num_steps*4)
+        self.steps3 = self.reshape_steps(np.array([l3_x, l3_y, l3_z]), total_steps=num_steps * 4)
 
-        self.steps4 = self.reshape_steps(np.array([l4_x, l4_y, l4_z]), total_steps=num_steps*4)
+        self.steps4 = self.reshape_steps(np.array([l4_x, l4_y, l4_z]), total_steps=num_steps * 4)
 
     def step_generator(self, reverse=False):
 
@@ -92,4 +92,3 @@ class Turn(Gait):
                 s3 = self.steps2[i]
 
                 yield self.p0 + np.array([s0, s1, s2, s3])
-

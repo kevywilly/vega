@@ -1,9 +1,7 @@
 import numpy as np
 
 from src.motion.gaits.gait import Gait
-import numpy as np
 
-from src.motion.gaits.gait import Gait
 
 class Trot(Gait):
 
@@ -17,18 +15,18 @@ class Trot(Gait):
             np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
         ]) * mag_x
 
-        l1_y = np.zeros(self.num_steps*2)
+        l1_y = np.zeros(self.num_steps * 2)
 
         l1_z = np.hstack([
-                np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-                np.hstack(np.zeros(self.num_steps))
+            np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
+            np.hstack(np.zeros(self.num_steps))
         ]) * mag_z
 
         l2_x = np.hstack([
             np.cos(np.radians(np.linspace(90, 180, self.num_steps * 2))),
         ]) * mag_x
 
-        l2_y = np.zeros(self.num_steps*2)
+        l2_y = np.zeros(self.num_steps * 2)
 
         l2_z = np.zeros(self.num_steps * 2)
 
@@ -49,5 +47,4 @@ class Trot(Gait):
                 if phase == 0:
                     yield self.p0 + offsets
                 else:
-                    yield self.p0 + np.roll(offsets,1,0)
-
+                    yield self.p0 + np.roll(offsets, 1, 0)

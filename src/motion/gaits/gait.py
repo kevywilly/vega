@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-class Gait(ABC):
 
+class Gait(ABC):
     y_flip = np.array([
-        [1,-1, 1],
+        [1, -1, 1],
         [1, -1, 1],
         [1, -1, 1],
         [1, -1, 1]
@@ -25,7 +25,8 @@ class Gait(ABC):
 
         self.build_steps()
 
-    def reshape_steps(self, step: np.ndarray, total_steps: int):
+    @staticmethod
+    def reshape_steps(step: np.ndarray, total_steps: int):
         return step.reshape(-1, total_steps).transpose(1, 0).astype(int)
 
     @abstractmethod

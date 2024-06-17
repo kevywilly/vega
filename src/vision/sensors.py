@@ -16,7 +16,6 @@ class CameraSensor:
     MODE1280x720x59 = 4
     MODE1280X720x120 = 5
 
-
     def __init__(self, id: int, width: int, height: int, framerate: int):
         self.id = id
         self.width = width

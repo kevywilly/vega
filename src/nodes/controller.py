@@ -80,8 +80,8 @@ class Controller(Node):
     accelerometer_data = traitlets.Any()
     motion_data = traitlets.Any()
 
-    def __init__(self, *args, **kwargs):
-        super(Controller, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(Controller, self).__init__(**kwargs)
         self.positions = None
         self.offsets = None
         self.pose = Pose()
@@ -138,7 +138,8 @@ class Controller(Node):
         except:
             pass
 
-    def voltage(self):
+    @staticmethod
+    def voltage():
         return _sc.get_battery_voltage()
 
     @traitlets.observe('euler')

@@ -1,10 +1,13 @@
 from typing import Optional
 
 import numpy as np
+
 from config import DIMS
 
 _quadrant_matrix = np.array([[1, 1, 1], [1, -1, 1], [-1, -1, 1], [-1, 1, 1]])
 _dimensions = np.array([DIMS.LENGTH / 2, DIMS.WIDTH / 2, 0])
+
+
 def _3d_rotate(corners: np.ndarray, degrees: float):
     """
     rotation_matrix = np.array([
@@ -21,6 +24,7 @@ def _3d_rotate(corners: np.ndarray, degrees: float):
     ])
     return np.dot(rotation_matrix, corners.T).T
 
+
 class Position:
     def __init__(self, local: np.ndarray, world: Optional[np.ndarray] = None):
         self.local = local
@@ -28,7 +32,7 @@ class Position:
 
     @classmethod
     def from_world(cls, world: np.ndarray):
-        return cls(local=world/_quadrant_matrix-_dimensions, world=world)
+        return cls(local=world / _quadrant_matrix - _dimensions, world=world)
 
     @classmethod
     def from_local(cls, local: np.ndarray):
@@ -39,18 +43,16 @@ class Position:
         return p
 
 
-
 class Pose:
     num_links = 12
 
     def __init__(self):
         self.positions = np.zeros((4, 3))
-        self.target_positions = np.zeros((4,3))
+        self.target_positions = np.zeros((4, 3))
         self.angles = np.zeros((4, 3))
-        self.target_angles = np.zeros((4,3))
-        self.servo_positions = np.zeros((4,3))
+        self.target_angles = np.zeros((4, 3))
+        self.servo_positions = np.zeros((4, 3))
         self.cmd = None
-
 
     def __repr__(self):
         return f"""

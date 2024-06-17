@@ -1,7 +1,4 @@
 import atexit
-import math
-
-from src.mock import adafruit_bno055
 
 try:
     import adafruit_bno055
@@ -14,6 +11,7 @@ import numpy as np
 import traitlets
 from config import ImuOffsets, BNO_AXIS_REMAP
 from src.nodes.node import Node
+
 
 class IMUMode:
     CONFIG_MODE = 0x00
@@ -30,6 +28,7 @@ class IMUMode:
     NDOF_FMC_OFF_MODE = 0x0B
     NDOF_MODE = 0x0C
 
+
 class IMU(Node):
     acceleration = traitlets.Any()
     magnetic = traitlets.Any()
@@ -39,8 +38,8 @@ class IMU(Node):
     linear_acceleration = traitlets.Any()
     gravity = traitlets.Any()
 
-    def __init__(self, *args, **kwargs):
-        super(IMU, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(IMU, self).__init__(**kwargs)
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
         self.sensor.axis_remap = BNO_AXIS_REMAP
@@ -59,7 +58,6 @@ class IMU(Node):
         self.quaternion = np.array(self.sensor.quaternion)
         self.linear_acceleration = np.array(self.sensor.linear_acceleration)
         self.gravity = np.array(self.sensor.gravity)
-
 
     def spinner(self):
         self.read_measurements()

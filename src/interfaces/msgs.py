@@ -1,14 +1,15 @@
+import time
 from abc import abstractmethod, ABC
-from typing import Optional, Dict
+from typing import Optional
+
 import numpy as np
 from numpy import ndarray
-import time
 
 
 class DataModel(ABC):
     @abstractmethod
     def numpy(self) -> ndarray:
-        return np.array()
+        return np.array([])
 
 
 class Vector3(DataModel):

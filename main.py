@@ -1,15 +1,14 @@
-
-#!/usr/bin/python3i
+# !/usr/bin/python3i
 
 import logging
-import time
 import os
-from flask_cors import CORS
-from flask import Flask, Response, request
+import time
 
-from src.interfaces.vector import Pos3d, Vector3
+from flask import Flask, Response, request
+from flask_cors import CORS
 
 from config import POSITIONS
+from src.interfaces.vector import Pos3d
 from src.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -42,37 +41,42 @@ def demo():
     crouch {11: 491, 12: 166, 13: 966, 21: 508, 22: 833, 23: 33, 31: 508, 32: 833, 33: 33, 41: 491, 42: 166, 43: 966}
     """
 
+
 @app.get('/')
 def _index():
     return OK
+
 
 @app.get('/api/demo')
 def _demo():
     demo()
     return OK
 
+
 @app.post('/api/target')
 def _target():
     data = request.get_json()
-    pos = Pos3d(**data)
     return data
+
 
 @app.post('/api/joy/<id>')
 def _joy(id: str):
-    data =  request.get_json()
+    data = request.get_json()
     data["id"] = int(id)
     return data
+
 
 @app.get('/api/stream')
 def stream():
     return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.get('/api/stats')
 def stats():
     heading, pitch, yaw = app.robot.imu.euler
     voltage = app.robot.controller.voltage()
     return {
-        "stats" : {
+        "stats": {
             "heading": heading,
             "pitch": pitch,
             "yaw": yaw,

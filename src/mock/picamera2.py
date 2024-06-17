@@ -1,7 +1,7 @@
 from functools import cached_property
 
-import numpy as np
 import cv2
+
 
 class Picamera2:
     def __init__(self):
@@ -19,11 +19,10 @@ class Picamera2:
 
     def capture_array(self):
         return self.frame
-        #return np.zeros((1640, 1232, 3))
+        # return np.zeros((1640, 1232, 3))
 
     def stop(self):
         self.running = False
 
     def close(self):
         return
-
