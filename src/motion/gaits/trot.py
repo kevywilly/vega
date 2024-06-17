@@ -6,7 +6,6 @@ from src.motion.gaits.gait import Gait
 class Trot(Gait):
 
     def build_steps(self):
-
         mag_x = -self.stride
         mag_z = -self.clearance
 
@@ -31,20 +30,4 @@ class Trot(Gait):
         l2_z = np.zeros(self.num_steps * 2)
 
         self.steps1 = self.reshape_steps(np.array([l1_x, l1_y, l1_z]), self.num_steps * 2)
-
         self.steps2 = self.reshape_steps(np.array([l2_x, l2_y, l2_z]), self.num_steps * 2)
-
-        self.steps3 = self.steps1
-
-        self.steps4 = self.steps2
-
-    def step_generator(self, reverse=False):
-
-        for phase in [0, 1]:
-            for i in range(self.steps1.shape[0]):
-                offsets = np.array([self.steps1[i], self.steps2[i], self.steps3[i], self.steps4[i]])
-
-                if phase == 0:
-                    yield self.p0 + offsets
-                else:
-                    yield self.p0 + np.roll(offsets, 1, 0)

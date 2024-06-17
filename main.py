@@ -4,7 +4,7 @@ import logging
 import os
 import time
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, render_template
 from flask_cors import CORS
 
 from config import POSITIONS
@@ -43,6 +43,11 @@ def demo():
 
 @app.get('/')
 def _index():
+    message = "Hello, World"
+    return render_template('joy.html', message=message)
+
+@app.get('/healthcheck')
+def _health_check():
     return OK
 
 
@@ -54,6 +59,12 @@ def _demo():
 
 @app.post('/api/target')
 def _target():
+    data = request.get_json()
+    return data
+
+
+@app.post('/api/move')
+def _move():
     data = request.get_json()
     return data
 
@@ -87,4 +98,4 @@ def stats():
 if __name__ == "__main__":
     app.robot = Robot()
     app.robot.spin(frequency=50)
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', debug=True)

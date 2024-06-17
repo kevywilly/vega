@@ -54,9 +54,16 @@ class Pose:
         self.servo_positions = np.zeros((4, 3))
         self.cmd = None
 
+    @property
+    def table(self):
+        return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
+
     def __repr__(self):
+        return f"""{self.table}"""
+        '''
         return f"""
         positions: {list(np.asarray(self.positions))}
         angles: {list(np.asarray(self.positions))}
         servos: {list(np.asarray(self.servo_positions))}
         """
+        '''
