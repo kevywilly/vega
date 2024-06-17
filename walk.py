@@ -25,7 +25,7 @@ def demo():
 
 
 def trot():
-    gait = Trot(p0=settings.quadruped.position_ready, stride=60, clearance=65, step_size=15)
+    gait = Trot(p0=settings.quadruped.position_ready, stride=60, clearance=65, step_size=50)
     robot.controller.move_to(settings.quadruped.position_ready)
     time.sleep(0.5)
     while 1:
