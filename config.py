@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 from src.vision.sensors import CameraSensor
-
+VEGA_ENVIRONMENT = os.environ.get("VEGA_ENVIRONMENT", "development")
 VEGA_API_URL = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
 SERIAL_PORT = os.environ.get("SERIAL_PORT", "/dev/serial0")
 

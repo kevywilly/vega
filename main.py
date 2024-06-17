@@ -99,4 +99,4 @@ def stats():
 if __name__ == "__main__":
     app.robot = Robot()
     app.robot.spin(frequency=50)
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=config.VEGA_ENVIRONMENT == "development")
