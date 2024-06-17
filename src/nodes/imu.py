@@ -59,7 +59,6 @@ class IMU(Node):
             self.quaternion = np.array(self.sensor.quaternion)
             self.linear_acceleration = np.array(self.sensor.linear_acceleration)
             self.gravity = np.array(self.sensor.gravity)
-            print('got measurements')
         except Exception as e:
             self.logger.error(f"could not read imu {e.__str__()}")
 

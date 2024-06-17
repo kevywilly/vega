@@ -1,8 +1,10 @@
 import numpy as np
+import os
 
 from src.vision.sensors import CameraSensor
 
-serial_port = '/dev/serial0'
+VEGA_API_URL = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
+SERIAL_PORT = os.environ.get("SERIAL_PORT", "/dev/serial0")
 
 # BNO sensor axes remap values.  These are the parameters to the BNO.set_axis_remap
 # function.  Don't change these without consulting section 3.4 of the datasheet.

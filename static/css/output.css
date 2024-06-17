@@ -562,6 +562,14 @@ video {
   display: flex;
 }
 
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.w-1\/2 {
+  width: 50%;
+}
+
 .flex-row {
   flex-direction: row;
 }
@@ -570,6 +578,18 @@ video {
   flex-direction: column;
 }
 
+.items-center {
+  align-items: center;
+}
+
 .justify-around {
   justify-content: space-around;
+}
+
+.gap-16 {
+  gap: 4rem;
+}
+
+.gap-32 {
+  gap: 8rem;
 }

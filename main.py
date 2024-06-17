@@ -7,6 +7,7 @@ import time
 from flask import Flask, Response, request, render_template
 from flask_cors import CORS
 
+import config
 from config import POSITIONS
 from src.nodes.robot import Robot
 
@@ -44,7 +45,7 @@ def demo():
 @app.get('/')
 def _index():
     message = "Hello, World"
-    return render_template('joy.html', message=message)
+    return render_template('joy.html', vega_api_url=config.VEGA_API_URL)
 
 @app.get('/healthcheck')
 def _health_check():

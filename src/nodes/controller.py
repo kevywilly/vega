@@ -18,7 +18,7 @@ logger = logging.getLogger('VEGA')
 _km = Kinematics(DIMS.COXA, DIMS.FEMUR, DIMS.TIBIA)
 
 try:
-    _sc = ServoController(serial.Serial(config.serial_port))
+    _sc = ServoController(serial.Serial(config.SERIAL_PORT))
 except:
     _sc = None
     logger.debug(f"Robot will not move - couldn't open serial port.")
