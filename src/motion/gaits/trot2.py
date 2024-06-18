@@ -47,5 +47,19 @@ class Trot2(Gait):
         l2_z = np.zeros(self.num_steps * 2)
         """
         # Reshape steps for easy processing
-        self.steps1 = self.reshape_steps(np.array([l1_x, l1_y, l1_z]), num_steps * 4)
+        self.steps1 = Gait.reshape_steps(np.array([l1_x, l1_y, l1_z]), num_steps * 4)
         self.steps2 = np.roll(self.steps1, num_steps*2, axis=0)
+
+
+    def step_generator(self, reverse=False):
+        """
+        Generator to yield the step positions.
+
+        Args:
+            reverse (bool): Flag to indicate reverse stepping.
+
+        Yields:
+            np.ndarray: Step positions.
+        """
+        for i in range(self.steps1.shape[0]):
+            yield self.p0 + np.array([self.steps1[i], self.steps2[i], self.steps1[i], self.steps2[i]])
