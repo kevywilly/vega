@@ -4,7 +4,9 @@ from typing import Optional
 import numpy as np
 import traitlets
 
+from config import POSITIONS
 from src.interfaces.msgs import Twist
+from src.motion.gaits.trot2 import Trot2
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
@@ -25,11 +27,14 @@ class CmdVel(traitlets.HasTraits):
         else:
             return np.array([self.value.linear.x, self.value.linear.y, self.value.angular.z])
 
+class DriveCmd(traitlets.HasTraits):
+    stride = traitlets.Int(allow_none=True)
 
 class Robot(Node):
     image = traitlets.Instance(Image)
     measurement = traitlets.Instance(Measurement)
     cmd_vel = traitlets.Instance(CmdVel)
+    walking = traitlets.Bool(allow_none=True, default=False)
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -41,6 +46,7 @@ class Robot(Node):
         self.measurement = Measurement()
         self.cmd_vel = CmdVel()
         self.cmd_zero = True
+        self.gait = Trot2(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
 
         # initialize nodes
         try:
@@ -107,4 +113,7 @@ class Robot(Node):
         # print("target_angles", self.controller.pose.target_angles)
 
     def spinner(self):
-        pass
+        if self.walking:
+            for position in self.gait.step_generator(reverse=False):
+                self.controller.move_to(position, 50)
+

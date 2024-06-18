@@ -95,6 +95,18 @@ def stats():
         }
     }
 
+@app.get('/api/walk')
+def walk():
+    app.robot.walking = True
+    return {"status": "walking"}
+
+@app.get('/api/stop')
+def stop():
+    app.robot.walking = False
+    app.robot.controller.move_to(POSITIONS.READY)
+    return {"status": "stopped"}
+
+
 
 if __name__ == "__main__":
     app.robot = Robot()
