@@ -11,7 +11,6 @@ import config
 from config import POSITIONS
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
-from src.motion.gaits.trot2 import Trot2
 from src.motion.gaits.turn import Turn
 from src.nodes.robot import Robot
 
@@ -50,6 +49,7 @@ def demo():
 def _index():
     message = "Hello, World"
     return render_template('joy.html', vega_api_url=config.VEGA_API_URL)
+
 
 @app.get('/healthcheck')
 def _health_check():
@@ -108,6 +108,7 @@ def trot():
 
     return {"status": "trotting"}
 
+
 @app.get('/api/sidestep')
 def sidestep():
     app.robot.stop()
@@ -115,6 +116,7 @@ def sidestep():
     app.robot.gait = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
 
     return {"status": "sidestepping"}
+
 
 @app.get('/api/turn')
 def turn():
@@ -124,11 +126,11 @@ def turn():
 
     return {"status": "turning"}
 
+
 @app.get('/api/stop')
 def stop():
     app.robot.stop()
     return {"status": "stopped"}
-
 
 
 if __name__ == "__main__":
