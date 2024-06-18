@@ -3,7 +3,7 @@ import numpy as np
 from src.motion.gaits.gait import Gait
 
 
-class Sideways(Gait):
+class Sidestep(Gait):
     def build_steps(self):
         mag_z = -self.clearance
         mag_y = self.stride

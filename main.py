@@ -9,6 +9,10 @@ from flask_cors import CORS
 
 import config
 from config import POSITIONS
+from src.motion.gaits.sidestep import Sidestep
+from src.motion.gaits.trot import Trot
+from src.motion.gaits.trot2 import Trot2
+from src.motion.gaits.turn import Turn
 from src.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -95,15 +99,34 @@ def stats():
         }
     }
 
-@app.get('/api/walk')
-def walk():
+
+@app.get('/api/trot')
+def trot():
+    app.robot.stop()
     app.robot.walking = True
-    return {"status": "walking"}
+    app.robot.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
+
+    return {"status": "trotting"}
+
+@app.get('/api/sidestep')
+def sidestep():
+    app.robot.stop()
+    app.robot.walking = True
+    app.robot.gait = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
+
+    return {"status": "sidestepping"}
+
+@app.get('/api/turn')
+def turn():
+    app.robot.stop()
+    app.robot.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
+    app.robot.walking = True
+
+    return {"status": "turning"}
 
 @app.get('/api/stop')
 def stop():
-    app.robot.walking = False
-    app.robot.controller.move_to(POSITIONS.READY)
+    app.robot.stop()
     return {"status": "stopped"}
 
 

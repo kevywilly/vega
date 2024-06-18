@@ -1,7 +1,7 @@
 import time
 
 from config import POSITIONS
-from src.motion.gaits.sideways import Sideways
+from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
 from src.motion.gaits.trot2 import Trot2
@@ -41,7 +41,7 @@ def trot2():
             robot.controller.move_to(position, 50)
 
 def side():
-    trotter = Sideways(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
+    trotter = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
     robot.controller.move_to(POSITIONS.READY)
     time.sleep(0.5)
     while 1:
