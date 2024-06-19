@@ -118,9 +118,7 @@ class Robot(Node):
         self.walking = False
         self.walking_dir = None
         self.joy_id = 0
-
         time.sleep(0.1)
-        self.gait = None
         self.controller.move_to(POSITIONS.READY)
         time.sleep(0.1)
 
@@ -151,9 +149,10 @@ class Robot(Node):
         if dir == 'C':
             self.stop()
             return response()
-        elif self.walking_dir == dir and self.joy_id == jid:
+        if self.walking_dir == dir and self.joy_id == jid:
             return response()
-        elif dir == 'N':
+
+        if dir == 'N':
             self.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
         elif dir == "S":
             self.gait = Trot(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=15)
