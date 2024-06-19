@@ -9,6 +9,7 @@ from src.interfaces.msgs import Twist
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
+from src.motion.gaits.trot2 import Trot2
 from src.motion.gaits.turn import Turn
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
@@ -153,9 +154,9 @@ class Robot(Node):
             return response()
 
         if dir == 'N':
-            self.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=20)
+            self.gait = Trot2(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
         elif dir == "S":
-            self.gait = Trot(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=20)
+            self.gait = Trot2(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=15)
         elif dir == "E" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=25, clearance=40, step_size=20)
         elif dir == "E" and jid == 2:
