@@ -42,6 +42,7 @@ class Robot(Node):
     walking = traitlets.Bool(allow_none=True, default=False)
     walking_dir = traitlets.Unicode(allow_none=True)
     joy_id = traitlets.Int(allow_none=True)
+    gait = traitlets.Instance(Gait, allow_none=True)
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -53,7 +54,6 @@ class Robot(Node):
         self.measurement = Measurement()
         self.cmd_vel = CmdVel()
         self.cmd_zero = True
-        self.gait: Optional[Gait] = None
 
         # initialize nodes
         try:
@@ -116,7 +116,7 @@ class Robot(Node):
 
     def stop(self):
         self.walking = False
-        self.walking_dir = None
+        self.walking_dir = 'C'
         self.joy_id = 0
         time.sleep(0.1)
         self.controller.move_to(POSITIONS.READY)
@@ -152,17 +152,17 @@ class Robot(Node):
         if self.walking_dir == dir and self.joy_id == jid:
             return response()
 
-        if dir == 'N':
+        if dir == 'R':
             self.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
-        elif dir == "S":
+        elif dir == "R":
             self.gait = Trot(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=15)
-        elif dir == "E" and self.joy_id == 1:
+        elif dir == "E" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
-        elif dir == "E" and self.joy_id == 2:
+        elif dir == "E" and jid == 2:
             self.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
-        elif dir == "W" and self.joy_id == 1:
+        elif dir == "W" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=-30, clearance=50, step_size=15)
-        elif dir == "W" and self.joy_id == 2:
+        elif dir == "W" and jid == 2:
             self.gait = Turn(degrees=20, p0=POSITIONS.READY, clearance=80, step_size=10)
 
         self.walking_dir = dir

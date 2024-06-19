@@ -1,19 +1,19 @@
-class JoyData {
-  constructor() {
-    this.px = 0;
-    this.py = 0;
-    this.dir = 0;
-    this.x = 0;
-    this.y = 0
-  }
-}
+let joy_id = 0;
+let dir = null;
 
-const joy1Data = { id: 1, x: 0, y: 0, dir: "C"};
-const joy2Data = { id: 2, x: 0, y: 0, dir: "C"};
+const joy1Data = {id: 1, x: 0, y: 0, dir: "C"};
+const joy2Data = {id: 2, x: 0, y: 0, dir: "C"};
 
 const postJoyData = (data) => {
-    console.log(data)
-    payload = JSON.stringify(data)
+
+    if (joy_id === data.id && dir === data.dir) {
+        return;
+    } else {
+        joy_id = data.id;
+        dir = data.dir;
+    }
+
+    payload = JSON.stringify(data);
     $.ajax({
         method: "POST",
         url: "api/joy",
@@ -24,19 +24,18 @@ const postJoyData = (data) => {
 }
 
 // Create JoyStick object into the DIV 'joy1Div'
-const Joy1 = new JoyStick('joy1Div', {}, function(stickData) {
+const Joy1 = new JoyStick('joy1Div', {}, function (stickData) {
     joy1Data.x = stickData.x;
     joy1Data.y = stickData.y;
     joy1Data.dir = stickData.cardinalDirection;
     postJoyData(joy1Data);
 });
 
-const Joy2 = new JoyStick('joy2Div', {}, function(stickData) {
+const Joy2 = new JoyStick('joy2Div', {}, function (stickData) {
     joy2Data.x = stickData.x;
     joy2Data.y = stickData.y;
     joy2Data.dir = stickData.cardinalDirection;
-    postJoyData(joy2Data);
+    if (joy2Data.dir !== 'N' && joy2Data.dir !== 'S') {
+        postJoyData(joy2Data);
+    }
 });
-
-
-
