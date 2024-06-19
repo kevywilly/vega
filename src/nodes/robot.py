@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import Optional, Dict
 
 import numpy as np
 import traitlets
@@ -7,7 +7,9 @@ import traitlets
 from config import POSITIONS
 from src.interfaces.msgs import Twist
 from src.motion.gaits.gait import Gait
-from src.motion.gaits.trot2 import Trot2
+from src.motion.gaits.sidestep import Sidestep
+from src.motion.gaits.trot import Trot
+from src.motion.gaits.turn import Turn
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
@@ -28,14 +30,18 @@ class CmdVel(traitlets.HasTraits):
         else:
             return np.array([self.value.linear.x, self.value.linear.y, self.value.angular.z])
 
+
 class DriveCmd(traitlets.HasTraits):
     stride = traitlets.Int(allow_none=True)
+
 
 class Robot(Node):
     image = traitlets.Instance(Image)
     measurement = traitlets.Instance(Measurement)
     cmd_vel = traitlets.Instance(CmdVel)
     walking = traitlets.Bool(allow_none=True, default=False)
+    walking_dir = traitlets.Unicode(allow_none=True)
+    joy_id = traitlets.Int(allow_none=True)
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -110,7 +116,11 @@ class Robot(Node):
 
     def stop(self):
         self.walking = False
+        self.walking_dir = None
+        self.joy_id = 0
+
         time.sleep(0.1)
+        self.gait = None
         self.controller.move_to(POSITIONS.READY)
         time.sleep(0.1)
 
@@ -124,3 +134,40 @@ class Robot(Node):
             for position in self.gait.step_generator(reverse=False):
                 self.controller.move_to(position, 50)
 
+    def process_joy(self, data: Dict):
+        dir = data.get("dir")
+        x = int(data.get("x", "0"))
+        y = int(data.get("y", "0"))
+        jid = int(data.get("id", "0"))
+
+        def response():
+            return {
+                "walking": self.walking,
+                "dir": self.walking_dir,
+                "joy_id": self.joy_id,
+                "gait": self.gait.__class__.__name__ if self.gait else None
+            }
+
+        if dir == 'C':
+            self.stop()
+            return response()
+        elif self.walking_dir == dir and self.joy_id == jid:
+            return response()
+        elif dir == 'N':
+            self.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
+        elif dir == "S":
+            self.gait = Trot(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=15)
+        elif dir == "E" and self.joy_id == 1:
+            self.gait = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
+        elif dir == "E" and self.joy_id == 2:
+            self.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
+        elif dir == "W" and self.joy_id == 1:
+            self.gait = Sidestep(p0=POSITIONS.READY, stride=-30, clearance=50, step_size=15)
+        elif dir == "W" and self.joy_id == 2:
+            self.gait = Turn(degrees=20, p0=POSITIONS.READY, clearance=80, step_size=10)
+
+        self.walking_dir = dir
+        self.walking = True
+        self.joy_id = jid
+
+        return response()

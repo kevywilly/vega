@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+
+    .button {
+        @apply px-2 py-1 rounded-sm text-center font-semibold
+    }
+
+    .button-blue {
+        @apply button bg-blue-500 text-white
+    }
+
+    .button-red {
+        @apply button bg-red-t00 text-white
+    }
+}

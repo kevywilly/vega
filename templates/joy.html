@@ -10,7 +10,20 @@
 </head>
 <body>
 	<div class="flex flex-col items-center">
-		<img src="{{vega_api_url}}/stream" class="aspect-video w-1/2">
+		<div class="flex flex-row w-full gap-2">
+			<div class="flex flex-col w-1/4 gap-2">
+				<div class="grid grid-cols-2 grid-flow-row gap-4 h-full">
+					<button class="button-blue col-span-2">Forward</button>
+					<button class="button-blue">Left</button>
+					<button class="button-blue">Right</button>
+					<button class="button-blue col-span-2">Backward</button>
+				</div>
+			</div>
+			<img src="api/stream" class="aspect-video w-1/2">
+			<div class="flex flex-col w-1/4">
+
+			</div>
+		</div>
 		<div class="flex flex-row justify-around gap-32">
 
 			<div id="joy1Div" style="width:200px;height:200px;"></div>
@@ -19,5 +32,9 @@
 	</div>
 </body>
 </html>
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
 <script src="{{url_for('static', filename='js/joy.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/api.js')}}"></script>

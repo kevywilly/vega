@@ -1,51 +1,30 @@
-<!doctype html>
-<html lang="en" class="fontawesome-i2svg-active fontawesome-i2svg-complete">
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="{{url_for('static', filename='joy.min.js')}}"></script>
-        <link rel="stylesheet" href={{url_for('static', filename='main.css')}}>
-    </head>
-    <body id=about style="font-family: sans-serif;">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <img class="video" src="http://localhost:5000/api/stream"/>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-6">
-                <div id="joy1" style="width:200px;height:200px">
-
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div id="joy2" style="width:200px;height:200px">
-
-                </div>
-            </div>
-        </div>
-    </div>
+<!DOCTYPE HTML>
+<!--- https://github.com/bobboteck/JoyStick/blob/master/joy.html --->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vega</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}">
+</head>
+<body>
+	<div class="flex flex-col items-center">
 
 
-    </body>
+			<img src="api/stream" class="aspect-video w-1/2">
+
+		<div class="flex flex-row justify-around gap-32">
+
+			<div id="joy1Div" style="width:200px;height:200px;"></div>
+			<div id="joy2Div" style="width:200px;height:200px;"></div>
+		</div>
+	</div>
+</body>
 </html>
-
-<!---
-https://github.com/bobboteck/JoyStick/blob/master/joy.html
---->
-<!-- JavaScript loaded at end -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS, then Fontawesome, and then custom JS scripts -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
-<script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" crossorigin="anonymous"></script>
-<script src="js/smooth_scrolling.js"></script>
-<script type="text/javascript">
-// Create JoyStick object into the DIV 'joyDiv'
-var joy1 = new JoyStick('joy1');
-var joy2 = new JoyStick('joy2');
-</script>
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='js/joy.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/api.js')}}"></script>

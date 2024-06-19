@@ -47,8 +47,7 @@ def demo():
 
 @app.get('/')
 def _index():
-    message = "Hello, World"
-    return render_template('joy.html', vega_api_url=config.VEGA_API_URL)
+    return render_template('index.html', vega_api_url=config.VEGA_API_URL)
 
 
 @app.get('/healthcheck')
@@ -74,11 +73,11 @@ def _move():
     return data
 
 
-@app.post('/api/joy/<id>')
-def _joy(id: str):
+@app.post('/api/joy')
+def _joy():
     data = request.get_json()
-    data["id"] = int(id)
-    return data
+    return app.robot.process_joy(data)
+
 
 
 @app.get('/api/stream')
