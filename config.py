@@ -52,16 +52,16 @@ class DIMS:
 
 
 class ANGLES:
-    ZERO = np.radians(np.array([[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]))
+    ZERO = np.radians(np.array([[0, 70, 65], [0, 70, 65], [0, 80, 65], [0, 80, 65]]))
 
 
 class POSITIONS:
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.6 + np.array([
-        [20.0, -5.0, 0.0],
-        [20.0, 5.0, 0.0],
-        [20.0, 5.0, 0.0],
-        [20.0, -5.0, 0.0]
+    READY = HOME * 0.5 + np.array([
+        [10.0, 0.0, 0.0],
+        [10.0, 0.0, 0.0],
+        [10.0, 0.0, 0.0],
+        [10.0, 0.0, 0.0]
     ])
 
     CROUCH = READY / 2
