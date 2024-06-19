@@ -152,9 +152,9 @@ class Robot(Node):
         if self.walking_dir == dir and self.joy_id == jid:
             return response()
 
-        if dir == 'R':
+        if dir == 'N':
             self.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
-        elif dir == "R":
+        elif dir == "S":
             self.gait = Trot(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=15)
         elif dir == "E" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
