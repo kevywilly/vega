@@ -153,17 +153,17 @@ class Robot(Node):
             return response()
 
         if dir == 'N':
-            self.gait = Trot(p0=POSITIONS.READY, stride=50, clearance=50, step_size=20)
+            self.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=20)
         elif dir == "S":
-            self.gait = Trot(p0=POSITIONS.READY, stride=-50, clearance=50, step_size=20)
+            self.gait = Trot(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=20)
         elif dir == "E" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=25, clearance=40, step_size=20)
         elif dir == "E" and jid == 2:
-            self.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=70, step_size=20)
+            self.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
         elif dir == "W" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=-25, clearance=40, step_size=20)
         elif dir == "W" and jid == 2:
-            self.gait = Turn(degrees=20, p0=POSITIONS.READY, clearance=70, step_size=20)
+            self.gait = Turn(degrees=20, p0=POSITIONS.READY, clearance=80, step_size=10)
 
         self.walking_dir = dir
         self.walking = True
