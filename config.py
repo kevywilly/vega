@@ -64,6 +64,13 @@ class POSITIONS:
         [10.0, 0.0, 0.0]
     ])
 
+    READY_REVERSE = READY + np.array([
+        [30.0, 0.0, 0.0],
+        [30.0, 0.0, 0.0],
+        [30.0, 0.0, 0.0],
+        [30.0, 0.0, 0.0]
+    ])
+
     CROUCH = READY / 2
 
 

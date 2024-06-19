@@ -154,9 +154,9 @@ class Robot(Node):
             return response()
 
         if dir == 'N':
-            self.gait = Trot2(p0=POSITIONS.READY, stride=40, clearance=55, step_size=15)
+            self.gait = Trot2(p0=POSITIONS.READY, stride=45, clearance=55, step_size=15)
         elif dir == "S":
-            self.gait = Trot2(p0=POSITIONS.READY, stride=-60, clearance=65, step_size=15)
+            self.gait = Trot2(p0=POSITIONS.READY_REVERSE, stride=-45, clearance=55, step_size=15)
         elif dir == "E" and jid == 1:
             self.gait = Sidestep(p0=POSITIONS.READY, stride=25, clearance=40, step_size=20)
         elif dir == "E" and jid == 2:
