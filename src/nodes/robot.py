@@ -154,15 +154,15 @@ class Robot(Node):
             return response()
 
         if dir == 'N':
-            self.gait = Trot2(p0=POSITIONS.READY, stride=45, clearance=55, step_size=15)
+            self.gait = Trot2(p0=POSITIONS.READY, stride=55, clearance=55, step_size=15)
         elif dir == "S":
-            self.gait = Trot2(p0=POSITIONS.READY_REVERSE, stride=-45, clearance=55, step_size=15)
+            self.gait = Trot2(p0=POSITIONS.READY_REVERSE, stride=-55, clearance=55, step_size=15)
         elif dir == "E" and jid == 1:
-            self.gait = Sidestep(p0=POSITIONS.READY, stride=25, clearance=40, step_size=20)
+            self.gait = Sidestep(p0=POSITIONS.READY, stride=25, clearance=30, step_size=20)
         elif dir == "E" and jid == 2:
             self.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
         elif dir == "W" and jid == 1:
-            self.gait = Sidestep(p0=POSITIONS.READY, stride=-25, clearance=40, step_size=20)
+            self.gait = Sidestep(p0=POSITIONS.READY, stride=-25, clearance=30, step_size=20)
         elif dir == "W" and jid == 2:
             self.gait = Turn(degrees=20, p0=POSITIONS.READY, clearance=80, step_size=10)
 
