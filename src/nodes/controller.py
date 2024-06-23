@@ -140,7 +140,10 @@ class Controller(Node):
 
     @staticmethod
     def voltage():
-        return _sc.get_battery_voltage()
+        if _sc:
+            return _sc.get_battery_voltage()
+        else:
+            return 8.0
 
     @traitlets.observe('euler')
     def _on_euler(self, change):

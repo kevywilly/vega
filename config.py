@@ -1,7 +1,9 @@
-import numpy as np
 import os
 
+import numpy as np
+
 from src.vision.sensors import CameraSensor
+
 VEGA_ENVIRONMENT = os.environ.get("VEGA_ENVIRONMENT", "development")
 VEGA_API_URL = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
 SERIAL_PORT = os.environ.get("SERIAL_PORT", "/dev/serial0")
@@ -56,13 +58,11 @@ class ANGLES:
 
 
 class POSITIONS:
+
+    OFFSETS = np.zeros((4, 3)).astype(np.int16)
+
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.5 + np.array([
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0]
-    ])
+    READY = HOME * 0.5 + OFFSETS
 
     READY_REVERSE = READY + np.array([
         [-15.0, 0.0, 0.0],
@@ -73,10 +73,7 @@ class POSITIONS:
 
     CROUCH = READY / 2
 
+    @classmethod
+    def reset(cls):
+        cls.OFFSETS = np.zeros((4,3))
 
-POSITION_OFFSETS = np.array([
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0]
-])

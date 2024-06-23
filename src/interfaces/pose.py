@@ -56,7 +56,8 @@ class Pose:
 
     @property
     def table(self):
-        return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
+        return np.vstack((np.round(np.degrees(self.angles)))).tolist()
+        #return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
 
     def __repr__(self):
         return f"""{self.table}"""

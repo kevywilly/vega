@@ -6,6 +6,7 @@ import time
 
 from flask import Flask, Response, request, render_template
 from flask_cors import CORS
+import numpy as np
 
 import config
 from config import POSITIONS
@@ -79,7 +80,6 @@ def _joy():
     return app.robot.process_joy(data)
 
 
-
 @app.get('/api/stream')
 def stream():
     return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -90,40 +90,26 @@ def stats():
     heading, pitch, yaw = app.robot.imu.euler
     voltage = app.robot.controller.voltage()
     return {
-        "stats": {
-            "heading": heading,
-            "pitch": pitch,
-            "yaw": yaw,
-            "voltage": voltage
-        }
+        "heading": heading,
+        "pitch": pitch,
+        "yaw": yaw,
+        "voltage": voltage
     }
 
-
-@app.get('/api/trot')
-def trot():
-    app.robot.stop()
-    app.robot.walking = True
-    app.robot.gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
-
-    return {"status": "trotting"}
+@app.get('/api/offsets')
+def ready():
+    return config.POSITIONS.OFFSETS.tolist()
 
 
-@app.get('/api/sidestep')
-def sidestep():
-    app.robot.stop()
-    app.robot.walking = True
-    app.robot.gait = Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15)
+@app.post('/api/offsets')
+def post_ready():
+    data = request.get_json()
+    if not data:
+        config.POSITIONS.reset()
+    else:
+        config.POSITIONS.OFFSETS = np.array(data).astype(np.int16)
 
-    return {"status": "sidestepping"}
-
-
-@app.get('/api/turn')
-def turn():
-    app.robot.stop()
-    app.robot.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
-    app.robot.walking = True
-
-    return {"status": "turning"}
+    return config.POSITIONS.OFFSETS.tolist()
 
 
 @app.get('/api/stop')
