@@ -55,12 +55,20 @@ class Pose:
         self.cmd = None
 
     @property
+    def cmd_as_array(self):
+        if self.cmd:
+            return  np.array(list(self.cmd.values())).reshape(4,3)
+        else:
+            return np.zeros((4,3))
+
+    @property
     def table(self):
-        return np.vstack((np.round(np.degrees(self.angles)))).tolist()
+        return self.cmd_as_array
+        # return np.vstack((np.round(np.degrees(self.angles)))).tolist()
         #return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
 
     def __repr__(self):
-        return f"""{self.table}"""
+        return f"""{self.cmd_as_array.tolist()}"""
         '''
         return f"""
         positions: {list(np.asarray(self.positions))}

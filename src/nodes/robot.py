@@ -123,11 +123,6 @@ class Robot(Node):
         self.controller.move_to(POSITIONS.READY)
         time.sleep(0.1)
 
-    def print_stats(self):
-        print("cmd", self.controller.pose.cmd)
-        # print("targets", self.controller.pose.target_positions)
-        # print("target_angles", self.controller.pose.target_angles)
-
     def spinner(self):
         if self.walking and self.gait is not None:
             for position in self.gait.step_generator(reverse=False):

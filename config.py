@@ -26,6 +26,9 @@ BNO_AXIS_REMAP = (0, 1, 2, 1, 0, 1)
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
 FLIP = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
+
+PFLIP = np.array([[-1,1,1],[-1,1,1],[-1,1,1],[-1,1,1]])
+
 DEFAULT_SENSOR_MODE = CameraSensor.MODE1640x1232X29
 CAMERA_MATRIX = np.array([
     848.72138, 0., 939.50914,
@@ -62,13 +65,13 @@ class POSITIONS:
     OFFSETS = np.zeros((4, 3)).astype(np.int16)
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.5 + OFFSETS
+    READY = HOME * 0.5
 
     READY_REVERSE = READY + np.array([
-        [-15.0, 0.0, 0.0],
-        [-15.0, 0.0, 0.0],
-        [-15.0, 0.0, 0.0],
-        [-15.0, 0.0, 0.0]
+        [15.0, 0.0, 0.0],
+        [15.0, 0.0, 0.0],
+        [15.0, 0.0, 0.0],
+        [15.0, 0.0, 0.0]
     ])
 
     CROUCH = READY / 2

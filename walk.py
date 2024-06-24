@@ -19,7 +19,6 @@ def demo():
     for p in positions:
         robot.set_targets(p)
         robot.move_to_targets()
-        robot.print_stats()
         time.sleep(2)
 
 

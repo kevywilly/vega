@@ -6,7 +6,7 @@ import serial
 import traitlets
 
 import config
-from config import POSITIONS, ANGLES, DIMS, SERVO_IDS, FLIP
+from config import POSITIONS, ANGLES, DIMS, SERVO_IDS, FLIP, PFLIP
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
@@ -28,8 +28,9 @@ SERVO_MAX_ANGLE = np.radians(240)
 
 
 def _angles_from_positions(positions: np.ndarray):
+    p_adj = (positions + POSITIONS.OFFSETS) * PFLIP # = POS
     angles = np.zeros((4, 3))
-    for i, pos in enumerate(positions):
+    for i, pos in enumerate(p_adj):
         angles[i] = _km.ik(pos)
 
     return angles
@@ -40,7 +41,7 @@ def _positions_from_angles(angles: np.ndarray):
     for i, ang in enumerate(angles):
         positions[i] = _km.fk(ang)
 
-    return positions
+    return positions/PFLIP - POSITIONS.OFFSETS
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
@@ -125,7 +126,7 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
-        print(self.pose)
+
         return cmd
 
     def _read_positions(self):
