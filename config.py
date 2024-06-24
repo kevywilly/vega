@@ -25,7 +25,8 @@ SERIAL_PORT = os.environ.get("SERIAL_PORT", "/dev/serial0")
 BNO_AXIS_REMAP = (0, 1, 2, 1, 0, 1)
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
-ANGLE_FLIP = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
+ANGLE_FLIP = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
+#ANGLE_FLIP = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
 
 POSITION_FLIP = np.array([[-1, 1, 1], [-1, 1, 1], [-1, 1, 1], [-1, 1, 1]])
 
