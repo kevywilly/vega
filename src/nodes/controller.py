@@ -6,7 +6,7 @@ import serial
 import traitlets
 
 import config
-from config import POSITIONS, ANGLES, DIMS, SERVO_IDS, FLIP, PFLIP
+from config import POSITIONS, ANGLES, DIMS, SERVO_IDS, ANGLE_FLIP, POSITION_FLIP, DEBUG
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
@@ -28,7 +28,7 @@ SERVO_MAX_ANGLE = np.radians(240)
 
 
 def _angles_from_positions(positions: np.ndarray):
-    p_adj = (positions + POSITIONS.OFFSETS) * PFLIP # = POS
+    p_adj = (positions + POSITIONS.OFFSETS) * POSITION_FLIP # = POS
     angles = np.zeros((4, 3))
     for i, pos in enumerate(p_adj):
         angles[i] = _km.ik(pos)
@@ -41,7 +41,7 @@ def _positions_from_angles(angles: np.ndarray):
     for i, ang in enumerate(angles):
         positions[i] = _km.fk(ang)
 
-    return positions/PFLIP - POSITIONS.OFFSETS
+    return positions/POSITION_FLIP - POSITIONS.OFFSETS
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
@@ -49,14 +49,14 @@ def _servo_positions_from_angles(angles: np.ndarray):
     return dict(
         zip(
             config.SERVOS.reshape(-1),
-            ((adjusted_angles * FLIP * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
+            ((adjusted_angles * ANGLE_FLIP * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
         )
     )
 
 
 def _angles_from_servo_positions(servo_positions):
     pos = _servo_positions_to_numpy(servo_positions)
-    angles = (pos - 500) * SERVO_MAX_ANGLE / (FLIP * 1000)
+    angles = (pos - 500) * SERVO_MAX_ANGLE / (ANGLE_FLIP * 1000)
     return angles + ANGLES.ZERO
 
 
@@ -126,6 +126,9 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
+
+        if DEBUG:
+            print(self.pose)
 
         return cmd
 

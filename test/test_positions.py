@@ -8,7 +8,7 @@ def test_pback():
     robot.spin()
     assert robot.controller.pose.cmd_as_array[0][1] == 309
     p = config.POSITIONS.READY_REVERSE
-    p2 = config.POSITIONS.READY_REVERSE * config.PFLIP
+    p2 = config.POSITIONS.READY_REVERSE * config.POSITION_FLIP
 
     robot.set_targets(p)
     robot.move_to_targets()
@@ -16,6 +16,7 @@ def test_pback():
     assert robot.controller.pose.cmd_as_array[0][1] == 344
 
     assert True
+
 
 def test_p0():
     robot = Robot()

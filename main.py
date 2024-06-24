@@ -95,6 +95,26 @@ def stats():
         "voltage": voltage
     }
 
+@app.get('/api/pose')
+def _get_pose():
+    return app.robot.controller.pose.target_positions.tolist()
+
+
+@app.post('/api/pose')
+def _update_pose():
+    data = request.get_json()
+    if not data:
+        app.robot.set_targets(config.POSITIONS.READY)
+    else:
+        app.robot.set_targets(np.array(data).astype(np.int16))
+
+    app.robot.move_to_targets()
+
+    targets = app.robot.controller.pose.target_positions
+    pose = app.robot.controller.pose.positions
+
+    return app.robot.controller.pose.target_positions.tolist()
+
 @app.get('/api/offsets')
 def ready():
     return config.POSITIONS.OFFSETS.tolist()

@@ -28,6 +28,21 @@ const displayOffsets = (data) => {
     $('input[name="l3_z"]').val(data[3][2]);
 }
 
+const displayPose = (data) => {
+    $('input[name="pose_x0"]').val(data[0][0]);
+    $('input[name="pose_y0"]').val(data[0][1]);
+    $('input[name="pose_z0"]').val(data[0][2]);
+    $('input[name="pose_x1"]').val(data[1][0]);
+    $('input[name="pose_y1"]').val(data[1][1]);
+    $('input[name="pose_z1"]').val(data[1][2]);
+    $('input[name="pose_x2"]').val(data[2][0]);
+    $('input[name="pose_y2"]').val(data[2][1]);
+    $('input[name="pose_z2"]').val(data[2][2]);
+    $('input[name="pose_x3"]').val(data[3][0]);
+    $('input[name="pose_y3"]').val(data[3][1]);
+    $('input[name="pose_z3"]').val(data[3][2]);
+}
+
 const post = (url, data, callback = null) => {
     payload = JSON.stringify(data);
     $.ajax({
@@ -49,11 +64,25 @@ const get = (url, callback = null) => {
     });
 }
 
+const getPose = () => {
+    get('/api/pose', function (data){
+        displayPose(data)
+    })
+}
+
+
+const setPose = (pose) => {
+    post('/api/pose',  pose,function (data){
+        displayPose(data);
+    })
+}
+
 const getOffsets = () => {
     get('/api/offsets', function (data){
         displayOffsets(data)
     })
 }
+
 
 const setOffsets = (offsets = p0) => {
     post('/api/offsets',  offsets,function (data){
@@ -91,6 +120,32 @@ const Joy2 = new JoyStick('joy2Div', {}, function (stickData) {
     }
 });
 
+
+const updatePose = () => {
+    setPose([
+        [
+            $('input[name="pose_x0"]').val(),
+            $('input[name="pose_y0"]').val(),
+            $('input[name="pose_z0"]').val()
+        ],
+        [
+            $('input[name="pose_x1"]').val(),
+            $('input[name="pose_y1"]').val(),
+            $('input[name="pose_z1"]').val()
+        ],
+        [
+            $('input[name="pose_x2"]').val(),
+            $('input[name="pose_y2"]').val(),
+            $('input[name="pose_z2"]').val()
+        ],
+        [
+            $('input[name="pose_x3"]').val(),
+            $('input[name="pose_y3"]').val(),
+            $('input[name="pose_z3"]').val()
+        ],
+    ])
+}
+
 const updateOffsets = () => {
     setOffsets([
         [
@@ -119,10 +174,17 @@ const resetOffsets = () => {
     setOffsets([])
 }
 
+const resetPose = () => {
+    setPose([])
+}
+
 setInterval(getStats, 2000);
 
 $(function() {
     getOffsets();
+    getPose();
     $( "#btnUpdateP0" ).on( "click", updateOffsets );
     $( "#btnResetP0" ).on( "click", resetOffsets );
+    $( "#btnUpdatePose" ).on( "click", updatePose );
+    $( "#btnResetPose" ).on( "click", resetPose );
 });

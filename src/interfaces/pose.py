@@ -68,7 +68,7 @@ class Pose:
         #return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
 
     def __repr__(self):
-        return f"""{self.cmd_as_array.tolist()}"""
+        return f"""POSITIONS:{self.positions.tolist()}"""
         '''
         return f"""
         positions: {list(np.asarray(self.positions))}
