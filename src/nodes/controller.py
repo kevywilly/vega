@@ -28,9 +28,8 @@ SERVO_MAX_ANGLE = np.radians(240)
 
 
 def _angles_from_positions(positions: np.ndarray):
-    p_adj = (positions + POSITIONS.OFFSETS) * POSITION_FLIP # = POS
     angles = np.zeros((4, 3))
-    for i, pos in enumerate(p_adj):
+    for i, pos in enumerate(positions):
         angles[i] = _km.ik(pos)
 
     return angles
@@ -41,7 +40,7 @@ def _positions_from_angles(angles: np.ndarray):
     for i, ang in enumerate(angles):
         positions[i] = _km.fk(ang)
 
-    return positions/POSITION_FLIP - POSITIONS.OFFSETS
+    return positions
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
