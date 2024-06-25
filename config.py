@@ -34,8 +34,6 @@ CAMERA_MATRIX = np.array([
 ]).reshape(3, 3)
 DISTORTION_COEFFICIENTS = np.array([-0.296850, 0.061372, 0.002562, -0.002645, 0.000000]).reshape(1, 5)
 
-DEBUG = True
-
 
 class IMU_OFFSETS:
     MAGNETIC = (419, -250, -597)
@@ -58,7 +56,6 @@ class ANGLES:
 
 
 class POSITIONS:
-
     OFFSETS = np.zeros((4, 3)).astype(np.int16)
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
@@ -80,5 +77,7 @@ class POSITIONS:
 
     @classmethod
     def reset(cls):
-        cls.OFFSETS = np.zeros((4,3))
+        cls.OFFSETS = np.zeros((4, 3))
 
+
+DEBUG = False

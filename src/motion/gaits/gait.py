@@ -80,6 +80,7 @@ class Gait(ABC):
 
     def __next__(self):
         self.positions = self.get_positions(self.phase, self.index)
+        print(self.positions.astype(int).tolist())
         index = self.index + 1
         if index >= self.max_index:
             self.index = 0

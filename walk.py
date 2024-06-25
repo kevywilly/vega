@@ -27,9 +27,12 @@ def trot():
     gait = Trot(p0=POSITIONS.READY, stride=60, clearance=65, step_size=15)
     robot.controller.move_to(POSITIONS.READY)
     time.sleep(0.5)
-    while 1:
-        for position in gait.step_generator(reverse=False):
-            robot.controller.move_to(position, 50)
+
+    positions = POSITIONS.READY
+    while positions is not None:
+        robot.controller.move_to(positions, 50)
+        positions = next(gait)
+
 
 
 def trot2():
@@ -58,4 +61,4 @@ def turn():
             robot.controller.move_to(position, 80)
 
 
-trot2()
+trot()
