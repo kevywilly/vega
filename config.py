@@ -55,7 +55,7 @@ class DIMS:
 
 
 class ANGLES:
-    ZERO = np.radians(np.array([[-2, 90, 30], [-2, 90, 30], [2, 90, 30], [2, 90, 30]]))
+    ZERO = np.radians(np.array([[10, 90, 30], [10, 90, 30], [-10, 90, 30], [-10, 90, 30]]))
 
 
 class POSITIONS:
