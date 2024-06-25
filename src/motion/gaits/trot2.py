@@ -51,6 +51,9 @@ class Trot2(Gait):
         self.steps2 = np.roll(self.steps1, num_steps*2, axis=0)
 
 
+    def get_positions(self, phase: int = 0, index: int = 0):
+        return self.p0 + np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+
     def step_generator(self, reverse=False):
         """
         Generator to yield the step positions.
