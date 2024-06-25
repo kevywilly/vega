@@ -62,7 +62,7 @@ class POSITIONS:
     OFFSETS = np.zeros((4, 3)).astype(np.int16)
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.75 + OFFSETS + np.array([
+    READY = HOME * 0.6 + OFFSETS + np.array([
         [0, 0, 0],
         [0, 0, 0],
         [0, 0, 0],
@@ -71,7 +71,7 @@ class POSITIONS:
 
 #    READY = HOME
 
-    READY_REVERSE = HOME * 0.70 + OFFSETS + np.array([
+    READY_REVERSE = HOME * 0.6 + OFFSETS + np.array([
         [-10, 0, 0],
         [-10, 0, 0],
         [-10, 0, 0],
