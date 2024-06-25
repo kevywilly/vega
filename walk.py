@@ -32,7 +32,7 @@ def run(gait: Gait):
         robot.controller.move_to(positions, 50)
         positions = next(gait)
 
-run(Trot2(**trot_params))
+run(Trot(**trot_params))
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
 
