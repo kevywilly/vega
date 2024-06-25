@@ -22,6 +22,9 @@ SERIAL_PORT = os.environ.get("SERIAL_PORT", "/dev/serial0")
 
 # BNO_AXIS_REMAP = (0,1,2,0,0,0)
 
+
+DEBUG = False
+
 BNO_AXIS_REMAP = (0, 1, 2, 1, 0, 1)
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
@@ -80,4 +83,6 @@ class POSITIONS:
         cls.OFFSETS = np.zeros((4, 3))
 
 
-DEBUG = False
+trot_params = {"stride": 50, "clearance": 50, "step_size": 15}
+
+
