@@ -55,25 +55,27 @@ class DIMS:
 
 
 class ANGLES:
-    ZERO = np.radians(np.array([[0, 90, 45], [0, 90, 45], [0, 90, 40], [0, 90, 40]]))
+    ZERO = np.radians(np.array([[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]))
 
 
 class POSITIONS:
     OFFSETS = np.zeros((4, 3)).astype(np.int16)
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.6 + OFFSETS + np.array([
-        [5.0, 0.0, 0.0],
-        [5.0, 0.0, 0.0],
-        [5.0, 0.0, 0.0],
-        [5.0, 0.0, 0.0]
+    READY = HOME * 0.50 + OFFSETS + np.array([
+        [15, 0, 0],
+        [15, 0, 0],
+        [15, 0, 0],
+        [15, 0, 0]
     ])
 
-    READY_REVERSE = READY + np.array([
-        [-30.0, 0.0, 0.0],
-        [-30.0, 0.0, 0.0],
-        [-30.0, 0.0, 0.0],
-        [-30.0, 0.0, 0.0]
+    #READY = HOME
+
+    READY_REVERSE = HOME * 0.50 + OFFSETS + np.array([
+        [-10, 0, 0],
+        [-10, 0, 0],
+        [-10, 0, 0],
+        [-10, 0, 0]
     ])
 
     CROUCH = READY / 2
@@ -83,6 +85,6 @@ class POSITIONS:
         cls.OFFSETS = np.zeros((4, 3))
 
 
-trot_params = {"stride": 50, "clearance": 50, "step_size": 15}
+trot_params = {"stride": 45, "clearance": 70, "step_size": 18}
 
 
