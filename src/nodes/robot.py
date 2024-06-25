@@ -16,11 +16,15 @@ from src.nodes.controller import Controller
 from src.nodes.imu import IMU
 from src.nodes.node import Node
 from src.vision.image import Image, ImageUtils
+from src.interfaces.pose import Pose
 
 
 class Measurement(traitlets.HasTraits):
     value = traitlets.Any(allow_none=True)
 
+
+class PoseStatus(traitlets.HasTraits):
+    pose = traitlets.Instance(Pose, allow_none=True)
 
 class CmdVel(traitlets.HasTraits):
     value = traitlets.Instance(Twist, allow_none=True)
@@ -43,7 +47,8 @@ class Robot(Node):
     walking = traitlets.Bool(allow_none=True, default=False)
     walking_dir = traitlets.Unicode(allow_none=True)
     joy_id = traitlets.Int(allow_none=True)
-    gait = traitlets.Instance(Gait, allow_none=True)
+    gait = traitlets.Any(Gait, allow_none=True)
+    stats = traitlets.Instance(PoseStatus, allow_none=True)
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -54,6 +59,7 @@ class Robot(Node):
         self.image = Image()
         self.measurement = Measurement()
         self.cmd_vel = CmdVel()
+        self.pose_status = PoseStatus()
         self.cmd_zero = True
 
         # initialize nodes
@@ -86,6 +92,7 @@ class Robot(Node):
         if self.controller:
             traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
             traitlets.dlink((self.imu, 'euler'), (self.controller, 'euler'))
+            traitlets.dlink((self.controller, 'pose'), (self.pose_status, 'pose'))
 
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
@@ -130,8 +137,8 @@ class Robot(Node):
 
     def spinner(self):
         if self.walking and self.gait is not None:
-            for position in self.gait.step_generator(reverse=False):
-                self.controller.move_to(position, 50)
+            position = next(self.gait)
+            self.controller.move_to(position, 50)
 
     def process_joy(self, data: Dict):
         dir = data.get("dir")

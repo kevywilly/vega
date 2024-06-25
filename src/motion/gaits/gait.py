@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+from functools import cached_property
 
 import numpy as np
+
 
 
 class Gait(ABC):
@@ -27,6 +29,10 @@ class Gait(ABC):
         self.steps2 = np.zeros(self.num_steps * 2)
 
         self.build_steps()
+        self.positions = self.p0
+        self.index = 0
+        self.phase = 0
+        self.max_index = self.steps1.shape[0]
 
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:
@@ -49,21 +55,40 @@ class Gait(ABC):
         """
         pass
 
-    def step_generator(self, reverse=False):
+    def get_positions(self, phase: int = 0, index: int = 0):
+        offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+        if phase == 0:
+            return self.p0 + offsets
+        else:
+            return self.p0 + np.roll(offsets, 1, 0)
+
+    def step_generator(self):
         """
         Generator to yield the step positions.
-
-        Args:
-            reverse (bool): Flag to indicate reverse stepping.
 
         Yields:
             np.ndarray: Step positions.
         """
+
         for phase in [0, 1]:
             for i in range(self.steps1.shape[0]):
-                offsets = np.array([self.steps1[i], self.steps2[i], self.steps1[i], self.steps2[i]])
+                yield self.get_positions(phase, i)
 
-                if phase == 0:
-                    yield self.p0 + offsets
-                else:
-                    yield self.p0 + np.roll(offsets, 1, 0)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.positions = self.get_positions(self.phase, self.index)
+        index = self.index + 1
+        if index >= self.max_index:
+            self.index = 0
+            self.phase = 1 if self.phase == 0 else 0
+        else:
+            self.index = index
+        return self.positions
+
+
+
+
+

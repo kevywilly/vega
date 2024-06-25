@@ -73,7 +73,7 @@ class Controller(Node):
     publish_frequency_hz = traitlets.Int(default_value=10, config=True)
     camera_image = traitlets.Any(allow_none=True)
     euler = traitlets.Any(allow_none=True)
-
+    pose = traitlets.Instance(Pose, allow_none=True)
     attitude_data = traitlets.Any()
     magnometer_data = traitlets.Any()
     gyroscope_data = traitlets.Any()

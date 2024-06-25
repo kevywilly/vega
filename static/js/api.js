@@ -5,11 +5,28 @@ const joy1Data = {id: 1, x: 0, y: 0, dir: "C"};
 const joy2Data = {id: 2, x: 0, y: 0, dir: "C"};
 
 
+const displayPose = (data) => {
+    const pose = data.pose;
+    $('input[name="pose_x0"]').val(pose.angles[0][0]);
+    $('input[name="pose_y0"]').val(pose.angles[0][1]);
+    $('input[name="pose_z0"]').val(pose.angles[0][2]);
+    $('input[name="pose_x1"]').val(pose.angles[1][0]);
+    $('input[name="pose_y1"]').val(pose.angles[1][1]);
+    $('input[name="pose_z1"]').val(pose.angles[1][2]);
+    $('input[name="pose_x2"]').val(pose.angles[2][0]);
+    $('input[name="pose_y2"]').val(pose.angles[2][1]);
+    $('input[name="pose_z2"]').val(pose.angles[2][2]);
+    $('input[name="pose_x3"]').val(pose.angles[3][0]);
+    $('input[name="pose_y3"]').val(pose.angles[3][1]);
+    $('input[name="pose_z3"]').val(pose.angles[3][2]);
+}
+
 const displayStats = (data) => {
     $('#displayHeading').text(data.heading);
     $('#displayPitch').text(data.pitch);
     $('#displayYaw').text(data.yaw);
     $('#displayVoltage').text(data.voltage);
+    displayPose(data);
 }
 
 const displayOffsets = (data) => {
@@ -27,6 +44,8 @@ const displayOffsets = (data) => {
     $('input[name="l3_y"]').val(data[3][1]);
     $('input[name="l3_z"]').val(data[3][2]);
 }
+
+
 
 const post = (url, data, callback = null) => {
     payload = JSON.stringify(data);
@@ -49,11 +68,25 @@ const get = (url, callback = null) => {
     });
 }
 
+const getTargets = () => {
+    get('/api/targets', function (data){
+        dispayTargets(data)
+    })
+}
+
+
+const setTargets = (pose) => {
+    post('/api/targets',  pose,function (data){
+        dispayTargets(data);
+    })
+}
+
 const getOffsets = () => {
     get('/api/offsets', function (data){
         displayOffsets(data)
     })
 }
+
 
 const setOffsets = (offsets = p0) => {
     post('/api/offsets',  offsets,function (data){
@@ -62,7 +95,9 @@ const setOffsets = (offsets = p0) => {
 }
 
 const getStats = () => {
-    get("api/stats", displayStats);
+    get("api/stats", (data) => {
+        displayStats(data);
+    });
 }
 
 const postJoyData = (data) => {
@@ -90,6 +125,32 @@ const Joy2 = new JoyStick('joy2Div', {}, function (stickData) {
         postJoyData(joy2Data);
     }
 });
+
+
+const updatePose = () => {
+    setTargets([
+        [
+            $('input[name="pose_x0"]').val(),
+            $('input[name="pose_y0"]').val(),
+            $('input[name="pose_z0"]').val()
+        ],
+        [
+            $('input[name="pose_x1"]').val(),
+            $('input[name="pose_y1"]').val(),
+            $('input[name="pose_z1"]').val()
+        ],
+        [
+            $('input[name="pose_x2"]').val(),
+            $('input[name="pose_y2"]').val(),
+            $('input[name="pose_z2"]').val()
+        ],
+        [
+            $('input[name="pose_x3"]').val(),
+            $('input[name="pose_y3"]').val(),
+            $('input[name="pose_z3"]').val()
+        ],
+    ])
+}
 
 const updateOffsets = () => {
     setOffsets([
@@ -119,10 +180,16 @@ const resetOffsets = () => {
     setOffsets([])
 }
 
+const resetTargets = () => {
+    setTargets([])
+}
+
 setInterval(getStats, 2000);
 
 $(function() {
     getOffsets();
-    $( "#btnUpdateP0" ).on( "click", updateOffsets );
-    $( "#btnResetP0" ).on( "click", resetOffsets );
+    $( "#btnUpdateOffsets" ).on( "click", updateOffsets );
+    $( "#btnResetOffsets" ).on( "click", resetOffsets );
+    $( "#btnUpdateTargets" ).on( "click", updatePose );
+    $( "#btnResetTargets" ).on( "click", resetTargets );
 });

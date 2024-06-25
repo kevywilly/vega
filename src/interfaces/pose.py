@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import numpy as np
 
@@ -51,8 +51,24 @@ class Pose:
         self.target_positions = np.zeros((4, 3))
         self.angles = np.zeros((4, 3))
         self.target_angles = np.zeros((4, 3))
-        self.servo_positions = np.zeros((4, 3))
+
         self.cmd = None
+
+
+    @property
+    def servos(self) -> np.ndarray:
+        if self.cmd:
+            return np.ndarray(self.cmd.values()).reshape(4,3)
+        else:
+            return np.zeros((4,3))
+
+    @property
+    def json(self) -> Dict:
+        return {
+            "positions": self.positions.tolist(),
+            "angles": np.degrees(self.angles).astype(int).tolist(),
+            #"servos": self.servos.tolist()
+        }
 
     @property
     def table(self):
@@ -60,11 +76,5 @@ class Pose:
         #return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
 
     def __repr__(self):
-        return f"""{self.table}"""
-        '''
-        return f"""
-        positions: {list(np.asarray(self.positions))}
-        angles: {list(np.asarray(self.positions))}
-        servos: {list(np.asarray(self.servo_positions))}
-        """
-        '''
+        return f"""POS: {self.angles.tolist()}"""
+

@@ -27,43 +27,82 @@
             <div id="displayVoltage"></div>
         </div>
     </div>
-    <div class="flex flex-col w-1/3 p-2 rounded-md ">
-        <h1 class="prose-xl text-center">Position Offsets</h1>
-        <table class="table table-auto w-full">
-            <thead>
-            <tr>
-                <th class="px-2 py-2">X</th>
-                <th class="px-2 py-2">Y</th>
-                <th class="px-2 py-2">Z</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td class="border px-4 py-2"><input class="input" name="l0_x" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l0_y" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l0_z" type="number" value=0></td>
-            </tr>
-            <tr>
-                <td class="border px-4 py-2"><input class="input" name="l1_x" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l1_y" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l1_z" type="number" value=0></td>
-            </tr>
-            <tr>
-                <td class="border px-4 py-2"><input class="input" name="l2_x" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l2_y" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l2_z" type="number" value=0></td>
-            </tr>
-            <tr>
-                <td class="border px-4 py-2"><input class="input" name="l3_x" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l3_y" type="number" value=0></td>
-                <td class="border px-4 py-2"><input class="input" name="l3_z" type="number" value=0></td>
-            </tr>
-            </tbody>
-        </table>
-        <div class="flex flex-row justify-around gap-2 mt-2">
-            <button class="button-blue" id="btnUpdateP0">Update</button><button class="button-red" id="btnResetP0">Reset</button>
+    <div class="flex flex-col w-1/3 p-2 rounded-md gap-4">
+        <div>
+            <h1 class="prose-xl text-center">Position Offsets</h1>
+            <table class="table table-auto w-full">
+                <thead>
+                <tr>
+                    <th class="px-2 py-2">X</th>
+                    <th class="px-2 py-2">Y</th>
+                    <th class="px-2 py-2">Z</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="l0_x" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l0_y" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l0_z" type="number" value=0></td>
+                </tr>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="l1_x" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l1_y" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l1_z" type="number" value=0></td>
+                </tr>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="l2_x" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l2_y" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l2_z" type="number" value=0></td>
+                </tr>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="l3_x" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l3_y" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="l3_z" type="number" value=0></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="flex flex-row justify-around gap-2 mt-2">
+                <button class="button-blue" id="btnUpdateOffsets">Update</button>
+                <button class="button-red" id="btnResetOffsets">Reset</button>
+            </div>
         </div>
-    </div>
+        <h1 class="prose-xl text-center">Angles</h1>
+            <table class="table table-auto w-full">
+                <thead>
+                <tr>
+                    <th class="px-2 py-2">Coxa</th>
+                    <th class="px-2 py-2">Femur</th>
+                    <th class="px-2 py-2">Tibia</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="pose_x0" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_y0" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_z0" type="number" value=0></td>
+                </tr>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="pose_x1" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_y1" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_z1" type="number" value=0></td>
+                </tr>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="pose_x2" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_y2" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_z2" type="number" value=0></td>
+                </tr>
+                <tr>
+                    <td class="border px-4 py-2"><input class="input" name="pose_x3" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_y3" type="number" value=0></td>
+                    <td class="border px-4 py-2"><input class="input" name="pose_z3" type="number" value=0></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="flex flex-row justify-around gap-2 mt-2">
+                <button class="button-blue" id="btnUpdateTargets">Update</button>
+                <button class="button-red" id="btnResetTargets">Reset</button>
+            </div>
+        </div>
 </div>
 <script type="javascript">
     getStats();
@@ -74,5 +113,5 @@
         src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
         crossorigin="anonymous"></script>
-<script src="{{url_for('static', filename='js/joy.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/joy2.js')}}"></script>
 <script src="{{url_for('static', filename='js/api.js')}}"></script>

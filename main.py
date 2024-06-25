@@ -46,6 +46,17 @@ def demo():
     """
 
 
+def get_stats():
+    heading, pitch, yaw = app.robot.imu.euler
+    voltage = app.robot.controller.voltage()
+    return {
+        "heading": heading,
+        "pitch": pitch,
+        "yaw": yaw,
+        "voltage": voltage,
+        "pose": app.robot.pose_status.pose.json
+    }
+
 @app.get('/')
 def _index():
     return render_template('index.html', vega_api_url=config.VEGA_API_URL)
@@ -68,15 +79,10 @@ def _target():
     return data
 
 
-@app.post('/api/move')
-def _move():
-    data = request.get_json()
-    return data
-
-
 @app.post('/api/joy')
 def _joy():
     data = request.get_json()
+
     return app.robot.process_joy(data)
 
 
@@ -87,14 +93,24 @@ def stream():
 
 @app.get('/api/stats')
 def stats():
-    heading, pitch, yaw = app.robot.imu.euler
-    voltage = app.robot.controller.voltage()
-    return {
-        "heading": heading,
-        "pitch": pitch,
-        "yaw": yaw,
-        "voltage": voltage
-    }
+    return get_stats()
+
+@app.get('/api/targets')
+def _get_targets():
+    return app.robot.controller.pose.target_positions.tolist()
+
+
+@app.post('/api/targets')
+def _set_targets():
+    data = request.get_json()
+    if not data:
+        app.robot.set_targets(config.POSITIONS.READY)
+    else:
+        app.robot.set_targets(np.array(data).astype(np.int16))
+
+    app.robot.move_to_targets()
+
+    return app.robot.controller.pose.target_positions.tolist()
 
 @app.get('/api/offsets')
 def ready():
