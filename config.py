@@ -62,13 +62,18 @@ class POSITIONS:
     OFFSETS = np.zeros((4, 3)).astype(np.int16)
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.5 + OFFSETS
+    READY = HOME * 0.5 + OFFSETS + np.array([
+        [10.0, 0.0, 0.0],
+        [10.0, 0.0, 0.0],
+        [10.0, 0.0, 0.0],
+        [10.0, 0.0, 0.0]
+    ])
 
     READY_REVERSE = READY + np.array([
-        [-15.0, 0.0, 0.0],
-        [-15.0, 0.0, 0.0],
-        [-15.0, 0.0, 0.0],
-        [-15.0, 0.0, 0.0]
+        [-30.0, 0.0, 0.0],
+        [-30.0, 0.0, 0.0],
+        [-30.0, 0.0, 0.0],
+        [-30.0, 0.0, 0.0]
     ])
 
     CROUCH = READY / 2
