@@ -140,6 +140,7 @@ class Controller(Node):
 
     @staticmethod
     def voltage():
+        return 8.0
         if _sc:
             return _sc.get_battery_voltage()
         else:
