@@ -3,6 +3,7 @@ from functools import cached_property
 
 import numpy as np
 
+from config import POSITIONS
 
 
 class Gait(ABC):
@@ -19,7 +20,7 @@ class Gait(ABC):
         steps2 (np.ndarray): Array to store step sequence 2.
     """
 
-    def __init__(self, p0: np.ndarray, stride=60, clearance=60, step_size=15):
+    def __init__(self, p0: np.ndarray=POSITIONS.READY, stride=60, clearance=60, step_size=15):
         self.p0 = p0
         self.stride = stride
         self.clearance = clearance

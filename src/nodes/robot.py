@@ -4,7 +4,7 @@ from typing import Optional, Dict
 import numpy as np
 import traitlets
 
-from config import POSITIONS, trot_params
+from config import POSITIONS, trot_params, sidestep_params
 from src.interfaces.msgs import Twist
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
@@ -163,13 +163,13 @@ class Robot(Node):
         if dir == 'N':
             self.gait = Trot2(p0=POSITIONS.READY, **trot_params)
         elif dir == "S":
-            self.gait = Trot2(p0=POSITIONS.READY_REVERSE, stride=-55, clearance=55, step_size=15)
+            self.gait = Trot2(p0=POSITIONS.READY_REVERSE, **trot_params)
         elif dir == "E" and jid == 1:
-            self.gait = Sidestep(p0=POSITIONS.READY, stride=25, clearance=30, step_size=20)
+            self.gait = Sidestep(**sidestep_params)
         elif dir == "E" and jid == 2:
             self.gait = Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10)
         elif dir == "W" and jid == 1:
-            self.gait = Sidestep(p0=POSITIONS.READY, stride=-25, clearance=30, step_size=20)
+            self.gait = Sidestep(**sidestep_params)
         elif dir == "W" and jid == 2:
             self.gait = Turn(degrees=20, p0=POSITIONS.READY, clearance=80, step_size=10)
 

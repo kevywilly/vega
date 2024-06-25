@@ -1,6 +1,6 @@
 import time
 
-from config import POSITIONS
+from config import POSITIONS, trot_params
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
@@ -25,14 +25,14 @@ def demo():
 
 
 def run(gait: Gait):
-    robot.controller.move_to(POSITIONS.READY)
+    robot.controller.move_to(gait.p0)
     time.sleep(0.5)
-    positions = POSITIONS.READY
+    positions = gait.p0
     while positions is not None:
         robot.controller.move_to(positions, 50)
         positions = next(gait)
 
-run(Trot2(p0=POSITIONS.READY, stride=45, clearance=50, step_size=18))
+run(Trot2(**trot_params))
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
 
