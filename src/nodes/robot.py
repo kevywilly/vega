@@ -138,7 +138,7 @@ class Robot(Node):
     def spinner(self):
         if self.walking and self.gait is not None:
             position = next(self.gait)
-            self.controller.move_to(position, 50)
+            self.controller.move_to(position, 10)
 
     def process_joy(self, data: Dict):
         dir = data.get("dir")
