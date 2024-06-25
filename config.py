@@ -55,14 +55,14 @@ class DIMS:
 
 
 class ANGLES:
-    ZERO = np.radians(np.array([[0, 90, 17], [-0, 90, 20], [-2, 95, 40], [0, 95, 43]]))
+    ZERO = np.radians(np.array([[-2, 90, 30], [-2, 90, 30], [-2, 90, 40], [-2, 90, 30]]))
 
 
 class POSITIONS:
     OFFSETS = np.zeros((4, 3)).astype(np.int16)
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
-    READY = HOME * 0.80 + OFFSETS + np.array([
+    READY = HOME * 0.75 + OFFSETS + np.array([
         [0, 0, 0],
         [0, 0, 0],
         [0, 0, 0],
