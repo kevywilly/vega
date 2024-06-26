@@ -51,7 +51,8 @@ class Robot(Node):
     joy_id = traitlets.Int(allow_none=True)
     gait = traitlets.Any(Gait, allow_none=True)
     stats = traitlets.Instance(PoseStatus, allow_none=True)
-    calibration_offsets = traitlets.Any(default_value=np.ndarray((4,3)))
+    yaw_offsets = traitlets.Any(default_value=np.zeros((4,3)))
+    pitch_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -192,5 +193,7 @@ class Robot(Node):
             self.controller.move_to(position, 10)
 
         if not self.walking:
-            Calibrator.get_offsets(self.imu.euler, self.calibration_offsets)
-            print(self.calibration_offsets.tolist())
+            Calibrator.get_pitch_offsets(self.imu.euler, self.pitch_offsets)
+            Calibrator.get_yaw_offsets(self.imu.euler, self.yaw_offsets)
+            print("yaw", self.yaw_offsets)
+            print("pitch", self.pitch_offsets)

@@ -6,16 +6,23 @@ import numpy as np
 class Calibrator:
 
     @classmethod
-    def get_offsets(cls, euler: Tuple[float, float, float], offsets: np.ndarray) -> np.ndarray:
+    def get_pitch_offsets(cls, euler: Tuple[float, float, float], offsets: np.ndarray) -> np.ndarray:
 
         heading, pitch, yaw = euler
-        if abs(yaw) < 175:
-            if yaw < 0: # raise front
+        if abs(yaw) < 176:
+            if yaw < 0:  # raise front
                 cls.adjust_front(1, offsets)
             else:
                 cls.adjust_rear(1, offsets)
         else:
             offsets *= 0
+
+        return offsets
+
+    @classmethod
+    def get_yaw_offsets(cls, euler: Tuple[float, float, float], offsets: np.ndarray) -> np.ndarray:
+
+        heading, pitch, yaw = euler
 
         if abs(pitch) > 2:
             if pitch < 0:
