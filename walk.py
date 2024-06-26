@@ -1,21 +1,15 @@
 import time
 
-from config import POSITIONS, trot_params
+from settings import settings
 from src.motion.gaits.gait import Gait
-from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
-from src.motion.gaits.turn import Turn
-from src.motion.gaits.trot2 import Trot2
 from src.nodes.robot import Robot
 
 robot = Robot()
 
-target = POSITIONS.CROUCH
-num_steps = 54
-
 
 def demo():
-    positions = [POSITIONS.READY, POSITIONS.CROUCH, POSITIONS.READY]
+    positions = [settings.position_ready, settings.position_crouch, settings.position_ready]
     print(positions)
     for p in positions:
         robot.set_targets(p)
@@ -31,7 +25,7 @@ def run(gait: Gait):
         robot.controller.move_to(positions, 50)
         positions = next(gait)
 
-run(Trot(**trot_params))
+
+run(Trot(**settings.trot_params))
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
-

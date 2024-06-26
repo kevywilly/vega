@@ -1,8 +1,15 @@
 import os
-
+from typing import List
+from enum import Enum
 import numpy as np
 
 from src.vision.sensors import CameraSensor
+
+"""
+    L1 - L0
+     |   |   
+    L2 - L3
+"""
 
 VEGA_ENVIRONMENT = os.environ.get("VEGA_ENVIRONMENT", "development")
 VEGA_API_URL = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")

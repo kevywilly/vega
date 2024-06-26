@@ -2,10 +2,10 @@ from typing import Optional, Dict
 
 import numpy as np
 
-from config import DIMS
+from settings import settings
 
 _quadrant_matrix = np.array([[1, 1, 1], [1, -1, 1], [-1, -1, 1], [-1, 1, 1]])
-_dimensions = np.array([DIMS.LENGTH / 2, DIMS.WIDTH / 2, 0])
+_dimensions = np.array([settings.robot_length / 2, settings.robot_width / 2, 0])
 
 
 def _3d_rotate(corners: np.ndarray, degrees: float):
@@ -28,7 +28,7 @@ def _3d_rotate(corners: np.ndarray, degrees: float):
 class Position:
     def __init__(self, local: np.ndarray, world: Optional[np.ndarray] = None):
         self.local = local
-        self.world = (self.local + _dimensions) * _quadrant_matrix
+        self.world = world if world else (self.local + _dimensions) * _quadrant_matrix
 
     @classmethod
     def from_world(cls, world: np.ndarray):
@@ -54,27 +54,25 @@ class Pose:
 
         self.cmd = None
 
-
     @property
     def servos(self) -> np.ndarray:
         if self.cmd:
-            return np.ndarray(self.cmd.values()).reshape(4,3)
+            return np.ndarray(self.cmd.values()).reshape(4, 3)
         else:
-            return np.zeros((4,3))
+            return np.zeros((4, 3))
 
     @property
     def json(self) -> Dict:
         return {
             "positions": self.positions.tolist(),
             "angles": np.degrees(self.angles).astype(int).tolist(),
-            #"servos": self.servos.tolist()
+            # "servos": self.servos.tolist()
         }
 
     @property
     def table(self):
         return np.vstack((np.round(np.degrees(self.angles)))).tolist()
-        #return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
+        # return list(np.vstack((self.positions, np.round(np.degrees(self.angles)))).flatten())
 
     def __repr__(self):
         return f"""POS: {self.positions.tolist()}"""
-

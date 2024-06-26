@@ -4,8 +4,9 @@ from typing import Optional, Dict
 import numpy as np
 import traitlets
 
-from config import POSITIONS, trot_params, sidestep_params, turn_params
+from settings import settings
 from src.interfaces.msgs import Twist
+from src.interfaces.pose import Pose
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
@@ -16,7 +17,6 @@ from src.nodes.controller import Controller
 from src.nodes.imu import IMU
 from src.nodes.node import Node
 from src.vision.image import Image, ImageUtils
-from src.interfaces.pose import Pose
 
 
 class Measurement(traitlets.HasTraits):
@@ -25,6 +25,7 @@ class Measurement(traitlets.HasTraits):
 
 class PoseStatus(traitlets.HasTraits):
     pose = traitlets.Instance(Pose, allow_none=True)
+
 
 class CmdVel(traitlets.HasTraits):
     value = traitlets.Instance(Twist, allow_none=True)
@@ -127,7 +128,7 @@ class Robot(Node):
         self.walking_dir = 'C'
         self.joy_id = 0
         time.sleep(0.1)
-        self.controller.move_to(POSITIONS.READY)
+        self.controller.move_to(settings.position_ready)
         time.sleep(0.1)
 
     def spinner(self):
@@ -136,9 +137,9 @@ class Robot(Node):
             self.controller.move_to(position, 10)
 
     def process_joy(self, data: Dict):
-        dir = data.get("dir")
-        x = int(data.get("x", "0"))
-        y = int(data.get("y", "0"))
+        direction = data.get("dir")
+        # x = int(data.get("x", "0"))
+        # y = int(data.get("y", "0"))
         jid = int(data.get("id", "0"))
 
         def response():
@@ -149,24 +150,25 @@ class Robot(Node):
                 "gait": self.gait.__class__.__name__ if self.gait else None
             }
 
-        if dir == 'C':
+        if direction == 'C':
             self.stop()
             return response()
-        if self.walking_dir == dir and self.joy_id == jid:
+        if self.walking_dir == direction and self.joy_id == jid:
             return response()
 
         if dir == 'N':
-            self.gait = Trot(**trot_params)
+            self.gait = Trot(**settings.trot_params)
         elif dir == "S":
-            self.gait = Trot2(p0=POSITIONS.READY_REVERSE,  **trot_params, reversed=True)
+            self.gait = Trot2(p0=settings.position_ready + settings.position_forward_offsets, **settings.trot_params,
+                              reversed=True)
         elif dir == "E" and jid == 1:
-            self.gait = Sidestep(**sidestep_params)
+            self.gait = Sidestep(**settings.sidestep_params)
         elif dir == "E" and jid == 2:
-            self.gait = Turn(**turn_params)
+            self.gait = Turn(**settings.turn_params)
         elif dir == "W" and jid == 1:
-            self.gait = Sidestep(**sidestep_params, reversed=True)
+            self.gait = Sidestep(**settings.sidestep_params, reversed=True)
         elif dir == "W" and jid == 2:
-            self.gait = Turn(**turn_params, reversed=True)
+            self.gait = Turn(**settings.turn_params, reversed=True)
 
         self.walking_dir = dir
         self.walking = True

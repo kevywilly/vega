@@ -6,7 +6,7 @@ import numpy as np
 import adafruit_bno055
 import board
 
-from config import IMU_OFFSETS, BNO_AXIS_REMAP
+from settings import settings
 from src.nodes.imu import IMUMode
 
 i2c = board.I2C()  # uses board.SCL and board.SDA

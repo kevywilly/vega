@@ -6,7 +6,7 @@ try:
 except:
     from src.mock.picamera2 import Picamera2
 
-from config import CAMERA_MATRIX, DISTORTION_COEFFICIENTS
+from settings import settings
 from src.nodes.node import Node
 
 
@@ -17,7 +17,7 @@ def _convert_color(frame):
 
 
 def _un_distort(frame):
-    return cv2.undistort(frame, CAMERA_MATRIX, DISTORTION_COEFFICIENTS)
+    return cv2.undistort(frame, settings.camera_matrix, settings.distortion_coefficients)
 
 
 class Camera(Node):

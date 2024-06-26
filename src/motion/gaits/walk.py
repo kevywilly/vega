@@ -26,7 +26,7 @@ class Walk:
         self.z2 = phase3_z
 
         self.steps1 = np.array([self.x, self.y, self.z])
-        self.steps1 = -self.steps.reshape(-1, self.x.size).transpose(1, 0).astype(int)
+        self.steps1 = -self.steps1.reshape(-1, self.x.size).transpose(1, 0).astype(int)
 
         self.steps2 = np.array([self.x2, self.y2, self.z2])
         self.steps2 = -self.steps2.reshape(-1, self.x2.size).transpose(1, 0).astype(int)

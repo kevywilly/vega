@@ -24,7 +24,7 @@ import time
 import board
 import adafruit_bno055
 
-from config import BNO_AXIS_REMAP
+from settings import settings
 
 
 # pylint: disable=too-few-public-methods

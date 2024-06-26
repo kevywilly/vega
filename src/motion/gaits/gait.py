@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
-from functools import cached_property
 
 import numpy as np
 
-from config import POSITIONS
+from settings import settings
 
 
 class Gait(ABC):
@@ -20,7 +19,8 @@ class Gait(ABC):
         steps2 (np.ndarray): Array to store step sequence 2.
     """
 
-    def __init__(self, p0: np.ndarray=POSITIONS.READY, stride=60, clearance=60, step_size=15, degrees=0, reversed=False):
+    def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15, degrees=0,
+                 reversed=False):
         self.p0 = p0
         self.stride = -stride if reversed else stride
         self.clearance = clearance
@@ -76,7 +76,6 @@ class Gait(ABC):
             for i in range(self.steps1.shape[0]):
                 yield self.get_positions(phase, i)
 
-
     def __iter__(self):
         return self
 
@@ -89,8 +88,3 @@ class Gait(ABC):
         else:
             self.index = index
         return self.positions
-
-
-
-
-
