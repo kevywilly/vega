@@ -55,7 +55,7 @@ class DIMS:
 
 
 class ANGLES:
-    ZERO = np.radians(np.array([[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]))
+    ZERO = np.radians(np.array([[-2, 90, 30], [-2, 90, 30], [2, 90, 30], [2, 90, 30]]))
 
 
 class POSITIONS:
@@ -63,10 +63,10 @@ class POSITIONS:
 
     HOME = np.zeros((4, 3)).astype(np.float16) + [0, 0, DIMS.MAX_HEIGHT]
     READY = HOME * 0.6 + OFFSETS + np.array([
-        [5, 0, 0],
-        [5, 0, 0],
-        [5, 0, 0],
-        [5, 0, 0]
+        [10, 0, 0],
+        [10, 0, 0],
+        [10, 0, 0],
+        [10, 0, 0]
     ])
 
 #    READY = HOME
@@ -87,6 +87,7 @@ class POSITIONS:
 
 trot_params = {"stride": 40, "clearance": 60, "step_size": 15}
 sidestep_params = {"stride": 25, "clearance": 30, "step_size": 15}
+turn_params = {"degrees": 20, "clearance": 60, "step_size": 10}
 
 
 

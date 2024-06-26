@@ -6,10 +6,6 @@ from src.motion.gaits.gait import Gait
 
 class Turn(Gait):
 
-    def __init__(self, degrees: float, **kwargs):
-        self.degrees = degrees
-        super().__init__(**kwargs)
-
     def build_steps(self):
 
         mag_z = -self.clearance
