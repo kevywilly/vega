@@ -193,4 +193,7 @@ $(function() {
     $( "#btnUpdateTargets" ).on( "click", updatePose );
     $( "#btnResetTargets" ).on( "click", resetTargets );
     $( "#btnDemo").on("click", () => {get("/api/demo");})
+    $( "#btnSit").on("click", () => {post(`/api/pose/sit`, null);})
+    $( "#btnCrouch").on("click", () => {post(`/api/pose/crouch`, null);})
+    $( "#btnReady").on("click", () => {post(`/api/pose/ready`, null);})
 });

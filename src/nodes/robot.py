@@ -160,9 +160,9 @@ class Robot(Node):
             return response()
 
         if direction == 'N':
-            self.gait = Trot(**settings.trot_params)
+            self.gait = Trot(p0=settings.position_ready + settings.position_forward_offsets, **settings.trot_params)
         elif direction == "S":
-            self.gait = Trot2(p0=settings.position_ready + settings.position_forward_offsets, **settings.trot_params,
+            self.gait = Trot2(p0=settings.position_ready + settings.position_backward_offsets, **settings.trot_params,
                               reversed=True)
         elif direction == "E" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params)

@@ -2,6 +2,7 @@
 
 import logging
 import os
+from datetime import time
 
 import numpy as np
 from flask import Flask, Response, request, render_template
@@ -79,6 +80,32 @@ def stats():
 @app.get('/api/targets')
 def _get_targets():
     return app.robot.controller.pose.target_positions.tolist()
+
+
+@app.post('/api/pose/<value>')
+def _set_pose(value: str):
+    v = value.lower()
+
+    p = None
+
+    if v == "ready":
+        p = settings.position_ready
+    elif v == "sit":
+        p = settings.position_sit
+    elif v == "crouch":
+        p = settings.position_crouch
+    else:
+        return {"status": "error, unknown pose"}
+
+    if app.robot.walking:
+        app.robot.stop()
+        time.sleep(0.5)
+
+    app.robot.set_targets(p)
+    app.robot.move_to_targets()
+
+    return {"status": "ok"}
+
 
 
 @app.post('/api/targets')
