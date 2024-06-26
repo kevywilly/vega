@@ -197,3 +197,4 @@ class Robot(Node):
             Calibrator.get_yaw_offsets(self.imu.euler, self.yaw_offsets)
             print("yaw", self.yaw_offsets)
             print("pitch", self.pitch_offsets)
+            self.controller.move_to(settings.position_ready + self.pitch_offsets + self.yaw_offsets, 10)
