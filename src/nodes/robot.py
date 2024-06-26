@@ -192,4 +192,4 @@ class Robot(Node):
 
         if not self.walking:
             offsets = Calibrator.get_offsets(self.imu.euler)
-            print(offsets)
+            print(offsets.tolist())
