@@ -51,6 +51,7 @@ class Robot(Node):
     joy_id = traitlets.Int(allow_none=True)
     gait = traitlets.Any(Gait, allow_none=True)
     stats = traitlets.Instance(PoseStatus, allow_none=True)
+    calibration_offsets = traitlets.Any(default_value=np.ndarray((4,3)))
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -191,5 +192,5 @@ class Robot(Node):
             self.controller.move_to(position, 10)
 
         if not self.walking:
-            offsets = Calibrator.get_offsets(self.imu.euler)
-            print(offsets.tolist())
+            self.calibration_offsets += Calibrator.get_offsets(self.imu.euler)
+            print(self.calibration_offsets.tolist())
