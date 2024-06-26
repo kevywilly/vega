@@ -7,6 +7,7 @@ import traitlets
 from settings import settings
 from src.interfaces.msgs import Twist
 from src.interfaces.pose import Pose
+from src.model.calibrator import Calibrator
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
@@ -131,11 +132,6 @@ class Robot(Node):
         self.controller.move_to(settings.position_ready)
         time.sleep(0.1)
 
-    def spinner(self):
-        if self.walking and self.gait is not None:
-            position = next(self.gait)
-            self.controller.move_to(position, 10)
-
     def process_joy(self, data: Dict):
         direction = data.get("dir")
         # x = int(data.get("x", "0"))
@@ -188,3 +184,12 @@ class Robot(Node):
             self.move_to_targets()
             print(p)
             time.sleep(2)
+
+    def spinner(self):
+        if self.walking and self.gait is not None:
+            position = next(self.gait)
+            self.controller.move_to(position, 10)
+
+        if not self.walking:
+            offsets = Calibrator.get_offsets(self.imu.euler)
+            print(offsets)
