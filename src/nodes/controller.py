@@ -88,8 +88,8 @@ class Controller(Node):
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_targets(settings.position_sit)
-        self.move_to(settings.position_sit)
+        self.set_targets(settings.position_ready)
+        self.move_to(settings.position_ready)
 
         atexit.register(self.shutdown)
 
