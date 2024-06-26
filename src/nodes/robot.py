@@ -156,22 +156,31 @@ class Robot(Node):
         if self.walking_dir == direction and self.joy_id == jid:
             return response()
 
-        if dir == 'N':
+        if direction == 'N':
             self.gait = Trot(**settings.trot_params)
-        elif dir == "S":
+        elif direction == "S":
             self.gait = Trot2(p0=settings.position_ready + settings.position_forward_offsets, **settings.trot_params,
                               reversed=True)
-        elif dir == "E" and jid == 1:
+        elif direction == "E" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params)
-        elif dir == "E" and jid == 2:
+        elif direction == "E" and jid == 2:
             self.gait = Turn(**settings.turn_params)
-        elif dir == "W" and jid == 1:
+        elif direction == "W" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params, reversed=True)
-        elif dir == "W" and jid == 2:
+        elif direction == "W" and jid == 2:
             self.gait = Turn(**settings.turn_params, reversed=True)
 
-        self.walking_dir = dir
+        self.walking_dir = direction
         self.walking = True
         self.joy_id = jid
 
         return response()
+
+    def demo(self):
+        positions = [settings.position_ready, settings.position_crouch, settings.position_ready, settings.position_sit]
+
+        for p in positions:
+            self.set_targets(p)
+            self.move_to_targets()
+            print(p)
+            time.sleep(2)

@@ -4,8 +4,6 @@ from functools import cached_property
 from typing import Tuple, Dict, List
 
 import numpy as np
-from pydantic import computed_field
-
 from src.vision.sensors import CameraSensor
 
 """
@@ -38,7 +36,7 @@ class LegGroup(List, Enum):
 
 
 class Settings:
-    debug: str = False
+    debug: str = os.environ.get("VEGA_DEBUT", True)
 
     environment: str = os.environ.get("VEGA_ENVIRONMENT", "development")
     api_url: str = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
@@ -49,7 +47,7 @@ class Settings:
 
     @property
     def servo_ids(self) -> np.ndarray:
-        self.servos.reshape(-1)
+        return self.servos.reshape(-1)
 
     flip: np.ndarray = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
 
@@ -106,10 +104,16 @@ class Settings:
     def position_ready(self) -> np.ndarray:
         return self.position_home * self.position_ready_height_pct
 
-    @computed_field
-    @property
+    @cached_property
     def position_crouch(self) -> np.ndarray:
         return self.position_ready * 0.5
+
+    @cached_property
+    def position_sit(self) -> np.ndarray:
+        ar = self.position_home * 0.8
+        ar[2,:] *= 0.4
+        ar[3, :] *= 0.4
+        return ar.astype(int)
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 65, "step_size": 15}
     sidestep_params: Dict[str, int] = {"stride": 25, "clearance": 30, "step_size": 15}

@@ -88,8 +88,8 @@ class Controller(Node):
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_targets(settings.position_ready)
-        self.move_to(settings.position_ready)
+        self.set_targets(settings.position_sit)
+        self.move_to(settings.position_sit)
 
         atexit.register(self.shutdown)
 
@@ -101,7 +101,7 @@ class Controller(Node):
         self._apply_cmd_vel(change.new)
 
     def shutdown(self):
-        self.move_to(settings.position_crouch)
+        self.move_to(settings.position_sit)
         time.sleep(0.2)
 
         if _sc:
@@ -128,8 +128,7 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
-        if config.DEBUG:
-            print(self.pose)
+        print(self.pose)
         return cmd
 
     def _read_positions(self):
