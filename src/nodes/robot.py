@@ -150,10 +150,13 @@ class Robot(Node):
                 "gait": self.gait.__class__.__name__ if self.gait else None
             }
 
-        if direction == 'C':
-            self.stop()
-            return response()
+
         if self.walking_dir == direction and self.joy_id == jid:
+            return response()
+
+        self.stop()
+
+        if direction == 'C':
             return response()
 
         if direction == 'N':
@@ -170,6 +173,7 @@ class Robot(Node):
         elif direction == "W" and jid == 2:
             self.gait = Turn(**settings.turn_params, reversed=True)
 
+        time.sleep(1)
         self.walking_dir = direction
         self.walking = True
         self.joy_id = jid
