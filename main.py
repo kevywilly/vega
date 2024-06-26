@@ -36,7 +36,6 @@ def demo():
     for p in positions:
         app.robot.set_targets(p)
         app.robot.move_to_targets()
-        app.robot.print_stats()
         time.sleep(2)
 
     """
