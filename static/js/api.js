@@ -184,7 +184,7 @@ const resetTargets = () => {
     setTargets([])
 }
 
-setInterval(getStats, 2000);
+setInterval(getStats, 500);
 
 $(function() {
     getOffsets();
@@ -192,4 +192,5 @@ $(function() {
     $( "#btnResetOffsets" ).on( "click", resetOffsets );
     $( "#btnUpdateTargets" ).on( "click", updatePose );
     $( "#btnResetTargets" ).on( "click", resetTargets );
+    $( "#btnDemo").on("click", () => {get("/api/demo");})
 });

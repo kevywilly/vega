@@ -5,6 +5,9 @@
 
 @layer components {
 
+    .section-header {
+        @apply prose-xl text-center bg-blue-400 p-2 font-semibold
+    }
     .button {
         @apply px-2 py-1 rounded-md text-center font-semibold
     }
