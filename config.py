@@ -85,7 +85,7 @@ class POSITIONS:
         cls.OFFSETS = np.zeros((4, 3))
 
 
-trot_params = {"stride": 40, "clearance": 60, "step_size": 15}
+trot_params = {"stride": 50, "clearance": 65, "step_size": 15}
 sidestep_params = {"stride": 25, "clearance": 30, "step_size": 15}
 turn_params = {"degrees": 20, "clearance": 60, "step_size": 10}
 

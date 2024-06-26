@@ -156,7 +156,7 @@ class Robot(Node):
             return response()
 
         if dir == 'N':
-            self.gait = Trot2(**trot_params)
+            self.gait = Trot(**trot_params)
         elif dir == "S":
             self.gait = Trot2(p0=POSITIONS.READY_REVERSE,  **trot_params, reversed=True)
         elif dir == "E" and jid == 1:
