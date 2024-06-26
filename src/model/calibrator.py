@@ -9,7 +9,7 @@ class Calibrator:
     def get_offsets(cls, euler: Tuple[float, float, float]) -> np.ndarray:
         offsets =  np.zeros((4,3))
         heading, pitch, yaw = euler
-        if abs(yaw) < 178:
+        if abs(yaw) < 175:
             if yaw < 0: # raise front
                 cls.adjust_front(1, offsets)
             else:
@@ -17,7 +17,7 @@ class Calibrator:
         else:
             offsets *= 0
 
-        if abs(pitch) > 0.5:
+        if abs(pitch) > 2:
             if pitch < 0:
                 cls.adjust_right(1, offsets)
             else:
