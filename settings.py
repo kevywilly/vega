@@ -113,7 +113,7 @@ class Settings:
         ar = self.position_home * 0.8
         ar[2,:] *= 0.3
         ar[3, :] *= 0.3
-        ar[:,0] -= 10
+        ar[:,0] -= 35
         return ar.astype(int)
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 65, "step_size": 15}
