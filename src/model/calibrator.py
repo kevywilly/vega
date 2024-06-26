@@ -6,7 +6,7 @@ import numpy as np
 class Calibrator:
 
     @classmethod
-    def get_offsets(cls, self, euler: Tuple[float, float, float]) -> np.ndarray:
+    def get_offsets(cls, euler: Tuple[float, float, float]) -> np.ndarray:
         offsets =  np.zeros((4,3))
         heading, pitch, yaw = euler
         if abs(yaw) < 179:
