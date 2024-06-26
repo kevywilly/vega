@@ -20,6 +20,8 @@ class Calibrator:
             else:
                 cls.adjust_left(1, offsets)
 
+        return offsets
+
     @classmethod
     def adjust_rear(cls, value: int, offsets: np.ndarray) -> np.ndarray:
         offsets[2, :] + [0, 0, value]
