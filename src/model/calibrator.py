@@ -14,11 +14,16 @@ class Calibrator:
                 cls.adjust_front(1, offsets)
             else:
                 cls.adjust_rear(1, offsets)
+        else:
+            offsets *= 0
+
         if abs(pitch) > 0.5:
             if pitch < 0:
                 cls.adjust_right(1, offsets)
             else:
                 cls.adjust_left(1, offsets)
+        else:
+            offsets *= 0
 
         return offsets
 
@@ -26,20 +31,29 @@ class Calibrator:
     def adjust_rear(cls, value: int, offsets: np.ndarray):
         offsets[2, :] += [0, 0, value]
         offsets[3, :] += [0, 0, value]
+        offsets[0, :] -= [0, 0, value]
+        offsets[1, :] -= [0, 0, value]
 
 
     @classmethod
-    def adjust_front(cls, value: int, offsets: np.ndarray) -> np.ndarray:
+    def adjust_front(cls, value: int, offsets: np.ndarray):
         offsets[0, :] += [0, 0, value]
         offsets[1, :] += [0, 0, value]
+        offsets[2, :] += [0, 0, value]
+        offsets[3, :] += [0, 0, value]
+
 
     @classmethod
-    def adjust_left(cls, value: int, offsets: np.ndarray) -> np.ndarray:
+    def adjust_left(cls, value: int, offsets: np.ndarray):
         offsets[1, :] += [0, 0, value]
         offsets[2, :] += [0, 0, value]
-
-    @classmethod
-    def adjust_right(cls, value: int, offsets: np.ndarray) -> np.ndarray:
         offsets[0, :] += [0, 0, value]
         offsets[3, :] += [0, 0, value]
 
+
+    @classmethod
+    def adjust_right(cls, value: int, offsets: np.ndarray):
+        offsets[0, :] += [0, 0, value]
+        offsets[3, :] += [0, 0, value]
+        offsets[1, :] -= [0, 0, value]
+        offsets[2, :] -= [0, 0, value]

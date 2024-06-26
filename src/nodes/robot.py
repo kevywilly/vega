@@ -192,6 +192,5 @@ class Robot(Node):
             self.controller.move_to(position, 10)
 
         if not self.walking:
-            pass
-            # self.calibration_offsets += Calibrator.get_offsets(self.imu.euler)
-            # print(self.calibration_offsets.tolist())
+            self.calibration_offsets += Calibrator.get_offsets(self.imu.euler)
+            print(self.calibration_offsets.tolist())
