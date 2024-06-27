@@ -80,8 +80,9 @@ class Robot(Node):
         self._start_nodes()
         self._setup_subscriptions()
         time.sleep(0.2)
-        self.yaw_level()
-        self.pitch_level()
+
+        if settings.auto_level:
+            self.level()
 
         self.loaded()
 
@@ -189,6 +190,44 @@ class Robot(Node):
             self.move_to_targets()
             print(p)
             time.sleep(2)
+
+    def level(self):
+        self.logger.info("**** Performing Level Calibration ***")
+        starting_offsets = settings.position_offsets * 1
+
+        pitch_array = np.array([-1,1,1,-1])
+        yaw_array = np.array([-1,-1,1,1])
+        zeros = np.zeros((4))
+        roll, pitch, yaw = self.imu.euler
+
+        for i in range(20):
+
+            if abs(pitch) > settings.pitch_threshold:
+                pitch_offset = pitch_array if pitch >= 0 else -pitch_array
+            else:
+                pitch_offset = zeros
+
+            if abs(yaw) > settings.yaw_threshold:
+                yaw_offset = yaw_array if (yaw >= 0) else -yaw_array
+            else:
+                yaw_offset = zeros
+
+            settings.position_offsets[:,2] += (pitch_offset + yaw_offset)
+            self.logger.info(f"OFFSETS: {settings.position_offsets.flatten().tolist()}")
+            self.controller.move_to(settings.position_ready, 10)
+            time.sleep(0.2)
+
+            roll, pitch, yaw = self.imu.euler
+
+            if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
+                self.logger.info("level calibration succeeded...")
+                return
+
+
+
+        self.logger.info("level calibration failed...")
+
+
 
     def pitch_level(self):
         starting_offsets = settings.position_offsets * 1

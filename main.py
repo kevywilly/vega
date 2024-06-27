@@ -127,8 +127,7 @@ def ready():
 
 @app.post('/api/level')
 def level():
-    app.robot.yaw_level()
-    app.robot.pitch_level()
+    app.robot.level()
     return settings.position_offsets.tolist()
 
 @app.post('/api/offsets')

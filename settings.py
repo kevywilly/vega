@@ -43,7 +43,7 @@ class Settings:
     api_url: str = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
     serial_port: str = os.environ.get("SERIAL_PORT", "/dev/serial0")
 
-    bno_axis_remap: Optional[Tuple] = None # (0, 1, 2, 1, 0, 1)
+    bno_axis_remap: Optional[Tuple] = None  # (0, 1, 2, 1, 0, 1)
     servos: np.ndarray = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 
     @property
@@ -64,9 +64,9 @@ class Settings:
     distortion_coefficients: np.ndarray = np.array([-0.296850, 0.061372, 0.002562, -0.002645, 0.000000]).reshape(1, 5)
 
     # IMU
-    #imu_magnetic_offsets: Tuple[int, int, int] = (419, -250, -597)
-    #imu_gyro_offsets: Tuple[int, int, int] = (0, -2, -1)
-    #imu_accel_offsets: Tuple[int, int, int] = (16, -31, 14)
+    # imu_magnetic_offsets: Tuple[int, int, int] = (419, -250, -597)
+    # imu_gyro_offsets: Tuple[int, int, int] = (0, -2, -1)
+    # imu_accel_offsets: Tuple[int, int, int] = (16, -31, 14)
 
     imu_magnetic_offsets = (32418, 32685, -32271)
     imu_gyro_offsets = (0, -1, 0)
@@ -139,6 +139,8 @@ class Settings:
 
     def reset_offsets(self):
         self.position_offsets = self.default_position_offsets
+
+    auto_level: bool = True
 
 
 settings = Settings()
