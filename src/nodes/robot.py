@@ -189,6 +189,41 @@ class Robot(Node):
             print(p)
             time.sleep(2)
 
+    def pitch_level(self):
+
+        roll, pitch, yaw = self.get_imu()
+        offset = 0
+        counter = 0
+
+        self.logger.info(f"******************************************************************\n")
+        self.logger.info(f"Leveling robot...")
+        self.controller.move_to(settings.position_ready, 10)
+        time.sleep(0.2)
+
+        while abs(pitch) < 1 and abs(offset) < 20 and counter < 20:
+            if pitch < 0:
+                offset = 1
+            else:
+                offset = -1
+
+            self.logger.info(f"pitch: {pitch} offset: {offset}")
+
+            settings.position_offsets[:,2] += offset * np.array([1,-1,-1,1])
+            self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
+            self.controller.move_to(settings.position_ready,10)
+            self.get_imu()
+            time.sleep(0.5)
+            roll, pitch, yaw = self.imu.euler
+            counter += 1
+
+        if abs(yaw) >= 179.5:
+            self.logger.info("z_level succeeded")
+        else:
+            self.logger.info("z_level failed")
+            settings.reset_offsets()
+            self.controller.move_to(settings.position_ready, 500)
+        self.logger.info(f"******************************************************************\n")
+
     def z_level(self):
 
         roll, pitch, yaw = self.get_imu()
@@ -202,13 +237,13 @@ class Robot(Node):
 
         while abs(yaw) < 179.5 and abs(offset) < 20 and counter < 20:
             if yaw < 0:
-                offset += 1
+                offset = 1
             else:
-                offset -= 1
+                offset = -1
 
             self.logger.info(f"yaw: {yaw} offset: {offset}")
 
-            settings.position_offsets[:,2] = offset * np.array([1,1,-1,-1])
+            settings.position_offsets[:,2] += offset * np.array([1,1,-1,-1])
             self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
             self.controller.move_to(settings.position_ready,10)
             self.get_imu()
