@@ -201,7 +201,8 @@ class Robot(Node):
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
         self.logger.info(f"pitch: {pitch} offset: {offset}")
-        while abs(pitch) < 1 and counter < 20:
+        while abs(pitch) > 1 and counter < 20:
+
             if pitch < 0:
                 offset = 1
             else:
@@ -217,12 +218,13 @@ class Robot(Node):
             roll, pitch, yaw = self.imu.euler
             counter += 1
 
-        if abs(yaw) >= 179.5:
+        if abs(pitch) < 1:
             self.logger.info("pitch level succeeded")
         else:
             self.logger.info("pitch level failed")
             settings.position_offsets = starting_offsets * 1
             self.controller.move_to(settings.position_ready, 500)
+
         self.logger.info(f"******************************************************************\n")
 
     def yaw_level(self):
