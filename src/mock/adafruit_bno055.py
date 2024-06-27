@@ -13,7 +13,7 @@ class BNO055_I2C:
         self.acceleration = (0.0, 0.0, 0.0)
         self.magnetic = (0.0, 0.0, 0.0)
         self.gyro = (0.0, 0.0, 0.0)
-        self.euler = (0.0, 0.0, 0.0)
+        self.euler = (180, 0.0, 179.9)
         self.quaternion = (0.0, 0.0, 0.0, 0.0)
         self.linear_acceleration = (0.0, 0.0, 0.0)
         self.gravity = (0.0, 0.0, 0.0)
