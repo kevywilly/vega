@@ -192,7 +192,7 @@ class Robot(Node):
 
     def pitch_level(self):
         starting_offsets = settings.position_offsets * 1
-        roll, pitch, yaw = self.get_imu()
+        roll, pitch, yaw = self.imu.euler
         offset = 0
         counter = 0
 
@@ -200,7 +200,7 @@ class Robot(Node):
         self.logger.info(f"Leveling robot pitch...")
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
-
+        self.logger.info(f"pitch: {pitch} offset: {offset}")
         while abs(pitch) < 1 and counter < 20:
             if pitch < 0:
                 offset = 1
