@@ -190,7 +190,7 @@ class Robot(Node):
             time.sleep(2)
 
     def z_level(self):
-        roll, pitch, yaw = self.imu.euler
+        roll, pitch, yaw = self.get_imu()
         offset = 0
         counter = 0
 
@@ -209,8 +209,9 @@ class Robot(Node):
             settings.position_offsets[:,2] = offset * np.array([1,1,-1,-1])
             self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
             self.controller.move_to(settings.position_ready,10)
+            self.get_imu()
             time.sleep(0.3)
-            _, pitch, _ = self.imu.euler
+            roll, pitch, yaw = self.get_imu()
             counter += 1
 
         self.logger.info(f"******************************************************************\n")
