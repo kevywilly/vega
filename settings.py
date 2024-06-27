@@ -64,9 +64,13 @@ class Settings:
     distortion_coefficients: np.ndarray = np.array([-0.296850, 0.061372, 0.002562, -0.002645, 0.000000]).reshape(1, 5)
 
     # IMU
-    imu_magnetic_offsets: Tuple[int, int, int] = (419, -250, -597)
-    imu_gyro_offsets: Tuple[int, int, int] = (0, -2, -1)
-    imu_accel_offsets: Tuple[int, int, int] = (16, -31, 14)
+    #imu_magnetic_offsets: Tuple[int, int, int] = (419, -250, -597)
+    #imu_gyro_offsets: Tuple[int, int, int] = (0, -2, -1)
+    #imu_accel_offsets: Tuple[int, int, int] = (16, -31, 14)
+
+    imu_magnetic_offsets = (32418, 32685, -32271)
+    imu_gyro_offsets = (0, -1, 0)
+    imu_accel_offsets = (-40, 42, -18)
 
     yaw_threshold: int = 0.5
     pitch_threshold: int = 0.5
