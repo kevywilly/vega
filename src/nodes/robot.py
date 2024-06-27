@@ -212,7 +212,7 @@ class Robot(Node):
             else:
                 yaw_offset = zeros
 
-            settings.position_offsets[:,2] += (pitch_offset + yaw_offset)
+            settings.position_offsets[:,2] += (pitch_offset + yaw_offset).astype(int)
             self.logger.info(f"OFFSETS: {settings.position_offsets.flatten().tolist()}")
             self.controller.move_to(settings.position_ready, 10)
             time.sleep(0.2)
