@@ -201,9 +201,9 @@ class Robot(Node):
 
         while abs(yaw) < 179.5 and abs(offset) < 20 and counter < 20:
             if yaw < 0:
-                offset += 1
-            else:
                 offset -= 1
+            else:
+                offset += 1
 
             self.logger.info(f"yaw: {yaw} offset: {offset}")
 
@@ -212,7 +212,7 @@ class Robot(Node):
             self.controller.move_to(settings.position_ready,10)
             self.get_imu()
             time.sleep(0.5)
-            roll, pitch, yaw = self.get_imu()
+            roll, pitch, yaw = self.imu.euler
             counter += 1
 
         if abs(yaw) >= 179.5:
