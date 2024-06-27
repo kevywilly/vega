@@ -6,7 +6,6 @@ import numpy as np
 import serial
 import traitlets
 
-import config
 from settings import settings
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
@@ -19,7 +18,7 @@ logger = logging.getLogger('VEGA')
 _km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_length)
 
 try:
-    _sc = ServoController(serial.Serial(config.SERIAL_PORT))
+    _sc = ServoController(serial.Serial(settings.serial_port))
 except:
     _sc = None
     logger.debug(f"Robot will not move - couldn't open serial port.")
@@ -30,7 +29,7 @@ SERVO_MAX_ANGLE = np.radians(240)
 
 def _angles_from_positions(positions: np.ndarray):
     angles = np.zeros((4, 3))
-    for i, pos in enumerate(positions):
+    for i, pos in enumerate(positions+settings.position_offsets):
         angles[i] = _km.ik(pos)
 
     return angles
@@ -41,7 +40,7 @@ def _positions_from_angles(angles: np.ndarray):
     for i, ang in enumerate(angles):
         positions[i] = _km.fk(ang)
 
-    return positions
+    return positions - settings.position_offsets
 
 
 def _servo_positions_from_angles(angles: np.ndarray):

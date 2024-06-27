@@ -191,10 +191,3 @@ class Robot(Node):
         if self.walking and self.gait is not None:
             position = next(self.gait)
             self.controller.move_to(position, 10)
-
-        if not self.walking:
-            Calibrator.get_pitch_offsets(self.imu.euler, self.pitch_offsets)
-            Calibrator.get_yaw_offsets(self.imu.euler, self.yaw_offsets)
-            print("yaw", self.yaw_offsets)
-            print("pitch", self.pitch_offsets)
-            self.controller.move_to(settings.position_ready + self.pitch_offsets, 10)

@@ -1,10 +1,10 @@
 import time
 import numpy as np
 from serial import Serial
-import config
+from settings import settings
 from src.motion.servo_controller import ServoController
 
-controller = ServoController(serial=Serial(config.SERIAL_PORT))
+controller = ServoController(serial=Serial(settings.serial_port))
 
 SERVOS = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 SERVO_IDS = SERVOS.reshape(-1)
