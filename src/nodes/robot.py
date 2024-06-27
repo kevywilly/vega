@@ -80,10 +80,7 @@ class Robot(Node):
         self._setup_subscriptions()
         time.sleep(0.2)
 
-        if settings.auto_level:
-            for i in range(2):
-                self.logger.info(f"*** Leveling pass {i} ***")
-                self.level()
+        self.auto_level()
 
         self.loaded()
 
@@ -191,7 +188,14 @@ class Robot(Node):
             print(p)
             time.sleep(2)
 
-    def level(self):
+    def auto_level(self):
+        if settings.auto_level:
+            for i in range(3):
+                self.logger.info(f"*** Leveling pass {i} ***")
+                if self.level():
+                    break
+
+    def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
         starting_offsets = settings.position_offsets * 1
 
@@ -221,9 +225,10 @@ class Robot(Node):
 
             if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
                 self.logger.info("leveling succeeded...")
-                return
+                return True
 
         self.logger.info("leveling failed...")
+        return False
 
     def spinner(self):
         if self.walking and self.gait is not None:
