@@ -7,7 +7,6 @@ import traitlets
 from settings import settings
 from src.interfaces.msgs import Twist
 from src.interfaces.pose import Pose
-from src.model.calibrator import Calibrator
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
@@ -51,7 +50,7 @@ class Robot(Node):
     joy_id = traitlets.Int(allow_none=True)
     gait = traitlets.Any(Gait, allow_none=True)
     stats = traitlets.Instance(PoseStatus, allow_none=True)
-    yaw_offsets = traitlets.Any(default_value=np.zeros((4,3)))
+    yaw_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
     pitch_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
 
     def __init__(self, **kwargs):
@@ -82,7 +81,9 @@ class Robot(Node):
         time.sleep(0.2)
 
         if settings.auto_level:
-            self.level()
+            for i in range(2):
+                self.logger.info(f"*** Leveling pass {i} ***")
+                self.level()
 
         self.loaded()
 
@@ -152,7 +153,6 @@ class Robot(Node):
                 "gait": self.gait.__class__.__name__ if self.gait else None
             }
 
-
         if self.walking_dir == direction and self.joy_id == jid:
             return response()
 
@@ -195,8 +195,8 @@ class Robot(Node):
         self.logger.info("**** Performing Level Calibration ***")
         starting_offsets = settings.position_offsets * 1
 
-        pitch_array = np.array([1,-1,-1,1]).astype(int)
-        yaw_array = np.array([-1,-1,1,1]).astype(int)
+        pitch_array = np.array([1, -1, -1, 1]).astype(int)
+        yaw_array = np.array([-1, -1, 1, 1]).astype(int)
         zeros = np.zeros((4))
         roll, pitch, yaw = self.imu.euler
 
@@ -212,94 +212,18 @@ class Robot(Node):
             else:
                 yaw_offset = zeros
 
-            settings.position_offsets[:,2] += (pitch_offset + yaw_offset).astype(int)
-            self.logger.info(f"OFFSETS: {settings.position_offsets.flatten().tolist()}")
+            settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
+            self.logger.info(f"setting offset => {settings.position_offsets.flatten().tolist()}")
             self.controller.move_to(settings.position_ready, 10)
             time.sleep(0.2)
 
             roll, pitch, yaw = self.imu.euler
 
             if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
-                self.logger.info("level calibration succeeded...")
+                self.logger.info("leveling succeeded...")
                 return
 
-
-
-        self.logger.info("level calibration failed...")
-
-
-
-    def pitch_level(self):
-        starting_offsets = settings.position_offsets * 1
-        roll, pitch, yaw = self.imu.euler
-        offset = 0
-        counter = 0
-
-        self.logger.info(f"******************************************************************\n")
-        self.logger.info(f"Leveling robot pitch...")
-        self.controller.move_to(settings.position_ready, 10)
-        time.sleep(0.2)
-        self.logger.info(f"pitch: {pitch} offset: {offset}")
-        while abs(pitch) > settings.pitch_threshold and counter < 20:
-
-            if pitch < 0:
-                offset = -1
-            else:
-                offset = 1
-
-            self.logger.info(f"pitch: {pitch} offset: {offset}")
-
-            settings.position_offsets[:,2] += offset * np.array([1,-1,-1,1])
-            self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
-            self.controller.move_to(settings.position_ready,10)
-            self.get_imu()
-            time.sleep(0.5)
-            roll, pitch, yaw = self.imu.euler
-            counter += 1
-
-        if abs(pitch) < settings.pitch_threshold:
-            self.logger.info("pitch level succeeded")
-        else:
-            self.logger.info("pitch level failed")
-            settings.position_offsets = starting_offsets * 1
-            self.controller.move_to(settings.position_ready, 500)
-
-        self.logger.info(f"******************************************************************\n")
-
-    def yaw_level(self):
-        starting_offsets = settings.position_offsets * 1
-        roll, pitch, yaw = self.get_imu()
-        offset = 0
-        counter = 0
-
-        self.logger.info(f"******************************************************************\n")
-        self.logger.info(f"Leveling robot yaw ..")
-        self.controller.move_to(settings.position_ready, 10)
-        time.sleep(0.2)
-
-        while abs(yaw) > settings.yaw_threshold and counter < 20:
-            if yaw < 0:
-                offset = 1
-            else:
-                offset = -1
-
-            self.logger.info(f"yaw: {yaw} offset: {offset}")
-
-            settings.position_offsets[:,2] += offset * np.array([1,1,-1,-1])
-            self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
-            self.controller.move_to(settings.position_ready,10)
-            self.get_imu()
-            time.sleep(0.5)
-            roll, pitch, yaw = self.imu.euler
-            counter += 1
-
-        if abs(yaw) <= settings.yaw_threshold:
-            self.logger.info("yaw leveling succeeded")
-        else:
-            self.logger.info("yaw leveling failed")
-            settings.position_offsets = starting_offsets * 1
-            self.controller.move_to(settings.position_ready, 500)
-        self.logger.info(f"******************************************************************\n")
+        self.logger.info("leveling failed...")
 
     def spinner(self):
         if self.walking and self.gait is not None:
