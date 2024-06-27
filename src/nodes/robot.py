@@ -201,7 +201,7 @@ class Robot(Node):
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
 
-        while abs(pitch) < 1 and abs(offset) < 20 and counter < 20:
+        while abs(pitch) < 1 and counter < 20:
             if pitch < 0:
                 offset = 1
             else:
@@ -236,7 +236,7 @@ class Robot(Node):
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
 
-        while abs(yaw) < 179.5 and abs(offset) < 20 and counter < 20:
+        while abs(yaw) < 179.5 and counter < 20:
             if yaw < 0:
                 offset = 1
             else:
