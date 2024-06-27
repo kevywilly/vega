@@ -80,7 +80,8 @@ class Robot(Node):
         self._start_nodes()
         self._setup_subscriptions()
         time.sleep(0.2)
-        self.z_level()
+        self.yaw_level()
+        self.pitch_level()
 
         self.loaded()
 
