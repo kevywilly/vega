@@ -70,7 +70,7 @@ class Settings:
 
     # Dimensions
     robot_width: int = 142
-    robot_length: int = 252
+    robot_length: int = 223
     coxa_length: int = 53
     femur_length: int = 102
     tibia_length: int = 114
