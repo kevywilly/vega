@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 from functools import cached_property
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Optional
 
 import numpy as np
 
@@ -43,7 +43,7 @@ class Settings:
     api_url: str = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
     serial_port: str = os.environ.get("SERIAL_PORT", "/dev/serial0")
 
-    bno_axis_remap: Tuple = (0, 1, 2, 1, 0, 1)
+    bno_axis_remap: Optional[Tuple] = None # (0, 1, 2, 1, 0, 1)
     servos: np.ndarray = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
 
     @property
