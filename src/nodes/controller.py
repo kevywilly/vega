@@ -88,7 +88,7 @@ class Controller(Node):
         self.cmd = None
         self._read_positions()
         self.set_targets(settings.position_ready)
-        self.move_to(settings.position_ready)
+        self.move_to(settings.position_ready, 250)
 
         atexit.register(self.shutdown)
 
