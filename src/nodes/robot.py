@@ -202,9 +202,9 @@ class Robot(Node):
 
         while abs(yaw) < 179.5 and abs(offset) < 20 and counter < 20:
             if yaw < 0:
-                offset -= 1
-            else:
                 offset += 1
+            else:
+                offset -= 1
 
             self.logger.info(f"yaw: {yaw} offset: {offset}")
 
