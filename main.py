@@ -1,4 +1,4 @@
-# !/usr/bin/python3i
+#!/usr/bin/python3i
 
 import logging
 import os
