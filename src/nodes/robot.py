@@ -198,6 +198,7 @@ class Robot(Node):
         self.logger.info(f"Leveling robot...")
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
+
         while abs(yaw) < 179.5 and abs(offset) < 20 and counter < 20:
             if yaw < 0:
                 offset += 1
@@ -214,6 +215,12 @@ class Robot(Node):
             roll, pitch, yaw = self.get_imu()
             counter += 1
 
+        if abs(yaw) >= 179.5:
+            self.logger.info("z_level succeeded")
+        else:
+            self.logger.info("z_level failed")
+            settings.reset_offsets()
+            self.controller.move_to(settings.position_ready, 500)
         self.logger.info(f"******************************************************************\n")
 
     def spinner(self):
