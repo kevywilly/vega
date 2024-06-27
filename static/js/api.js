@@ -196,4 +196,5 @@ $(function() {
     $( "#btnSit").on("click", () => {post(`/api/pose/sit`, null);})
     $( "#btnCrouch").on("click", () => {post(`/api/pose/crouch`, null);})
     $( "#btnReady").on("click", () => {post(`/api/pose/ready`, null);})
+    $( "#btnLevel" ).on( "click", () => {post("/api/level", null, displayOffsets)} );
 });

@@ -125,6 +125,11 @@ def _set_targets():
 def ready():
     return settings.position_offsets.tolist()
 
+@app.post('/api/level')
+def level():
+    app.robot.yaw_level()
+    app.robot.pitch_level()
+    return settings.position_offsets.tolist()
 
 @app.post('/api/offsets')
 def post_ready():
