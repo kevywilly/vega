@@ -204,7 +204,7 @@ class Robot(Node):
             else:
                 offset += 1
 
-            self.logger.info("yaw: ", yaw, "offset: ", offset)
+            self.logger.info(f"yaw: {yaw} offset: {offset}")
 
             settings.position_offsets[:,2] = offset * np.array([1,1,-1,-1])
             self.controller.move_to(settings.position_ready,10)
