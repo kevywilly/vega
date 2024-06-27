@@ -204,9 +204,9 @@ class Robot(Node):
         while abs(pitch) > settings.pitch_threshold and counter < 20:
 
             if pitch < 0:
-                offset = 1
-            else:
                 offset = -1
+            else:
+                offset = 1
 
             self.logger.info(f"pitch: {pitch} offset: {offset}")
 
