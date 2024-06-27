@@ -198,11 +198,11 @@ class Robot(Node):
         self.logger.info(f"Leveling robot...")
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
-        while abs(yaw) < 179.5 and abs(offset) < 50 and counter < 50:
+        while abs(yaw) < 179.5 and abs(offset) < 20 and counter < 20:
             if yaw < 0:
-                offset -= 1
-            else:
                 offset += 1
+            else:
+                offset -= 1
 
             self.logger.info(f"yaw: {yaw} offset: {offset}")
 
