@@ -195,8 +195,8 @@ class Robot(Node):
         self.logger.info("**** Performing Level Calibration ***")
         starting_offsets = settings.position_offsets * 1
 
-        pitch_array = np.array([-1,1,1,-1])
-        yaw_array = np.array([-1,-1,1,1])
+        pitch_array = np.array([-1,1,1,-1]).astype(int)
+        yaw_array = np.array([-1,-1,1,1]).astype(int)
         zeros = np.zeros((4))
         roll, pitch, yaw = self.imu.euler
 
