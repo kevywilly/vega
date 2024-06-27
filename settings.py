@@ -68,6 +68,9 @@ class Settings:
     imu_gyro_offsets: Tuple[int, int, int] = (0, -2, -1)
     imu_accel_offsets: Tuple[int, int, int] = (16, -31, 14)
 
+    yaw_threshold: int = 0.5
+    pitch_threshold: int = 0.5
+
     # Dimensions
     robot_width: int = 142
     robot_length: int = 223

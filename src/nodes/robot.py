@@ -201,7 +201,7 @@ class Robot(Node):
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
         self.logger.info(f"pitch: {pitch} offset: {offset}")
-        while abs(pitch) > 1 and counter < 20:
+        while abs(pitch) > settings.pitch_threshold and counter < 20:
 
             if pitch < 0:
                 offset = 1
@@ -218,7 +218,7 @@ class Robot(Node):
             roll, pitch, yaw = self.imu.euler
             counter += 1
 
-        if abs(pitch) < 1:
+        if abs(pitch) < settings.pitch_threshold:
             self.logger.info("pitch level succeeded")
         else:
             self.logger.info("pitch level failed")
@@ -238,7 +238,7 @@ class Robot(Node):
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
 
-        while abs(yaw) < 179.5 and counter < 20:
+        while abs(yaw) > settings.yaw_threshold and counter < 20:
             if yaw < 0:
                 offset = 1
             else:
@@ -254,7 +254,7 @@ class Robot(Node):
             roll, pitch, yaw = self.imu.euler
             counter += 1
 
-        if abs(yaw) >= 179.5:
+        if abs(yaw) <= settings.yaw_threshold:
             self.logger.info("yaw leveling succeeded")
         else:
             self.logger.info("yaw leveling failed")
