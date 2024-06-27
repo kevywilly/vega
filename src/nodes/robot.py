@@ -79,6 +79,8 @@ class Robot(Node):
 
         self._start_nodes()
         self._setup_subscriptions()
+        time.sleep(0.2)
+        self.z_level()
 
         self.loaded()
 
@@ -186,6 +188,31 @@ class Robot(Node):
             self.move_to_targets()
             print(p)
             time.sleep(2)
+
+    def z_level(self):
+        roll, pitch, yaw = self.imu.euler
+        offset = 0
+        counter = 0
+
+        self.logger.info(f"******************************************************************\n")
+        self.logger.info(f"*Leveling robot...")
+
+
+        while abs(yaw) < 179.5 and abs(offset) < 50 and counter < 50:
+            if yaw < 0:
+                offset += 1
+            else:
+                offset -= 1
+
+            self.logger.info("yaw: ", yaw, "offset: ", offset)
+
+            settings.position_offsets[:,2] = offset * [1,1,-1,-1]
+            self.controller.move_to(settings.position_ready,10)
+            time.sleep(0.3)
+            _, pitch, _ = self.imu.euler
+            counter += 1
+
+        self.logger.info(f"******************************************************************\n")
 
     def spinner(self):
         if self.walking and self.gait is not None:
