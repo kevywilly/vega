@@ -210,7 +210,7 @@ class Robot(Node):
             self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
             self.controller.move_to(settings.position_ready,10)
             self.get_imu()
-            time.sleep(0.3)
+            time.sleep(0.5)
             roll, pitch, yaw = self.get_imu()
             counter += 1
 
