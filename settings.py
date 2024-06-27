@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import Tuple, Dict, List
 
 import numpy as np
+
 from src.vision.sensors import CameraSensor
 
 """
@@ -16,7 +17,7 @@ from src.vision.sensors import CameraSensor
 # BNO sensor axes remap values.  These are the parameters to the BNO.set_axis_remap
 # function.  Don't change these without consulting section 3.4 of the datasheet.
 # The default axes mapping below assumes the Adafruit BNO055 breakout is flat on
-# a table with the row of SDA, SCL, GND, VIN, etc pins facing away from you.
+# a table with the row of SDA, SCL, GND, VIN, etc. pins facing away from you.
 # BNO_AXIS_REMAP = { 'x': BNO055.AXIS_REMAP_X,
 #                    'y': BNO055.AXIS_REMAP_Y,
 #                    'z': BNO055.AXIS_REMAP_Z,
@@ -111,8 +112,8 @@ class Settings:
     @cached_property
     def position_sit(self) -> np.ndarray:
         ar = self.position_home * 1
-        ar[:,2] *= [0.9,0.9,0.2,0.2]
-        ar[:,0] += [10,10,-30,-30]
+        ar[:, 2] *= [0.9, 0.9, 0.2, 0.2]
+        ar[:, 0] += [10, 10, -30, -30]
         return ar.astype(int)
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 65, "step_size": 15}

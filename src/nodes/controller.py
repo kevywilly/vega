@@ -47,7 +47,7 @@ def _servo_positions_from_angles(angles: np.ndarray):
     adjusted_angles = angles - settings.angles_zero
     return dict(
         zip(
-            config.SERVOS.reshape(-1),
+            settings.servo_ids,
             ((adjusted_angles * settings.flip * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
         )
     )
