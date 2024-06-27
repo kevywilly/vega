@@ -207,6 +207,7 @@ class Robot(Node):
             self.logger.info(f"yaw: {yaw} offset: {offset}")
 
             settings.position_offsets[:,2] = offset * np.array([1,1,-1,-1])
+            self.logger.info(f"offsets: {settings.position_offsets.tolist()}")
             self.controller.move_to(settings.position_ready,10)
             time.sleep(0.3)
             _, pitch, _ = self.imu.euler
