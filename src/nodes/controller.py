@@ -100,7 +100,7 @@ class Controller(Node):
         self._apply_cmd_vel(change.new)
 
     def shutdown(self):
-        self.move_to(settings.position_sit)
+        self.move_to(settings.position_sit,500)
         time.sleep(0.2)
 
         if _sc:
