@@ -190,13 +190,13 @@ class Robot(Node):
             time.sleep(2)
 
     def pitch_level(self):
-
+        starting_offsets = settings.position_offsets * 1
         roll, pitch, yaw = self.get_imu()
         offset = 0
         counter = 0
 
         self.logger.info(f"******************************************************************\n")
-        self.logger.info(f"Leveling robot...")
+        self.logger.info(f"Leveling robot pitch...")
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
 
@@ -217,21 +217,21 @@ class Robot(Node):
             counter += 1
 
         if abs(yaw) >= 179.5:
-            self.logger.info("z_level succeeded")
+            self.logger.info("pitch level succeeded")
         else:
-            self.logger.info("z_level failed")
-            settings.reset_offsets()
+            self.logger.info("pitch level failed")
+            settings.position_offsets = starting_offsets * 1
             self.controller.move_to(settings.position_ready, 500)
         self.logger.info(f"******************************************************************\n")
 
-    def z_level(self):
-
+    def yaw_level(self):
+        starting_offsets = settings.position_offsets * 1
         roll, pitch, yaw = self.get_imu()
         offset = 0
         counter = 0
 
         self.logger.info(f"******************************************************************\n")
-        self.logger.info(f"Leveling robot...")
+        self.logger.info(f"Leveling robot yaw ..")
         self.controller.move_to(settings.position_ready, 10)
         time.sleep(0.2)
 
@@ -252,10 +252,10 @@ class Robot(Node):
             counter += 1
 
         if abs(yaw) >= 179.5:
-            self.logger.info("z_level succeeded")
+            self.logger.info("yaw leveling succeeded")
         else:
-            self.logger.info("z_level failed")
-            settings.reset_offsets()
+            self.logger.info("yaw leveling failed")
+            settings.position_offsets = starting_offsets * 1
             self.controller.move_to(settings.position_ready, 500)
         self.logger.info(f"******************************************************************\n")
 
