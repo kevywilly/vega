@@ -173,11 +173,11 @@ class Robot(Node):
         elif direction == "E" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params)
         elif direction == "E" and jid == 2:
-            self.gait = Trot(**settings.turn_params, turn_pct=0.6)
+            self.gait = Trot(**settings.turn_params, turn_pct=0.7)
         elif direction == "W" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params, reversed=True)
         elif direction == "W" and jid == 2:
-            self.gait = Trot(**settings.turn_params, turn_pct=-0.6)
+            self.gait = Trot(**settings.turn_params, turn_pct=-0.7)
 
         time.sleep(1)
         self.walking_dir = direction
