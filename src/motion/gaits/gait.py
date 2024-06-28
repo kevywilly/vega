@@ -19,7 +19,7 @@ class Gait(ABC):
         steps2 (np.ndarray): Array to store step sequence 2.
     """
 
-    def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15, degrees=0,
+    def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15, turn_pct: float=0.0,
                  reversed=False):
         self.p0 = p0
         self.stride = -stride if reversed else stride
@@ -28,13 +28,14 @@ class Gait(ABC):
         self.num_steps = int(90 / self.step_size)
         self.steps1 = np.zeros(self.num_steps * 2)
         self.steps2 = np.zeros(self.num_steps * 2)
-        self.degrees = -degrees if reversed else degrees
+        self.turn_pct = turn_pct
 
         self.build_steps()
         self.positions = self.p0
         self.index = 0
         self.phase = 0
         self.max_index = self.steps1.shape[0]
+        self.reversed = reversed
 
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:

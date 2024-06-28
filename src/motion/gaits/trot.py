@@ -10,6 +10,27 @@ class Trot(Gait):
     Builds a trot gait step sequence.
     """
 
+    def get_positions(self, phase: int = 0, index: int = 0):
+        positions = super().get_positions(phase, index)
+
+        if self.turn_pct == 0.0:
+            return positions
+
+        if self.turn_pct < 0:
+            return positions * np.ndarray[
+                [1-self.turn_pct,1,1],
+                [1+self.turn_pct,1,1],
+                [1+self.turn_pct,1,1],
+                [1-self.turn_pct,1,1]
+            ]
+        else:
+            return positions * np.ndarray[
+                [1+self.turn_pct, 1, 1],
+                [1-self.turn_pct, 1, 1],
+                [1+self.turn_pct, 1, 1],
+                [1-self.turn_pct, 1, 1]
+            ]
+
     def build_steps(self):
         """
         Build the step sequences for the trot gait.
