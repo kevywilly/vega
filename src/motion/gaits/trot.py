@@ -17,19 +17,19 @@ class Trot(Gait):
             return positions
 
         if self.turn_pct < 0:
-            return positions * np.ndarray[
+            return positions * np.array([
                 [1-self.turn_pct,1,1],
                 [1+self.turn_pct,1,1],
                 [1+self.turn_pct,1,1],
                 [1-self.turn_pct,1,1]
-            ]
+            ])
         else:
-            return positions * np.ndarray[
+            return positions * np.array([
                 [1+self.turn_pct, 1, 1],
                 [1-self.turn_pct, 1, 1],
                 [1+self.turn_pct, 1, 1],
                 [1-self.turn_pct, 1, 1]
-            ]
+            ])
 
     def build_steps(self):
         """
