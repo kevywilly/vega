@@ -126,7 +126,7 @@ class Settings:
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 65, "step_size": 15}
     sidestep_params: Dict[str, int] = {"stride": 25, "clearance": 30, "step_size": 15}
-    turn_params: Dict[str, int] = {"degrees": 20, "clearance": 60, "step_size": 10}
+    turn_params: Dict[str, int] = {"stride": 40, "clearance": 65, "step_size": 15}
 
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):
         if group is None:
