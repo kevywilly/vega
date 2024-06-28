@@ -157,7 +157,7 @@ $(function () {
         post(`/api/pose/ready`, null);
     })
     $("#btnLevel").on("click", () => {
-        post("/api/level", null, displayOffsets)
+        post("/api/level")
     });
     setInterval(getStats, 500);
 });
