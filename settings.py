@@ -5,6 +5,7 @@ from typing import Tuple, Dict, List, Optional
 
 import numpy as np
 
+from src.model.tilt import Tilt
 from src.vision.sensors import CameraSensor
 
 """
@@ -142,5 +143,6 @@ class Settings:
 
     auto_level: bool = True
 
+    tilt: Tilt = Tilt(yaw=12)
 
 settings = Settings()

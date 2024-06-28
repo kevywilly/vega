@@ -107,6 +107,18 @@ def _set_pose(value: str):
     return {"status": "ok"}
 
 
+@app.post('/api/tilt/<type>/<degrees>')
+def _set_tilt(type: str, degrees: int):
+    if type == "yaw":
+        settings.tilt.yaw = int(degrees)
+    elif type == "pitch":
+        settings.tilt.pitch = int(degrees)
+
+    return settings.tilt.json()
+
+@app.get('/api/tilt')
+def _get_tilt():
+    return settings.tilt.json()
 
 @app.post('/api/targets')
 def _set_targets():

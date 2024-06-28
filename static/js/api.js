@@ -46,7 +46,6 @@ const displayOffsets = (data) => {
 }
 
 
-
 const post = (url, data, callback = null) => {
     payload = JSON.stringify(data);
     $.ajax({
@@ -69,27 +68,27 @@ const get = (url, callback = null) => {
 }
 
 const getTargets = () => {
-    get('/api/targets', function (data){
+    get('/api/targets', function (data) {
         dispayTargets(data)
     })
 }
 
 
 const setTargets = (pose) => {
-    post('/api/targets',  pose,function (data){
+    post('/api/targets', pose, function (data) {
         dispayTargets(data);
     })
 }
 
 const getOffsets = () => {
-    get('/api/offsets', function (data){
+    get('/api/offsets', function (data) {
         displayOffsets(data)
     })
 }
 
 
 const setOffsets = (offsets = p0) => {
-    post('/api/offsets',  offsets,function (data){
+    post('/api/offsets', offsets, function (data) {
         displayOffsets(data);
     })
 }
@@ -108,6 +107,37 @@ const postJoyData = (data) => {
     }
 }
 
+const handleUpdateTilt = (name, value) => {
+    post(`/api/tilt/${name}/${value}`, null)
+}
+
+const PitchSlider = new Slider(
+    "pitchSlider",
+    {
+        min: -50,
+        max: 50,
+        step: 5,
+        value: 0,
+        title: "Pitch",
+        name: "pitch",
+        vertical: true,
+        onChange: (v) => handleUpdateTilt("pitch", v)
+    }
+);
+
+const YawSlider = new Slider(
+    "yawSlider",
+    {
+        min: -50,
+        max: 50,
+        step: 5,
+        value: 0,
+        title: "Yaw",
+        name: "yaw",
+        vertical: true,
+        onChange: (v) => handleUpdateTilt("yaw", v)
+    }
+);
 
 // Create JoyStick object into the DIV 'joy1Div'
 const Joy1 = new JoyStick('joy1Div', {}, function (stickData) {
@@ -184,17 +214,47 @@ const resetTargets = () => {
     setTargets([])
 }
 
-setInterval(getStats, 500);
+const getTilt = () => {
+    get("/api/tilt", (data) => {
+        PitchSlider.setValue(data.pitch)
+        YawSlider.setValue(data.yaw)
+    })
+}
+const sliderHandler = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
 
-$(function() {
+    if (name === "pitch") {
+        $("#pitchValue").text(e.target.value);
+    } else if (name === "yaw") {
+        $("#yawValue").text(e.target.value);
+    }
+    post(`/api/tilt/${name.toLowerCase()}/${value}`)
+}
+
+$(function () {
+    $("#btnUpdateOffsets").on("click", updateOffsets);
+    $("#btnResetOffsets").on("click", resetOffsets);
+    $("#btnUpdateTargets").on("click", updatePose);
+    $("#btnResetTargets").on("click", resetTargets);
+    $("#btnDemo").on("click", () => {
+        get("/api/demo");
+    })
+    $("#btnSit").on("click", () => {
+        post(`/api/pose/sit`, null);
+    })
+    $("#btnCrouch").on("click", () => {
+        post(`/api/pose/crouch`, null);
+    })
+    $("#btnReady").on("click", () => {
+        post(`/api/pose/ready`, null);
+    })
+    $("#btnLevel").on("click", () => {
+        post("/api/level", null, displayOffsets)
+    });
+
     getOffsets();
-    $( "#btnUpdateOffsets" ).on( "click", updateOffsets );
-    $( "#btnResetOffsets" ).on( "click", resetOffsets );
-    $( "#btnUpdateTargets" ).on( "click", updatePose );
-    $( "#btnResetTargets" ).on( "click", resetTargets );
-    $( "#btnDemo").on("click", () => {get("/api/demo");})
-    $( "#btnSit").on("click", () => {post(`/api/pose/sit`, null);})
-    $( "#btnCrouch").on("click", () => {post(`/api/pose/crouch`, null);})
-    $( "#btnReady").on("click", () => {post(`/api/pose/ready`, null);})
-    $( "#btnLevel" ).on( "click", () => {post("/api/level", null, displayOffsets)} );
+    getTilt();
 });
+
+// setInterval(getStats, 500);

@@ -108,17 +108,24 @@
         </div>
 
         <!--- Demo Button --->
-        <hr></hr>
+
+        <hr>
+        <div class="flex flex-row w-full justify-between">
+            <div id="pitchSlider" class="slider-vertical"></div>
+            <div id="yawSlider" class="slider-vertical"></div>
+            <button class="button-blue text-sm" id="btnLevel">-Auto Level-</button>
+
+
+        </div>
+        <hr>
         <div class="flex flex-row w-full justify-between">
             <button class="button-blue bg-green-600 text-sm" id="btnSit">Sit</button>
             <button class="button-blue bg-green-600 text-sm" id="btnCrouch">Crouch</button>
             <button class="button-blue bg-green-600 text-sm" id="btnReady">Ready</button>
             <button class="button-blue bg-green-600 text-sm" id="btnDemo">Demo</button>
         </div>
-        <hr></hr>
-        <div class="flex flex-row w-full justify-between">
-            <button class="button-blue text-base" id="btnLevel">--- Level ---</button>
-        </div>
+
+
     </div>
 </div>
 <script type="javascript">
@@ -130,5 +137,6 @@
         src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
         crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='js/slider.js')}}"></script>
 <script src="{{url_for('static', filename='js/joy2.js')}}"></script>
 <script src="{{url_for('static', filename='js/api.js')}}"></script>

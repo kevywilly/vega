@@ -47,4 +47,12 @@
     .data-table {
         @apply table w-full text-sm [&_td]:data-table-td [&_th]:data-table-th [&_input]:data-table-input
     }
+
+    .slider {
+        @apply flex flex-row gap-x-2 items-end [&>span]:text-sm [&>input]:flex-grow
+    }
+
+    .slider-vertical {
+        @apply slider flex-col
+    }
 }
