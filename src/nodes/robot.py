@@ -190,13 +190,16 @@ class Robot(Node):
 
     def auto_level(self):
         if settings.auto_level:
-            for i in range(3):
+            for i in range(4):
                 self.logger.info(f"*** Leveling pass {i} ***")
                 if self.level():
                     break
 
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
+
+        self.controller.move_to(settings.position_ready, 400)
+
         starting_offsets = settings.position_offsets * 1
 
         pitch_array = np.array([1, -1, -1, 1]).astype(int)
@@ -219,7 +222,7 @@ class Robot(Node):
             settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
             self.logger.info(f"setting offset => {settings.position_offsets.flatten().tolist()}")
             self.controller.move_to(settings.position_ready, 10)
-            time.sleep(0.2)
+            time.sleep(0.3)
 
             roll, pitch, yaw = self.imu.euler
 
