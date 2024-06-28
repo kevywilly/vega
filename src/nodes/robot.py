@@ -134,6 +134,7 @@ class Robot(Node):
         self.joy_id = 0
         time.sleep(0.1)
         self.controller.move_to(settings.position_ready)
+        self.auto_level()
         time.sleep(0.1)
 
     def process_joy(self, data: Dict):
