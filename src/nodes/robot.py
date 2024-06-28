@@ -160,18 +160,24 @@ class Robot(Node):
             return response()
 
         if direction == 'N':
-            self.gait = Trot(p0=settings.position_ready + settings.position_forward_offsets, **settings.trot_params)
+            self.gait = Trot(
+                p0=settings.position_ready + settings.position_forward_offsets,
+                **settings.trot_params
+            )
         elif direction == "S":
-            self.gait = Trot(p0=settings.position_ready + settings.position_backward_offsets, **settings.trot_params,
-                              reversed=True)
+            self.gait = Trot(
+                p0=settings.position_ready + settings.position_backward_offsets,
+                **settings.trot_params,
+                reversed=True
+            )
         elif direction == "E" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params)
         elif direction == "E" and jid == 2:
-            self.gait = Trot(**settings.turn_params, turn_pct=0.8)
+            self.gait = Trot(**settings.turn_params, turn_pct=0.6)
         elif direction == "W" and jid == 1:
             self.gait = Sidestep(**settings.sidestep_params, reversed=True)
         elif direction == "W" and jid == 2:
-            self.gait = Trot(**settings.turn_params, turn_pct=-0.8)
+            self.gait = Trot(**settings.turn_params, turn_pct=-0.6)
 
         time.sleep(1)
         self.walking_dir = direction
