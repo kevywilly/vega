@@ -158,6 +158,11 @@ class Robot(Node):
             self.gait = Sidestep(**settings.sidestep_params)
         elif move_type == MoveTypes.STOP:
             self.stop()
+            return {
+                "moving": self.moving,
+                "move_type": self.move_type,
+                "gait": None,
+            }
 
         self.move_type = move_type
 
@@ -166,8 +171,7 @@ class Robot(Node):
             
         return {
             "moving": self.moving,
-            "move_type": self.move_type,
-            "gait": self.gait.__class__.__name__ if self.gait else None,
+            "move_type": self.move_type
         }
 
     def demo(self):

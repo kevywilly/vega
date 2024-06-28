@@ -79,7 +79,7 @@ def stream():
 
 
 @app.get('/api/stats')
-async def stats():
+def stats():
     return get_stats()
 
 
