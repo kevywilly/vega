@@ -220,17 +220,18 @@ class Robot(Node):
                 yaw_offset = zeros
 
             settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
-            self.logger.info(f"setting offset => {settings.position_offsets.flatten().tolist()}")
+            self.logger.info(f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}")
             self.controller.move_to(settings.position_ready, 10)
+
             time.sleep(0.3)
 
             roll, pitch, yaw = self.imu.euler
 
             if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
-                self.logger.info("leveling succeeded...")
+                self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
                 return True
 
-        self.logger.info("leveling failed...")
+        self.logger.info(f"leveling failed...pitch...{pitch} yaw...{yaw}")
         return False
 
     def spinner(self):

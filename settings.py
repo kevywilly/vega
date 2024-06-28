@@ -73,8 +73,8 @@ class Settings:
     imu_gyro_offsets = (0, -1, 0)
     imu_accel_offsets = (-40, 42, -18)
 
-    yaw_threshold: int = 0.5
-    pitch_threshold: int = 0.5
+    yaw_threshold: float = 0.5
+    pitch_threshold: float = 0.5
 
     # Dimensions
     robot_width: int = 142
@@ -143,6 +143,7 @@ class Settings:
 
     auto_level: bool = True
 
-    tilt: Tilt = Tilt(yaw=12)
+    tilt: Tilt = Tilt()
+
 
 settings = Settings()
