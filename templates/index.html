@@ -12,9 +12,8 @@
 <div class="flex flex-row gap-2 pt-2">
     <div class="flex flex-col items-center w-1/2 p-2 rounded-md bg-black text-white">
         <img src="api/stream" class="aspect-video">
-        <div class="flex flex-row justify-around gap-32">
-            <div id="joy1Div" style="width:200px;height:200px;"></div>
-            <div id="joy2Div" style="width:200px;height:200px;"></div>
+        <div class="grid grid-cols-3 gap-6 my-4" id="controlPanel">
+
         </div>
         <div class="flex flex-row gap-2 justify-between">
             <div>Heading:</div>
@@ -90,5 +89,5 @@
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
         crossorigin="anonymous"></script>
 <script src="{{url_for('static', filename='js/slider.js')}}"></script>
-<script src="{{url_for('static', filename='js/joy2.js')}}"></script>
+<script src="{{url_for('static', filename='js/control.js')}}"></script>
 <script src="{{url_for('static', filename='js/vega.js')}}"></script>

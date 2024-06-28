@@ -2,13 +2,14 @@
 
 import logging
 import os
-from datetime import time
+import time
 
 import numpy as np
 from flask import Flask, Response, request, render_template
 from flask_cors import CORS
 
 from settings import settings
+from src.model.types import MoveTypes
 from src.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -67,11 +68,9 @@ def _target():
     return data
 
 
-@app.post('/api/joy')
-def _joy():
-    data = request.get_json()
-
-    return app.robot.process_joy(data)
+@app.post('/api/move/<move_type>')
+def _move(move_type: MoveTypes):
+    return app.robot.process_move(move_type)
 
 
 @app.get('/api/stream')
@@ -80,7 +79,7 @@ def stream():
 
 
 @app.get('/api/stats')
-def stats():
+async def stats():
     return get_stats()
 
 
