@@ -4,10 +4,12 @@ import numpy as np
 
 
 class Kinematics:
-    def __init__(self, coxa, femur, tibia):
+    def __init__(self, coxa, femur, tibia, width, length):
         self.coxa = coxa
         self.femur = femur
         self.tibia = tibia
+        self.width = width
+        self.length = length
 
     def ik(self, pos: np.ndarray) -> np.ndarray:
         """ https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/ """
@@ -40,3 +42,14 @@ class Kinematics:
         z = self.femur * np.sin(theta1) + self.tibia * np.sin(theta1 + theta2)
         # h = np.sqrt(x**2 + z**2)
         return np.array([x, 0, z])
+
+    def tilt(self, positions: np.ndarray, pitch: float, yaw: float) -> np.ndarray:
+        # positive yaw = nose up
+        # positive pitch = clockwise
+        zx = self.length * np.sin(np.radians(yaw))/2
+        zy = self.width * np.sin(np.radians(pitch))/2
+
+        p = positions * 1
+        p[:,2] += zx * np.array([1,1,-1,-1]) + zy * np.array([1,-1,-1,1])
+        return p.astype(int)
+

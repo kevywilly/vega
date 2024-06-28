@@ -15,7 +15,7 @@ from src.nodes.node import Node
 
 logger = logging.getLogger('VEGA')
 
-_km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_length)
+_km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_length, settings.robot_width, settings.robot_length)
 
 try:
     _sc = ServoController(serial.Serial(settings.serial_port))
