@@ -119,8 +119,8 @@ class Settings:
     @cached_property
     def position_sit(self) -> np.ndarray:
         ar = self.position_home * 1
-        ar[:, 2] *= [0.9, 0.9, 0.2, 0.2]
-        ar[:, 0] += [10, 10, -30, -30]
+        ar[:, 2] *= [0.8, 0.8, 0.2, 0.2]
+        ar[:, 0] += [10, 10, -25, -35]
         return ar.astype(int)
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 65, "step_size": 15}
