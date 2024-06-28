@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}">
 </head>
 <body>
-<div class="flex flex-row gap-2">
+<div class="flex flex-row gap-2 pt-2">
     <div class="flex flex-col items-center w-1/2 p-2 rounded-md bg-black text-white">
-        <img src="api/stream" class="aspect-video w-full">
+        <img src="api/stream" class="aspect-video">
         <div class="flex flex-row justify-around gap-32">
             <div id="joy1Div" style="width:200px;height:200px;"></div>
             <div id="joy2Div" style="width:200px;height:200px;"></div>
@@ -27,105 +27,57 @@
             <div id="displayVoltage"></div>
         </div>
     </div>
-    <div class="flex flex-col w-1/2 p-2 rounded-md gap-4">
-        <!--- Position Offsets --->
-        <div>
-            <h1 class="section-header">Position Offsets</h1>
-            <table class="data-table">
-                <thead>
-                <tr>
-                    <th>X</th>
-                    <th>Y</th>
-                    <th>Z</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><input name="l0_x" type="number" value=0></td>
-                    <td><input name="l0_y" type="number" value=0></td>
-                    <td><input name="l0_z" type="number" value=0></td>
-                </tr>
-                <tr>
-                    <td><input name="l1_x" type="number" value=0></td>
-                    <td><input name="l1_y" type="number" value=0></td>
-                    <td><input name="l1_z" type="number" value=0></td>
-                </tr>
-                <tr>
-                    <td><input name="l2_x" type="number" value=0></td>
-                    <td><input name="l2_y" type="number" value=0></td>
-                    <td class="td-data"><input name="l2_z" type="number" value=0></td>
-                </tr>
-                <tr>
-                    <td><input name="l3_x" type="number" value=0></td>
-                    <td><input name="l3_y" type="number" value=0></td>
-                    <td><input name="l3_z" type="number" value=0></td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="flex flex-row justify-around gap-2 mt-1">
-                <button class="button-blue" id="btnUpdateOffsets">Update</button>
-                <button class="button-red" id="btnResetOffsets">Reset</button>
+    <div class="flex flex-col p-4 text-xs border rounded-md">
+        <div id="heightSlider" class="slider-vertical"></div>
+        <div id="yawSlider" class="slider-vertical"></div>
+        <div id="pitchSlider" class="slider-vertical"></div>
+    </div>
+    <div class="flex flex-col p-2 rounded-md gap-4 border rounded-md flex-grow">
+        <div class="grid grid-cols-4 gap-4">
+            <button class="button-blue bg-green-600 text-sm w-full" id="btnSit">Sit</button>
+            <button class="button-blue bg-green-600 text-sm  w-full" id="btnCrouch">Crouch</button>
+            <button class="button-blue bg-green-600 text-sm  w-full" id="btnReady">Ready</button>
+            <button class="button-blue bg-green-600 text-sm  w-full" id="btnDemo">Demo</button>
+        </div>
+        <hr>
+        <!--- Position --->
+        <div class="w-full">
+            <h1 class="section-header">Position</h1>
+            <div class="data-grid-4 font-bold">
+                <div></div>
+                <div>X</div>
+                <div>Y</div>
+                <div>Z</div>
+            </div>
+            <div class="data-grid-4" id="positions">
             </div>
         </div>
-        <!--- Angles --->
-        <div>
+        <div class="w-full">
             <h1 class="section-header">Angles</h1>
-            <table class="data-table">
-                <thead>
-                <tr>
-                    <th class="px-2 py-2">Coxa</th>
-                    <th class="px-2 py-2">Femur</th>
-                    <th class="px-2 py-2">Tibia</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><input name="pose_x0" type="number" value=0></td>
-                    <td><input name="pose_y0" type="number" value=0></td>
-                    <td><input name="pose_z0" type="number" value=0></td>
-                </tr>
-                <tr>
-                    <td><input name="pose_x1" type="number" value=0></td>
-                    <td><input name="pose_y1" type="number" value=0></td>
-                    <td><input name="pose_z1" type="number" value=0></td>
-                </tr>
-                <tr>
-                    <td><input name="pose_x2" type="number" value=0></td>
-                    <td><input name="pose_y2" type="number" value=0></td>
-                    <td><input name="pose_z2" type="number" value=0></td>
-                </tr>
-                <tr>
-                    <td><input name="pose_x3" type="number" value=0></td>
-                    <td><input name="pose_y3" type="number" value=0></td>
-                    <td><input name="pose_z3" type="number" value=0></td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="flex flex-row justify-around gap-2 mt-2">
-                <button class="button-blue" id="btnUpdateTargets">Update</button>
-                <button class="button-red" id="btnResetTargets">Reset</button>
+            <div class="data-grid-4 font-bold">
+                <div></div>
+                <div>X</div>
+                <div>Y</div>
+                <div>Z</div>
+            </div>
+            <div class="data-grid-4" id="angles">
             </div>
         </div>
-
-        <!--- Demo Button --->
-
-        <hr>
-        <div class="flex flex-row w-full justify-between">
-            <div id="pitchSlider" class="slider-vertical"></div>
-            <div id="yawSlider" class="slider-vertical"></div>
-            <button class="button-blue text-sm" id="btnLevel">-Auto Level-</button>
-
-
+        <div class="w-full">
+            <h1 class="section-header">Offsets</h1>
+            <div class="data-grid-4 font-bold">
+                <div></div>
+                <div>X</div>
+                <div>Y</div>
+                <div>Z</div>
+            </div>
+            <div class="data-grid-4" id="offsets">
+            </div>
         </div>
         <hr>
-        <div class="flex flex-row w-full justify-between">
-            <button class="button-blue bg-green-600 text-sm" id="btnSit">Sit</button>
-            <button class="button-blue bg-green-600 text-sm" id="btnCrouch">Crouch</button>
-            <button class="button-blue bg-green-600 text-sm" id="btnReady">Ready</button>
-            <button class="button-blue bg-green-600 text-sm" id="btnDemo">Demo</button>
+        <div class="flex flex-row w-full justify-around">
+            <button class="button-blue text-sm" id="btnLevel">Auto Level</button>
         </div>
-
-
     </div>
 </div>
 <script type="javascript">
@@ -139,4 +91,4 @@
         crossorigin="anonymous"></script>
 <script src="{{url_for('static', filename='js/slider.js')}}"></script>
 <script src="{{url_for('static', filename='js/joy2.js')}}"></script>
-<script src="{{url_for('static', filename='js/api.js')}}"></script>
+<script src="{{url_for('static', filename='js/vega.js')}}"></script>

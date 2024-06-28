@@ -6,7 +6,7 @@
 @layer components {
 
     .section-header {
-        @apply prose-lg text-center bg-blue-400  font-semibold
+        @apply prose-sm text-center bg-blue-400  font-semibold
     }
     .button {
         @apply px-2 py-1 rounded-md text-center font-semibold
@@ -32,27 +32,15 @@
         @apply  w-[50px] border rounded-md w-full text-center
     }
 
-    .data-table-td {
-        @apply px-2 py-1 text-center border
-    }
-
-    .data-table-th {
-        @apply data-table-td font-semibold
-    }
-
-    .data-table-input {
-        @apply border px-2 py-1 text-center
-    }
-
-    .data-table {
-        @apply table w-full text-sm [&_td]:data-table-td [&_th]:data-table-th [&_input]:data-table-input
+    .data-grid-4 {
+        @apply grid grid-cols-4 border rounded-md text-xs [&>div]:text-center
     }
 
     .slider {
-        @apply flex flex-row gap-x-2 items-end [&>span]:text-sm [&>input]:flex-grow
+        @apply flex flex-row gap-x-2 items-end [&>span]:text-xs [&>span]:font-semibold [&>input]:flex-grow p-2
     }
 
     .slider-vertical {
-        @apply slider flex-col
+        @apply slider flex-col items-center
     }
 }

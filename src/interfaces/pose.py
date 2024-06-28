@@ -62,6 +62,18 @@ class Pose:
             return np.zeros((4, 3))
 
     @property
+    def angles_in_degrees(self):
+        return np.degrees(self.angles).astype(int)
+
+    @property
+    def height(self):
+        return np.average(self.positions[:,2])
+
+    @property
+    def height_pct(self):
+        return int(100*np.average(self.positions[:, 2])/settings.robot_max_height)
+
+    @property
     def json(self) -> Dict:
         return {
             "positions": self.positions.tolist(),

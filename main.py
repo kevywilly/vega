@@ -27,14 +27,21 @@ CORS(app, resource={
 
 
 def get_stats():
+
     heading, pitch, yaw = app.robot.imu.euler
     voltage = app.robot.controller.voltage()
+    pose = app.robot.controller.pose
     return {
         "heading": heading,
         "pitch": pitch,
         "yaw": yaw,
         "voltage": voltage,
-        "pose": app.robot.pose_status.pose.json
+        "angles": pose.angles_in_degrees.tolist(),
+        "positions": pose.positions.astype(int).tolist(),
+        "offsets": settings.position_offsets.astype(int).tolist(),
+        "tilt": settings.tilt.json(),
+        "height": pose.height,
+        "height_pct": app.robot.controller.pose.height_pct,
     }
 
 

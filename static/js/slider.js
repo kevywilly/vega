@@ -1,4 +1,3 @@
-
 const SliderParams = {
     min: 0,
     max: 100,
@@ -7,10 +6,11 @@ const SliderParams = {
     step: 1,
     name: "",
     vertical: true,
-    onChange: (value) => {}
+    onChange: (value) => {
+    }
 }
 
-var Slider = (function (id, parameters={}) {
+var Slider = (function (id, parameters = {}) {
 
     const {
         min,
@@ -39,9 +39,10 @@ var Slider = (function (id, parameters={}) {
     rangeElem.step = step;
     rangeElem.name = name || `${id}Range`;
 
-    if(vertical) {
+    if (vertical) {
         rangeElem.style.writingMode = 'vertical-lr';
         rangeElem.style.direction = "rtl";
+
     }
 
     valueElem.innerText = defaultValue;
@@ -49,6 +50,7 @@ var Slider = (function (id, parameters={}) {
     sliderElem.appendChild(titleElem);
     sliderElem.appendChild(rangeElem);
     sliderElem.appendChild(valueElem);
+
 
     this.setValue = function (newValue) {
         rangeElem.value = newValue;
@@ -65,7 +67,6 @@ var Slider = (function (id, parameters={}) {
         this.setValue(defaultValue)
         onChange(defaultValue);
     }
-
 
 
 });
