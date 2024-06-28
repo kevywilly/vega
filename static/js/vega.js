@@ -141,6 +141,6 @@ $(function () {
     $("#btnLevel").on("click", () => {
         post("/api/level")
     });
-    setInterval(getStats, 1000);
+    //setInterval(getStats, 1000);
 });
 
