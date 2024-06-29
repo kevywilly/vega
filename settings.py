@@ -52,7 +52,7 @@ class Settings:
         return self.servos.reshape(-1)
 
     #flip_v10: np.ndarray = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
-    flip: np.ndarray = np.array([[-1, -1, -1], [-1, 1, 1], [-1, 1, 1], [-1, -1, -1]])
+    flip: np.ndarray = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
 
     default_sensor_mode: CameraSensor = CameraSensor.MODE1640x1232X29
 
@@ -96,7 +96,7 @@ class Settings:
 
     default_position_offsets: np.ndarray = np.zeros((4, 3)).astype(int)
     position_offsets: np.ndarray = np.zeros((4, 3)).astype(int)
-
+    position_offsets[0][0]=20
     position_ready_height_pct: float = 0.65
     position_forward_offsets: np.ndarray = np.array([
         [-10, 0, 0]
