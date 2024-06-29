@@ -127,9 +127,10 @@ class Robot(Node):
     def stop(self):
         self.moving = False
         self.move_type = MoveTypes.STOP
-        time.sleep(0.2)
-        self.level()
-        time.sleep(0.2)
+        self.ready()
+        # time.sleep(0.2)
+        # self.level()
+        # time.sleep(0.2)
         return {
                 "moving": self.moving,
                 "move_type": self.move_type
@@ -192,7 +193,7 @@ class Robot(Node):
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
         try:
-            self.controller.move_to(settings.position_ready, 200)
+            self.ready(200)
             time.sleep(0.2)
             pitch_array = np.array([1, -1, -1, 1]).astype(int)
             yaw_array = np.array([-1, -1, 1, 1]).astype(int)
@@ -214,7 +215,7 @@ class Robot(Node):
                 settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
                 self.logger.info(
                     f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}")
-                self.controller.move_to(settings.position_ready, 10)
+                self.ready(10)
 
                 time.sleep(0.3)
 
@@ -224,11 +225,14 @@ class Robot(Node):
                     self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
                     return True
         except Exception as ex:
-            self.controller.move_to(settings.position_ready, 200)
+            self.ready(200)
             self.logger.error(ex)
 
         self.logger.info(f"leveling failed...pitch...{pitch} yaw...{yaw}")
         return False
+
+    def ready(self, millis=200):
+        self.controller.move_to(settings.position_ready, millis)
 
     def spinner(self):
         if self.moving and self.gait is not None:
