@@ -163,7 +163,6 @@ class Robot(Node):
         elif move_type == MoveTypes.STOP:
             return self.stop()
 
-
         self.move_type = move_type
 
         if self.move_type != MoveTypes.STOP:
@@ -200,7 +199,7 @@ class Robot(Node):
             zeros = np.zeros((4))
             roll, pitch, yaw = self.imu.euler
 
-            for i in range(20):
+            for i in range(10):
 
                 if abs(pitch) > settings.pitch_threshold:
                     pitch_offset = pitch_array if pitch >= 0 else -pitch_array
@@ -229,6 +228,8 @@ class Robot(Node):
             self.logger.error(ex)
 
         self.logger.info(f"leveling failed...pitch...{pitch} yaw...{yaw}")
+        settings.reset_offsets()
+        self.ready(200)
         return False
 
     def ready(self, millis=200):
