@@ -143,7 +143,7 @@ class Settings:
     def reset_offsets(self):
         self.position_offsets = self.default_position_offsets
 
-    auto_level: bool = False
+    auto_level: bool = True
 
     tilt: Tilt = Tilt()
 
