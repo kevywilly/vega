@@ -69,19 +69,20 @@ class Gait(ABC):
         if self.turn_pct == 0.0:
             return pos
 
+        # LEFT
         if self.turn_pct < 0:
-            return pos * np.array([
-                [1-self.turn_pct,1,1],
+            return np.roll(pos, 1, 0) * np.array([
                 [1,1,1],
+                [1 - self.turn_pct, 1, 1],
+                [1 - self.turn_pct, 1, 1],
                 [1,1,1],
-                [1-self.turn_pct,1,1]
             ])
         else:
-            return np.roll(pos, 1, 0) * np.array([
+            return pos * np.array([
+                [1 - self.turn_pct, 1, 1],
                 [1, 1, 1],
-                [1-self.turn_pct,1,1],
-                [1-self.turn_pct,1,1],
-                [1, 1, 1]
+                [1, 1, 1],
+                [1 - self.turn_pct, 1, 1],
             ])
 
     def step_generator(self):
