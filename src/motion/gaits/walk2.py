@@ -4,23 +4,24 @@ from settings import settings
 from src.motion.gaits.gait import Gait, Gait2
 
 
-class Walk(Gait2):
+class Walk2(Gait2):
 
     def build_steps(self):
         x = np.hstack([
             np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
             np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.cos(np.radians(np.linspace(90, 90+45, self.num_steps * 2))),
+            np.cos(np.radians(np.linspace(90, 90+45, self.num_steps*3))),
         ]) * self.stride
 
-        y = np.zeros(self.num_steps * 4)
+        y = np.zeros(self.num_steps * 5)
 
         z = np.hstack([
             np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-            np.zeros(self.num_steps*3)
+            np.zeros(self.num_steps*4)
         ]) * (-self.clearance)
+        ar = np.array([x,y,z])
 
-        steps = Gait.reshape_steps(np.array([x,y,z]), self.num_steps * 4)
+        steps = Gait.reshape_steps(np.array([x,y,z]), x.size)
         self.steps4 = steps
         self.steps2 = np.roll(steps, self.num_steps, axis=0)
         self.steps3 = np.roll(steps, self.num_steps*2, axis=0)
@@ -33,7 +34,7 @@ class Walk(Gait2):
 
 if __name__ == "__main__":
 
-    gait = Walk(
+    gait = Walk2(
         p0=settings.position_ready,
         stride=50,
         clearance=50,

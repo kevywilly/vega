@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from settings import settings
@@ -31,6 +32,8 @@ class Gait(ABC):
         self.num_steps = int(90 / self.step_size)
         self.steps1 = np.zeros(self.num_steps * 2)
         self.steps2 = np.zeros(self.num_steps * 2)
+        self.steps3 = None
+        self.steps4 = None
         self.turn_pct = turn_pct
         self.is_reversed = is_reversed
 
@@ -39,7 +42,6 @@ class Gait(ABC):
         self.index = 0
         self.phase = 0
         self.max_index = self.steps1.shape[0]
-
 
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:
@@ -62,8 +64,11 @@ class Gait(ABC):
         """
         pass
 
+    def get_offsets(self, index):
+        return np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+
     def get_positions(self, phase: int = 0, index: int = 0):
-        offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+        offsets = self.get_offsets()
 
         def get_pos():
             if phase == 0:
@@ -112,3 +117,44 @@ class Gait(ABC):
         else:
             self.index = index
         return self.positions
+
+    def plotit(self):
+        print("leg 1")
+        plt.plot(self.steps1, label=["s1_x", "s1_y", "s1_z"])
+        plt.legend()
+        plt.show()
+
+        print("leg 2")
+        plt.plot(self.steps2, label=["s2_x", "s2_y", "s2_z"])
+        plt.legend()
+        plt.show()
+
+        if self.steps3 is not None:
+            print("leg 3")
+            plt.plot(self.steps3, label=["s3_x", "s3_y", "s3_z"])
+            plt.legend()
+            plt.show()
+
+        if self.steps4 is not None:
+            print("leg 4")
+            plt.plot(self.steps4, label=["s4_x", "s4_y", "s4_z"])
+            plt.legend()
+            plt.show()
+
+
+class Gait2(Gait):
+    def get_positions(self, phase: int = 0, index: int = 0):
+        return self.p0 + np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+
+    def step_generator(self, reverse=False):
+        """
+        Generator to yield the step positions.
+
+        Args:
+            reverse (bool): Flag to indicate reverse stepping.
+
+        Yields:
+            np.ndarray: Step positions.
+        """
+        for i in range(self.steps1.shape[0]):
+            yield self.p0 + np.array([self.steps1[i], self.steps2[i], self.steps1[i], self.steps2[i]])
