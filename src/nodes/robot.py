@@ -149,7 +149,7 @@ class Robot(Node):
         elif move_type == MoveTypes.FORWARD_RT:
             self.gait = Trot(**settings.turn_params, turn_pct=-0.7)
         elif move_type == MoveTypes.BACKWARD:
-            self.gait = Trot2(
+            self.gait = Trot(
                 p0=settings.position_ready + settings.position_backward_offsets,
                 **settings.trot_reverse_params
             )
