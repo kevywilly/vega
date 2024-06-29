@@ -28,7 +28,7 @@ class Gait(ABC):
         self.num_steps = int(90 / self.step_size)
         self.steps1 = np.zeros(self.num_steps * 2)
         self.steps2 = np.zeros(self.num_steps * 2)
-        self.turn_pct = turn_pct
+        self.turn_pct = -turn_pct
 
         self.build_steps()
         self.positions = self.p0
