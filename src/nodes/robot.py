@@ -223,6 +223,7 @@ class Robot(Node):
                 if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
                     self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
                     return True
+
         except Exception as ex:
             self.ready(200)
             self.logger.error(ex)
