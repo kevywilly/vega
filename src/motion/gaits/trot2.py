@@ -54,12 +54,11 @@ class Trot2(Gait):
     def get_positions(self, phase: int = 0, index: int = 0):
 
         pos = self.p0 + np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
-        turn_factor = 1.0 - self.turn_pct
-
-        if self.turn_pct > 0.0:
-            pos[:,0] *= [1.0,turn_factor,turn_factor,1.0]
-        elif self.turn_pct < 0.0:
-            pos[:, 0] *= [turn_factor, 1.0, 1.0, turn_factor]
+        if self.turn_pct:
+            if self.turn_pct > 0:
+                pos[:,0] *= [-1,1,-1,1]
+            else:
+                pos[:,0] *= [1,-1,1,-1]
 
         return pos
 
