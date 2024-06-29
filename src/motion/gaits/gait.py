@@ -82,9 +82,9 @@ class Gait(ABC):
 
         # LEFT
         if self.turn_pct > 0.0:
-            pos[:, 0] *= [tf2, tf1, tf1, tf2]
+            pos[:, 0] *= [1.0, tf1, tf1, 1.0]
         elif self.turn_pct < 0.0:
-            pos[:, 0] *= [tf1, tf2, tf2, tf1]
+            pos[:, 0] *= [tf1, 1.0, 1.0, tf1]
 
         return pos
 
