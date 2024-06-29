@@ -72,25 +72,17 @@ class Gait(ABC):
             else:
                 pos = (self.p0 + np.roll(offsets, 1, 0))
 
-
         if self.turn_pct == 0.0:
             return pos
 
+        turn_factor = 1.0-self.turn_pct
         # LEFT
-        if self.turn_pct >= 0.0:
-            return pos * np.array([
-                [1,1,1],
-                [1 - self.turn_pct, 1, 1],
-                [1 - self.turn_pct, 1, 1],
-                [1,1,1],
-            ])
-        else:
-            return pos * np.array([
-                [1 - self.turn_pct, 1, 1],
-                [1, 1, 1],
-                [1, 1, 1],
-                [1 - self.turn_pct, 1, 1],
-            ])
+        if self.turn_pct > 0.0:
+            pos[:,0] *= [1.0,turn_factor,turn_factor,1.0]
+        elif self.turn_pct < 0.0:
+            pos[:, 0] *= [turn_factor, 1.0, 1.0, turn_factor]
+
+        return pos
 
     def step_generator(self):
         """
