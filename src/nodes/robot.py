@@ -127,9 +127,9 @@ class Robot(Node):
     def stop(self):
         self.moving = False
         self.move_type = MoveTypes.STOP
-        time.sleep(0.1)
+        time.sleep(0.2)
         self.level()
-        time.sleep(0.1)
+        time.sleep(0.2)
 
     def process_move(self, move_type: MoveTypes):
 
