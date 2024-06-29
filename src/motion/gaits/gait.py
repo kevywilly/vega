@@ -63,14 +63,14 @@ class Gait(ABC):
 
         if self.turn_pct < 0:
             if phase == 0:
-                pos = (self.p0 + np.roll(offsets, 1, 0)).astype(int)
+                pos = (self.p0 + np.roll(offsets, 1, 0))
             else:
-                pos = (self.p0 + offsets).astype(int)
+                pos = (self.p0 + offsets)
         else:
             if phase == 0:
-                pos = (self.p0 + offsets).astype(int)
+                pos = (self.p0 + offsets)
             else:
-                pos = (self.p0 + np.roll(offsets, 1, 0)).astype(int)
+                pos = (self.p0 + np.roll(offsets, 1, 0))
 
 
         if self.turn_pct == 0.0:
