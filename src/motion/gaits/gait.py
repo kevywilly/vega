@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import numpy as np
 
@@ -19,23 +20,26 @@ class Gait(ABC):
         steps2 (np.ndarray): Array to store step sequence 2.
     """
 
-    def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15, turn_pct: float=0.0,
-                 reversed=False):
+    def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
+                 turn_pct: Optional[float] = None,
+                 is_reversed=False):
+
         self.p0 = p0
-        self.stride = -stride if reversed else stride
+        self.stride = -stride if is_reversed else stride
         self.clearance = clearance
         self.step_size = step_size
         self.num_steps = int(90 / self.step_size)
         self.steps1 = np.zeros(self.num_steps * 2)
         self.steps2 = np.zeros(self.num_steps * 2)
-        self.turn_pct = -turn_pct
+        self.turn_pct = turn_pct
+        self.is_reversed = is_reversed
 
         self.build_steps()
         self.positions = self.p0
         self.index = 0
         self.phase = 0
         self.max_index = self.steps1.shape[0]
-        self.reversed = reversed
+
 
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:
@@ -61,7 +65,7 @@ class Gait(ABC):
     def get_positions(self, phase: int = 0, index: int = 0):
         offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
 
-        if self.turn_pct < 0:
+        if self.turn_pct and self.turn_pct > 0:
             if phase == 0:
                 pos = (self.p0 + np.roll(offsets, 1, 0))
             else:
@@ -72,14 +76,14 @@ class Gait(ABC):
             else:
                 pos = (self.p0 + np.roll(offsets, 1, 0))
 
-        if self.turn_pct == 0.0:
+        if not self.turn_pct:
             return pos
 
-        turn_factor = 1-abs(self.turn_pct)
+        turn_factor = 1 - abs(self.turn_pct)
 
         # LEFT
         if self.turn_pct > 0.0:
-            pos[:,0] *= [1.0,turn_factor, turn_factor,1.0]
+            pos[:, 0] *= [1.0, turn_factor, turn_factor, 1.0]
         elif self.turn_pct < 0.0:
             pos[:, 0] *= [turn_factor, 1.0, 1.0, turn_factor]
 
