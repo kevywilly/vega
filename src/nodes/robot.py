@@ -11,6 +11,7 @@ from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
+from src.motion.gaits.trot2 import Trot2
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
@@ -144,18 +145,18 @@ class Robot(Node):
                 **settings.trot_params
             )
         elif move_type == MoveTypes.FORWARD_LT:
-            self.gait = Trot(**settings.turn_params, turn_pct=0.7)
+            self.gait = Trot2(**settings.turn_params, turn_pct=0.7)
         elif move_type == MoveTypes.FORWARD_RT:
-            self.gait = Trot(**settings.turn_params, turn_pct=-0.7)
+            self.gait = Trot2(**settings.turn_params, turn_pct=-0.7)
         elif move_type == MoveTypes.BACKWARD:
             self.gait = Trot(
                 p0=settings.position_ready + settings.position_backward_offsets,
                 **settings.trot_reverse_params
             )
         elif move_type == MoveTypes.BACKWARD_LT:
-            self.gait = Trot(**settings.turn_params, turn_pct=0.7, reversed=True)
+            self.gait = Trot2(**settings.turn_params, turn_pct=-0.7, reversed=True)
         elif move_type == MoveTypes.BACKWARD_RT:
-            self.gait = Trot(**settings.turn_params, turn_pct=-0.7, reversed=True)
+            self.gait = Trot2(**settings.turn_params, turn_pct=0.7, reversed=True)
         elif move_type == MoveTypes.LEFT:
             self.gait = Sidestep(**settings.sidestep_params, reversed=True)
         elif move_type == MoveTypes.RIGHT:
