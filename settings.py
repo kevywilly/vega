@@ -96,14 +96,14 @@ class Settings:
 
     default_position_offsets: np.ndarray = np.zeros((4, 3)).astype(int)
     position_offsets: np.ndarray = np.zeros((4, 3)).astype(int)
-    position_offsets[0][0]=20
+
     position_ready_height_pct: float = 0.65
     position_forward_offsets: np.ndarray = np.array([
         [-10, 0, 0]
     ])
 
     position_backward_offsets: np.ndarray = np.array([
-        [10, 0, 0]
+        [5, 0, 0]
     ])
 
     @cached_property
