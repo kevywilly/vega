@@ -4,7 +4,7 @@ class MoveTypes(str, Enum):
     FORWARD_LT="FORWARD_LT"
     FORWARD="FORWARD"
     FORWARD_RT = "FORWARD_RT"
-    LEFT = "FORWARD_LT"
+    LEFT = "LEFT"
     STOP = "STOP"
     RIGHT = "RIGHT"
     BACKWARD_LT = "BACKWARD_LT"
