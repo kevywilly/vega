@@ -51,7 +51,8 @@ class Settings:
     def servo_ids(self) -> np.ndarray:
         return self.servos.reshape(-1)
 
-    flip: np.ndarray = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
+    #flip_v10: np.ndarray = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
+    flip: np.ndarray = np.array([[-1, -1, -1], [-1, 1, 1], [-1, 1, 1], [-1, -1, -1]])
 
     default_sensor_mode: CameraSensor = CameraSensor.MODE1640x1232X29
 
