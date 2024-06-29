@@ -65,28 +65,18 @@ class Gait(ABC):
     def get_positions(self, phase: int = 0, index: int = 0):
         offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
 
-        def get_pos():
-            if phase == 0:
-                pos = (self.p0 + offsets)
-            else:
-                pos = (self.p0 + np.roll(offsets, 1, 0))
+        if self.turn_pct > 0:
+            offsets[:, 0] *= [1.0, .3, .3, 1.0]
+        elif self.turn_pct < 0:
+            offsets[:, 0] *= [.3, 1.0, 1.0, .3]
 
-            return pos
-
-        if not self.turn_pct:
-            return get_pos()
-
-        tf1 = 1.0 - abs(self.turn_pct)
-        tf2 = 1.0 + tf1
-        pos = get_pos()
-
-        # LEFT
-        if self.turn_pct > 0.0:
-            pos[:, 0] *= [1.0, tf1, tf1, 1.0]
-        elif self.turn_pct < 0.0:
-            pos[:, 0] *= [tf1, 1.0, 1.0, tf1]
+        if phase == 0:
+            pos = (self.p0 + offsets)
+        else:
+            pos = (self.p0 + np.roll(offsets, 1, 0))
 
         return pos
+
 
     def step_generator(self):
         """
