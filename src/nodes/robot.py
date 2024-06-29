@@ -191,38 +191,41 @@ class Robot(Node):
 
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
-
-        self.controller.move_to(settings.position_ready, 200)
-        time.sleep(0.2)
-        pitch_array = np.array([1, -1, -1, 1]).astype(int)
-        yaw_array = np.array([-1, -1, 1, 1]).astype(int)
-        zeros = np.zeros((4))
-        roll, pitch, yaw = self.imu.euler
-
-        for i in range(20):
-
-            if abs(pitch) > settings.pitch_threshold:
-                pitch_offset = pitch_array if pitch >= 0 else -pitch_array
-            else:
-                pitch_offset = zeros
-
-            if abs(yaw) > settings.yaw_threshold:
-                yaw_offset = yaw_array if (yaw >= 0) else -yaw_array
-            else:
-                yaw_offset = zeros
-
-            settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
-            self.logger.info(
-                f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}")
-            self.controller.move_to(settings.position_ready, 10)
-
-            time.sleep(0.3)
-
+        try:
+            self.controller.move_to(settings.position_ready, 200)
+            time.sleep(0.2)
+            pitch_array = np.array([1, -1, -1, 1]).astype(int)
+            yaw_array = np.array([-1, -1, 1, 1]).astype(int)
+            zeros = np.zeros((4))
             roll, pitch, yaw = self.imu.euler
 
-            if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
-                self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
-                return True
+            for i in range(20):
+
+                if abs(pitch) > settings.pitch_threshold:
+                    pitch_offset = pitch_array if pitch >= 0 else -pitch_array
+                else:
+                    pitch_offset = zeros
+
+                if abs(yaw) > settings.yaw_threshold:
+                    yaw_offset = yaw_array if (yaw >= 0) else -yaw_array
+                else:
+                    yaw_offset = zeros
+
+                settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
+                self.logger.info(
+                    f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}")
+                self.controller.move_to(settings.position_ready, 10)
+
+                time.sleep(0.3)
+
+                roll, pitch, yaw = self.imu.euler
+
+                if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
+                    self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
+                    return True
+        except Exception as ex:
+            self.controller.move_to(settings.position_ready, 200)
+            self.logger.error(ex)
 
         self.logger.info(f"leveling failed...pitch...{pitch} yaw...{yaw}")
         return False
