@@ -99,11 +99,11 @@ class Settings:
 
     position_ready_height_pct: float = 0.65
     position_forward_offsets: np.ndarray = np.array([
-        [10, 0, 0]
+        [-10, 0, 0]
     ])
 
     position_backward_offsets: np.ndarray = np.array([
-        [-5, 0, 0]
+        [10, 0, 0]
     ])
 
     @cached_property
