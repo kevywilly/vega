@@ -14,7 +14,7 @@ class Trot2(Gait):
         """
         Build the step sequences for the trot gait.
         """
-        mag_x = -self.stride
+        mag_x = self.stride
         mag_z = -self.clearance
 
         num_steps = self.num_steps
