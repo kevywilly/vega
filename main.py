@@ -103,7 +103,7 @@ def _set_pose(value: str):
     else:
         return {"status": "error, unknown pose"}
 
-    if app.robot.walking:
+    if app.robot.moving:
         app.robot.stop()
         time.sleep(0.5)
 
