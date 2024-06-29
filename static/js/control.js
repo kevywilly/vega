@@ -33,26 +33,33 @@ var ControlPanel = (function (id, params={}) {
         {value: "BACKWARD_RT", label: "Backward RT"},
     ]
 
-    let cmd = null
+
+    let currentValue = "";
+    let previousValue = "";
 
     const handleClick = (e,value,index) => {
-        if (value === cmd) {
-            cmd = "STOP";
-            e.target.style.opacity=1.0;
+        previousValue = currentValue;
+        currentValue = value;
+        // console.log(`${previousValue} : ${currentValue}`);
+        if(previousValue === currentValue) {
+            document.getElementById(previousValue).style.opacity = 1.0;
+            currentValue="STOP"
         } else {
-            cmd = value;
-            if(cmd !== "STOP") {
-                e.target.style.opacity = 0.5;
+            if(currentValue !== "STOP") {
+                document.getElementById(currentValue).style.opacity = 0.5;
+            } else {
+                document.getElementById(previousValue).style.opacity = 1.0;
             }
         }
-        onChange(cmd)
+        onChange(currentValue);
+
     }
 
     for(i=0; i<buttons.length; i++) {
         const v = buttons[i].value;
         const l = buttons[i].label;
         let e = document.createElement("button");
-        e.id=`controlButton${i}`
+        e.id=v
         e.innerText=buttons[i].label;
         e.className="button button-blue";
         if(v==="STOP") {

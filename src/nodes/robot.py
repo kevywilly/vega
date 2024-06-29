@@ -130,6 +130,10 @@ class Robot(Node):
         time.sleep(0.2)
         self.level()
         time.sleep(0.2)
+        return {
+                "moving": self.moving,
+                "move_type": self.move_type
+        }
 
     def process_move(self, move_type: MoveTypes):
 
@@ -157,12 +161,8 @@ class Robot(Node):
         elif move_type == MoveTypes.RIGHT:
             self.gait = Sidestep(**settings.sidestep_params)
         elif move_type == MoveTypes.STOP:
-            self.stop()
-            return {
-                "moving": self.moving,
-                "move_type": self.move_type,
-                "gait": None,
-            }
+            return self.stop()
+
 
         self.move_type = move_type
 
