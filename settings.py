@@ -125,6 +125,7 @@ class Settings:
         return ar.astype(int)
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 65, "step_size": 15}
+    trot_reverse_params: Dict[str, int] = {"stride": -40, "clearance": 60, "step_size": 15}
     sidestep_params: Dict[str, int] = {"stride": 25, "clearance": 30, "step_size": 15}
     turn_params: Dict[str, int] = {"stride": 25, "clearance": 50, "step_size": 15}
 

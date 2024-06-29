@@ -60,10 +60,11 @@ class Gait(ABC):
 
     def get_positions(self, phase: int = 0, index: int = 0):
         offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+
         if phase == 0:
-            pos = self.p0 + offsets
+            pos = (self.p0 + offsets).astype(int)
         else:
-            pos = self.p0 + np.roll(offsets, 1, 0)
+            pos = (self.p0 + np.roll(offsets, 1, 0)).astype(int)
 
         if self.turn_pct == 0.0:
             return pos
@@ -76,7 +77,7 @@ class Gait(ABC):
                 [1-self.turn_pct,1,1]
             ])
         else:
-            return pos * np.array([
+            return np.roll(pos, 1, 0) * np.array([
                 [1, 1, 1],
                 [1-self.turn_pct,1,1],
                 [1-self.turn_pct,1,1],
