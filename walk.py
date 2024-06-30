@@ -3,7 +3,7 @@ import time
 from settings import settings
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.trot import Trot
-from src.motion.gaits.walk2 import Walk
+from src.motion.gaits.walk import Walk
 from src.nodes.robot import Robot
 
 robot = Robot()
