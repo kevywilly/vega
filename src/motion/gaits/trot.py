@@ -11,7 +11,7 @@ class Trot(Gait2):
             np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
             np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
             np.cos(np.radians(np.linspace(90, 90+45, self.num_steps * 2))),
-        ]) * self.stride
+        ]) * int(self.stride/2)
 
         y = np.zeros(self.num_steps * 4)
 

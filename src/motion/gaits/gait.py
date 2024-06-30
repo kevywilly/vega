@@ -144,7 +144,7 @@ class Gait(ABC):
 
 class Gait2(Gait):
     def get_positions(self, phase: int = 0, index: int = 0):
-        return self.p0 + np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+        return self.p0 + self.get_offsets()
 
     def step_generator(self, reverse=False):
         """
@@ -157,4 +157,4 @@ class Gait2(Gait):
             np.ndarray: Step positions.
         """
         for i in range(self.steps1.shape[0]):
-            yield self.p0 + np.array([self.steps1[i], self.steps2[i], self.steps1[i], self.steps2[i]])
+            yield self.p0 + self.get_offsets()

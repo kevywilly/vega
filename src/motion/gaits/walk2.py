@@ -8,24 +8,35 @@ class Walk2(Gait2):
 
     def build_steps(self):
         x = np.hstack([
-            np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.cos(np.radians(np.linspace(90, 90+45, self.num_steps*6))),
-        ]) * self.stride
-
-        y = np.zeros(self.num_steps * 8)
-
+            np.sin(np.radians(np.linspace(0, 90, self.num_steps * 1))),
+            np.cos(np.radians(np.linspace(0, 90, self.num_steps * 1))),
+            np.cos(np.radians(np.linspace(90, 180, self.num_steps * 4))),
+        ]) * int(self.stride/2)
         z = np.hstack([
-            np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-            np.zeros(self.num_steps*7)
+            np.sin(np.radians(np.linspace(90, 180, self.num_steps))),
+            np.zeros(self.num_steps*5)
         ]) * (-self.clearance)
-        ar = np.array([x,y,z])
 
-        steps = Gait.reshape_steps(np.array([x,y,z]), x.size)
-        self.steps4 = steps
-        self.steps2 = np.roll(steps, self.num_steps*2, axis=0)
-        self.steps3 = np.roll(steps, self.num_steps*4, axis=0)
-        self.steps1 = np.roll(steps, self.num_steps*6, axis=0)
+        x = x.reshape((6,-1))
+        z = z.reshape((6,-1))
+
+        x1 = np.array([x[0], x[1], x[2], x[3], x[4], x[5]]).flatten()
+        x2 = np.array([x[2], x[0], x[1], x[2], x[3], x[4]]).flatten()
+        x3 = np.array([x[2], x[3], x[0], x[1], x[2], x[3]]).flatten()
+        x4 = np.array([x[2], x[3], x[4], x[0], x[1], x[2]]).flatten()
+
+        z1 = z.flatten()
+        z2 = np.roll(z,1,0).flatten()
+        z3 = np.roll(z,2,0).flatten()
+        z4 = np.roll(z,3,0).flatten()
+
+        y = np.zeros(x1.size)
+
+        self.steps1 = Gait.reshape_steps(np.array([x4,y,z4]), x1.size)
+        self.steps2 = Gait.reshape_steps(np.array([x1,y,z1]), x1.size)
+        self.steps3 = Gait.reshape_steps(np.array([x2,y,z2]), x1.size)
+        self.steps4 = Gait.reshape_steps(np.array([x3,y,z3]), x1.size)
+
 
     def get_offsets(self, index):
         return np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
