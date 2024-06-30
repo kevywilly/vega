@@ -64,34 +64,28 @@ class Gait(ABC):
         """
         pass
 
-    def get_offsets(self, index):
-        return np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+    def get_offsets(self, index) -> np.ndarray:
 
-    def get_positions(self, phase: int = 0, index: int = 0):
-        offsets = self.get_offsets(index)
+        if self.steps3 is not None and self.steps4 is not None:
+            offsets = np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
+        else:
+            offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
 
-        def get_pos():
-            if phase == 0:
-                pos = (self.p0 + offsets)
-            else:
-                pos = (self.p0 + np.roll(offsets, 1, 0))
+        return offsets
 
-            return pos
-
-        if not self.turn_pct:
-            return get_pos()
+        if not self.turn_pct or self.turn_pct == 0:
+            return offsets
 
         tf = 1.0 - abs(self.turn_pct)
 
-        pos = get_pos()
-
         # LEFT
         if self.turn_pct > 0.0:
-            pos[:, 0] *= [1.0, tf, tf, 1.0]
+            return offsets * [1.0, tf, tf, 1.0]
         elif self.turn_pct < 0.0:
-            pos[:, 0] *= [tf, 1.0, 1.0, tf]
+            return offsets * [tf, 1.0, 1.0, tf]
 
-        return pos
+    def get_positions(self, phase: int = 0, index: int = 0):
+        return self.p0 + self.get_offsets()
 
     def step_generator(self):
         """
@@ -141,20 +135,3 @@ class Gait(ABC):
             plt.legend()
             plt.show()
 
-
-class Gait2(Gait):
-    def get_positions(self, phase: int = 0, index: int = 0):
-        return self.p0 + self.get_offsets(index)
-
-    def step_generator(self, reverse=False):
-        """
-        Generator to yield the step positions.
-
-        Args:
-            reverse (bool): Flag to indicate reverse stepping.
-
-        Yields:
-            np.ndarray: Step positions.
-        """
-        for i in range(self.steps1.shape[0]):
-            yield self.p0 + self.get_offsets()

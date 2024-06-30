@@ -1,10 +1,10 @@
 import numpy as np
 
 from settings import settings
-from src.motion.gaits.gait import Gait, Gait2
+from src.motion.gaits.gait import Gait
 
 
-class Walk(Gait2):
+class Walk(Gait):
 
     def build_steps(self):
         x = np.hstack([
@@ -36,11 +36,6 @@ class Walk(Gait2):
         self.steps2 = Gait.reshape_steps(np.array([x1,y,z1]), x1.size)
         self.steps3 = Gait.reshape_steps(np.array([x2,y,z2]), x1.size)
         self.steps4 = Gait.reshape_steps(np.array([x3,y,z3]), x1.size)
-
-
-    def get_offsets(self, index):
-        return np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
-
 
 
 if __name__ == "__main__":

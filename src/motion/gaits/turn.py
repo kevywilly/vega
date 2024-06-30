@@ -1,10 +1,10 @@
 import numpy as np
 
 from settings import settings
-from src.motion.gaits.gait import Gait, Gait2
+from src.motion.gaits.gait import Gait
 
 
-class Turn(Gait2):
+class Turn(Gait):
 
     def build_steps(self):
         x = np.hstack([
