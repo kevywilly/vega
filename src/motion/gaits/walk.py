@@ -32,10 +32,10 @@ class Walk(Gait):
 
         y = np.zeros(x1.size)
 
-        self.steps1 = Gait.reshape_steps(np.array([x4,y,z4]), x1.size)
-        self.steps2 = Gait.reshape_steps(np.array([x1,y,z1]), x1.size)
-        self.steps3 = Gait.reshape_steps(np.array([x2,y,z2]), x1.size)
-        self.steps4 = Gait.reshape_steps(np.array([x3,y,z3]), x1.size)
+        self.steps1 = Gait.reshape_steps(np.array([x4,y,z4]), x1.size) # leg 0
+        self.steps2 = Gait.reshape_steps(np.array([x2,y,z2]), x1.size) # leg 1
+        self.steps3 = Gait.reshape_steps(np.array([x1, y, z1]), x1.size) # leg 2
+        self.steps4 = Gait.reshape_steps(np.array([x3,y,z3]), x1.size) # leg 3
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ class Turn(Gait):
             np.sin(np.radians(np.linspace(0, 90, self.num_steps * 1))),
             np.cos(np.radians(np.linspace(0, 90, self.num_steps * 1))),
             np.cos(np.radians(np.linspace(90, 180, self.num_steps * 4))),
-        ]) * int(self.stride / 2)
+        ]) * int(self.stride)
 
         z = np.hstack([
             np.sin(np.radians(np.linspace(90, 180, self.num_steps))),
@@ -35,13 +35,13 @@ class Turn(Gait):
 
         if self.num_steps > 0:
             self.steps1 = Gait.reshape_steps(np.array([x4, y, z4]), x1.size).astype(int)
-            self.steps2 = Gait.reshape_steps(np.array([x1 * self.turn_pct, y, z1]), x1.size).astype(int)
-            self.steps3 = Gait.reshape_steps(np.array([x2 * self.turn_pct, y, z2]), x1.size).astype(int)
+            self.steps2 = Gait.reshape_steps(np.array([x2 * self.turn_pct, y, z2]), x1.size).astype(int)
+            self.steps3 = Gait.reshape_steps(np.array([x1 * self.turn_pct, y, z1]), x1.size).astype(int)
             self.steps4 = Gait.reshape_steps(np.array([x3, y, z3]), x1.size).astype(int)
         else:
             self.steps1 = Gait.reshape_steps(np.array([x4 * self.turn_pct, y, z4]), x1.size).astype(int)
-            self.steps2 = Gait.reshape_steps(np.array([x1, y, z1]), x1.size).astype(int)
-            self.steps3 = Gait.reshape_steps(np.array([x2, y, z2]), x1.size).astype(int)
+            self.steps2 = Gait.reshape_steps(np.array([x2, y, z2]), x1.size).astype(int)
+            self.steps3 = Gait.reshape_steps(np.array([x1, y, z1]), x1.size).astype(int)
             self.steps4 = Gait.reshape_steps(np.array([x3 * self.turn_pct, y, z3]), x1.size).astype(int)
 
     def get_offsets(self, index):
