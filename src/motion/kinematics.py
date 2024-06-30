@@ -16,8 +16,6 @@ class Kinematics:
         x, y, z = pos
         x = -x # invert x for world coordinate positioning
 
-        print(x,y,z)
-
         cos_q2 = (x * x + z * z - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
         q2 = acos(cos_q2)
         q1 = atan2(z, x) - atan2(self.tibia * sin(q2), (self.femur + self.tibia * cos_q2))
