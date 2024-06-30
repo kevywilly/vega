@@ -14,7 +14,9 @@ class Kinematics:
     def ik(self, pos: np.ndarray) -> np.ndarray:
         """ https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/ """
         x, y, z = pos
-        x = -x # invert x for world coordinate positioning 
+        x = -x # invert x for world coordinate positioning
+
+        print(x,y,z)
 
         cos_q2 = (x * x + z * z - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
         q2 = acos(cos_q2)
