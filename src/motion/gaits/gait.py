@@ -68,7 +68,7 @@ class Gait(ABC):
         return np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
 
     def get_positions(self, phase: int = 0, index: int = 0):
-        offsets = self.get_offsets()
+        offsets = self.get_offsets(index)
 
         def get_pos():
             if phase == 0:
