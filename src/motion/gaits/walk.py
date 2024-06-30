@@ -11,7 +11,7 @@ class Walk(Gait2):
             np.sin(np.radians(np.linspace(0, 90, self.num_steps * 1))),
             np.cos(np.radians(np.linspace(0, 90, self.num_steps * 1))),
             np.cos(np.radians(np.linspace(90, 180, self.num_steps * 4))),
-        ]) * int(self.stride/2)
+        ]) * int(self.stride)
         z = np.hstack([
             np.sin(np.radians(np.linspace(90, 180, self.num_steps))),
             np.zeros(self.num_steps*5)
