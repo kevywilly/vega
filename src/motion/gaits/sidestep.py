@@ -22,10 +22,10 @@ class Sidestep(Gait):
     def get_positions(self, phase: int = 0, index: int = 0):
         offsets = self.p0 + self.get_offsets(index)
 
-        def get_pos():
-            if phase == 0:
-                pos = (self.p0 + offsets)
-            else:
-                pos = (self.p0 + np.roll(offsets, 1, 0))
 
-            return pos
+        if phase == 0:
+            pos = (self.p0 + offsets)
+        else:
+            pos = (self.p0 + np.roll(offsets, 1, 0))
+
+        return pos
