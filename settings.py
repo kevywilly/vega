@@ -127,7 +127,7 @@ class Settings:
 
     trot_params: Dict[str, int] = {"stride": 50, "clearance": 60, "step_size": 15}
     trot_reverse_params: Dict[str, int] = {"stride": -60, "clearance": 30, "step_size": 15}
-    sidestep_params: Dict[str, int] = {"stride": 20, "clearance": 30, "step_size": 15}
+    sidestep_params: Dict[str, int] = {"stride": 20, "clearance": 60, "step_size": 15}
     turn_params: Dict[str, int] = {"stride": 40, "clearance": 60, "step_size": 15}
     walk_params: Dict[str, int] = {"stride": 50, "clearance": 60, "step_size": 15}
 
