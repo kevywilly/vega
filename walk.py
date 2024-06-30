@@ -27,6 +27,6 @@ def run(gait: Gait):
         positions = next(gait)
 
 
-run(Walk(stride=60, clearance=40, step_size=10))
+run(Walk(stride=50, clearance=60, step_size=15))
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
