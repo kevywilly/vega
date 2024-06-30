@@ -144,7 +144,7 @@ class Gait(ABC):
 
 class Gait2(Gait):
     def get_positions(self, phase: int = 0, index: int = 0):
-        return self.p0 + self.get_offsets()
+        return self.p0 + self.get_offsets(index)
 
     def step_generator(self, reverse=False):
         """

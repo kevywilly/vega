@@ -20,6 +20,7 @@ const get = (url, callback = null) => {
 }
 
 
+let mode= 0
 
 const offsetsElem = document.getElementById("offsets")
 const positionsElem = document.getElementById("positions")
@@ -140,6 +141,14 @@ $(function () {
     })
     $("#btnLevel").on("click", () => {
         post("/api/level")
+    });
+    $("#btnMode").on("click", () => {
+        mode = mode == 1 ? 0 : 1;
+        if(mode==1) {
+            document.getElementById("btnMode").innerText="Mode: Walk";
+        } else {
+            document.getElementById("btnMode").innerText="Mode: Trot";
+        }
     });
     setInterval(getStats, 1000);
 });
