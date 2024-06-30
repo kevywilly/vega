@@ -87,6 +87,7 @@ class Gait(ABC):
     def get_positions(self, phase: int = 0, index: int = 0):
         return self.p0 + self.get_offsets(index)
 
+
     def step_generator(self):
         """
         Generator to yield the step positions.
@@ -134,4 +135,5 @@ class Gait(ABC):
             plt.plot(self.steps4, label=["s4_x", "s4_y", "s4_z"])
             plt.legend()
             plt.show()
+
 
