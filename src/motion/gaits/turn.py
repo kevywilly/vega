@@ -15,23 +15,39 @@ class Turn(Gait):
         mag_z = -self.clearance
         mag_y = self.stride
 
-        x = np.zeros(self.num_steps*2)
-        y1 = np.hstack([
-            np.sin(np.radians(np.linspace(45, 90, self.num_steps))),
-            np.cos(np.radians(np.linspace(90, 180, self.num_steps)))
+        x = np.zeros(self.num_steps*8)
+
+        y = np.hstack([
+            np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
+            np.zeros(self.num_steps) + 1,
+            np.zeros(self.num_steps) + 1,
+            np.zeros(self.num_steps) + 1,
+            np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
+            np.zeros(self.num_steps),
+            np.zeros(self.num_steps),
+            np.zeros(self.num_steps),
         ]) * mag_y
+
         z = np.hstack([
             np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-            np.zeros(self.num_steps)
+            np.zeros(self.num_steps),
+            np.zeros(self.num_steps),
+            np.zeros(self.num_steps),
+            np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
+            np.zeros(self.num_steps),
+            np.zeros(self.num_steps),
+            np.zeros(self.num_steps),
         ]) * mag_z
 
-        y2 = np.hstack([
-            np.cos(np.radians(np.linspace(90, 180, self.num_steps))),
-            np.sin(np.radians(np.linspace(45, 90, self.num_steps))),
-        ]) * -mag_y
 
-        self.steps1 = self.reshape_steps(np.array([x, y1, z]), self.num_steps * 2)
-        self.steps2 = self.reshape_steps(np.array([x, y1, z]), self.num_steps * 2)
-        self.steps3 = self.reshape_steps(np.array([x, y2, z]), self.num_steps * 2)
-        self.steps4 = self.reshape_steps(np.array([x, y2, z]), self.num_steps * 2)
+
+
+
+        front = self.reshape_steps(np.array([x, y, z]), self.num_steps * 8)
+        back = self.reshape_steps(np.array([x, -y, z]), self.num_steps * 8)
+
+        self.steps1 = front
+        self.steps2 = np.roll(front, self.num_steps, axis=0)
+        self.steps3 = np.roll(back, self.num_steps*6, axis=0)
+        self.steps4 = np.roll(back, self.num_steps*7, axis=0)
 
