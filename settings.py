@@ -125,11 +125,11 @@ class Settings:
         ar[:, 0] += [10, 10, -25, -35]
         return ar.astype(int)
 
-    trot_params: Dict[str, int] = {"stride": 46, "clearance": 60, "step_size": 15}
-    trot_reverse_params: Dict[str, int] = {"stride": -30, "clearance": 40, "step_size": 15}
-    sidestep_params: Dict[str, int] = {"stride": 20, "clearance": 30, "step_size": 15}
-    turn_params: Dict[str, int] = {"stride": 30, "clearance": 50, "step_size": 20}
-    walk_params: Dict[str, int] = {"stride": 50, "clearance": 60, "step_size": 15}
+    trot_params: Dict[str, int] = {"stride": 50, "clearance": 60}
+    trot_reverse_params: Dict[str, int] = {"stride": -30, "clearance": 40}
+    sidestep_params: Dict[str, int] = {"stride": 20, "clearance": 30}
+    turn_params: Dict[str, int] = {"stride": 10, "clearance": 40}
+    walk_params: Dict[str, int] = {"stride": 50, "clearance": 60}
 
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):
         if group is None:
