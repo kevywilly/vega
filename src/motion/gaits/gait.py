@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,7 +21,7 @@ class Gait(ABC):
     """
 
     def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
-                 turn_pct: Optional[float] = None,
+                 turn_direction=1,
                  is_reversed=False):
 
         self.p0 = p0
@@ -34,7 +33,7 @@ class Gait(ABC):
         self.steps2 = np.zeros(self.num_steps * 2)
         self.steps3 = None
         self.steps4 = None
-        self.turn_pct = turn_pct
+        self.turn_direction = turn_direction
         self.is_reversed = is_reversed
 
         self.build_steps()
@@ -67,26 +66,12 @@ class Gait(ABC):
     def get_offsets(self, index) -> np.ndarray:
 
         if self.steps3 is not None and self.steps4 is not None:
-            offsets = np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
+            return np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
         else:
-            offsets = np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
-
-        return offsets
-
-        if not self.turn_pct or self.turn_pct == 0:
-            return offsets
-
-        tf = 1.0 - abs(self.turn_pct)
-
-        # LEFT
-        if self.turn_pct > 0.0:
-            return offsets * [1.0, tf, tf, 1.0]
-        elif self.turn_pct < 0.0:
-            return offsets * [tf, 1.0, 1.0, tf]
+            return np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
 
     def get_positions(self, phase: int = 0, index: int = 0):
         return self.p0 + self.get_offsets(index)
-
 
     def step_generator(self):
         """
@@ -135,5 +120,3 @@ class Gait(ABC):
             plt.plot(self.steps4, label=["s4_x", "s4_y", "s4_z"])
             plt.legend()
             plt.show()
-
-

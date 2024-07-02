@@ -1,59 +1,37 @@
+from abc import ABC, abstractmethod
+from typing import Optional
+
 import numpy as np
 
 from settings import settings
 from src.motion.gaits.gait import Gait
 
 
+
+
+
 class Turn(Gait):
-
     def build_steps(self):
-        x = np.hstack([
-            np.sin(np.radians(np.linspace(0, 90, self.num_steps * 1))),
-            np.cos(np.radians(np.linspace(0, 90, self.num_steps * 1))),
-            np.cos(np.radians(np.linspace(90, 180, self.num_steps * 4))),
-        ]) * int(self.stride)
+        mag_z = -self.clearance
+        mag_y = self.stride
 
+        x = np.zeros(self.num_steps*2)
+        y1 = np.hstack([
+            np.sin(np.radians(np.linspace(45, 90, self.num_steps))),
+            np.cos(np.radians(np.linspace(90, 180, self.num_steps)))
+        ]) * mag_y
         z = np.hstack([
-            np.sin(np.radians(np.linspace(90, 180, self.num_steps))),
-            np.zeros(self.num_steps * 5)
-        ]) * (-self.clearance)
+            np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
+            np.zeros(self.num_steps)
+        ]) * mag_z
 
-        x = x.reshape((6, -1))
-        z = z.reshape((6, -1))
+        y2 = np.hstack([
+            np.cos(np.radians(np.linspace(90, 180, self.num_steps))),
+            np.sin(np.radians(np.linspace(45, 90, self.num_steps))),
+        ]) * mag_y
 
-        x1 = np.array([x[0], x[1], x[2], x[3], x[4], x[5]]).flatten()
-        x2 = np.array([x[2], x[0], x[1], x[2], x[3], x[4]]).flatten()
-        x3 = np.array([x[2], x[3], x[0], x[1], x[2], x[3]]).flatten()
-        x4 = np.array([x[2], x[3], x[4], x[0], x[1], x[2]]).flatten()
+        self.steps1 = self.reshape_steps(np.array([x, y1, z]), self.num_steps*2)
+        self.steps2 = self.reshape_steps(np.array([x, y1, z]), self.num_steps * 2)
+        self.steps3 = self.reshape_steps(np.array([x, y1, z]), self.num_steps * 2)
+        self.steps4 = self.reshape_steps(np.array([x, y1, z]), self.num_steps * 2)
 
-        z1 = z.flatten()
-        z2 = np.roll(z, 1, 0).flatten()
-        z3 = np.roll(z, 2, 0).flatten()
-        z4 = np.roll(z, 3, 0).flatten()
-
-        y = np.zeros(x1.size)
-
-        if self.num_steps > 0:
-            self.steps1 = Gait.reshape_steps(np.array([x4, y, z4]), x1.size).astype(int)
-            self.steps2 = Gait.reshape_steps(np.array([x2 * self.turn_pct, y, z2]), x1.size).astype(int)
-            self.steps3 = Gait.reshape_steps(np.array([x1 * self.turn_pct, y, z1]), x1.size).astype(int)
-            self.steps4 = Gait.reshape_steps(np.array([x3, y, z3]), x1.size).astype(int)
-        else:
-            self.steps1 = Gait.reshape_steps(np.array([x4 * self.turn_pct, y, z4]), x1.size).astype(int)
-            self.steps2 = Gait.reshape_steps(np.array([x2, y, z2]), x1.size).astype(int)
-            self.steps3 = Gait.reshape_steps(np.array([x1, y, z1]), x1.size).astype(int)
-            self.steps4 = Gait.reshape_steps(np.array([x3 * self.turn_pct, y, z3]), x1.size).astype(int)
-
-    def get_offsets(self, index):
-        return np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
-
-
-if __name__ == "__main__":
-    gait = Turn(
-        p0=settings.position_ready,
-        stride=50,
-        clearance=50,
-        step_size=1
-    )
-
-    gait.plotit()
