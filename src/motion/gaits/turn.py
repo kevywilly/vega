@@ -19,24 +19,14 @@ class Turn(Gait):
 
         y = np.hstack([
             np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.zeros(self.num_steps) + 1,
-            np.zeros(self.num_steps) + 1,
-            np.zeros(self.num_steps) + 1,
+            np.zeros(self.num_steps*3) + 1,
             np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.zeros(self.num_steps),
-            np.zeros(self.num_steps),
-            np.zeros(self.num_steps),
+            np.zeros(self.num_steps*3),
         ]) * mag_y
 
         z = np.hstack([
             np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-            np.zeros(self.num_steps),
-            np.zeros(self.num_steps),
-            np.zeros(self.num_steps),
-            np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-            np.zeros(self.num_steps),
-            np.zeros(self.num_steps),
-            np.zeros(self.num_steps),
+            np.zeros(self.num_steps*7),
         ]) * mag_z
 
 
