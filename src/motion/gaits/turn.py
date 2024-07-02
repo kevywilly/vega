@@ -28,7 +28,7 @@ class Turn(Gait):
         y2 = np.hstack([
             np.cos(np.radians(np.linspace(90, 180, self.num_steps))),
             np.sin(np.radians(np.linspace(45, 90, self.num_steps))),
-        ]) * mag_y
+        ]) * -mag_y
 
         self.steps1 = self.reshape_steps(np.array([x, y1, z]), self.num_steps*2)
         self.steps2 = self.reshape_steps(np.array([x, y1, z]), self.num_steps * 2)
