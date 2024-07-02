@@ -56,7 +56,7 @@ from src.motion.gaits.gait import Gait
 class Turn(Gait):
     def build_steps(self):
         mag_z = -self.clearance
-        mag_y = self.stride
+        mag_y = -self.stride
 
         step = np.sin(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
         back = np.cos(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
