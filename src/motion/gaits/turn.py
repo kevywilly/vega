@@ -22,7 +22,7 @@ class Turn(Gait):
             np.zeros(self.num_steps*3) + 1,
             np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
             np.zeros(self.num_steps*3),
-        ]) * mag_y
+        ]) * -1 * mag_y
 
         z = np.hstack([
             np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
