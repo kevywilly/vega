@@ -16,9 +16,9 @@ class Turn(Gait):
         step = np.sin(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
         back = np.cos(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
         up_down = np.sin(np.radians(np.linspace(0, 180, self.num_steps))) * mag_z
-        stepped = np.zeros(self.num_steps) + 1
+        stepped = np.zeros(self.num_steps)
         zero = np.zeros(self.num_steps)
-        zeros = np.zeros(self.num_steps*5)
+        zeros = np.repeat(zero,5)
 
         print(step.size)
         print(back.size)
@@ -27,25 +27,25 @@ class Turn(Gait):
         self.steps1 = np.array([
             zeros,
             np.hstack([step,stepped,stepped,stepped,back]),
-            np.hstack([up_down,zero,zero,zero,zero])
+            np.hstack([up_down,np.repeat(zero,4)])
         ])
 
         self.steps2 = np.array([
             zeros,
             np.hstack([zero, step, stepped, stepped, back]),
-            np.hstack([zero, up_down, zero, zero, zero])
+            np.hstack([zero, up_down,np.repeat(zero,3)])
         ])
 
         self.steps3 = np.array([
             zeros,
-            np.hstack([zero, zero, -step, stepped, back]),
-            np.hstack([zero, zero, up_down, zero, zero])
+            np.hstack([np.repeat(zero,2), -step, stepped, back]),
+            np.hstack([np.repeat(zero,2), up_down, np.repeat(zero,2)])
         ])
 
         self.steps4 = np.array([
             zeros,
-            np.hstack([zero, zero, zero, -step, back]),
-            np.hstack([zero, zero, zero, up_down, zero])
+            np.hstack([np.repeat(zero,3), -step, back]),
+            np.hstack([np.repeat(zero,3), up_down, zero])
         ])
 
         self.steps1 = Gait.reshape_steps(self.steps1, self.num_steps * 5)
