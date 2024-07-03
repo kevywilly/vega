@@ -10,8 +10,7 @@ from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
-from src.motion.gaits.trot import Trot
-from src.motion.gaits.trot2 import Trot2
+from src.motion.gaits.trot import Trot, TrotSimple
 from src.motion.gaits.turn import Turn
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
@@ -141,7 +140,7 @@ class Robot(Node):
     def process_move(self, move_type: MoveTypes):
 
         if move_type == MoveTypes.FORWARD:
-            self.gait = Trot(
+            self.gait = TrotSimple(
                 p0=settings.position_ready + settings.position_forward_offsets,
                 **settings.trot_params
             )
