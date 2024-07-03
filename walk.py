@@ -2,7 +2,7 @@ import time
 
 from settings import settings
 from src.motion.gaits.gait import Gait
-from src.motion.gaits.trot import Trot, TrotSimple
+from src.motion.gaits.trot import Trot
 from src.motion.gaits.walk import Walk
 from src.nodes.robot import Robot
 
@@ -27,6 +27,6 @@ def run(gait: Gait):
         positions = next(gait)
 
 
-run(TrotSimple(stride=50, clearance=60, step_size=15))
+run(Trot(stride=60, clearance=60, step_size=25))
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
