@@ -29,16 +29,17 @@ class TrotSimple(Gait):
     def build_steps(self):
         x_step = np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
         x_back = np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
+        x_back2 = np.cos(np.radians(np.linspace(90, 135, self.num_steps)))
         z_step = np.sin(np.radians(np.linspace(0, 180, self.num_steps)))
         zeros = np.zeros(self.num_steps)
 
         x1 = np.hstack([
             x_step,
             x_back,
-            zeros,
+            x_back2
         ]) * int(self.stride)
         x2 = np.hstack([
-            zeros,
+            x_back2,
             x_step,
             x_back
         ]) * int(self.stride)
