@@ -1,6 +1,11 @@
+from abc import ABC, abstractmethod
+from typing import Optional
+
 import numpy as np
 
+from settings import settings
 from src.motion.gaits.gait import Gait
+
 
 
 class Turn(Gait):
@@ -11,37 +16,40 @@ class Turn(Gait):
         step = np.sin(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
         back = np.cos(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
         up_down = np.sin(np.radians(np.linspace(0, 180, self.num_steps))) * mag_z
-        stepped = np.ones(self.num_steps) * mag_y * self.turn_direction
-        zeros = np.zeros(self.num_steps)
+        stepped = np.zeros(self.num_steps) + 1
+        zero = np.zeros(self.num_steps)
+        zeros = np.zeros(self.num_steps*5)
 
-        s1 = np.array([
-            np.repeat(zeros,5),
-            np.hstack([step, np.repeat(stepped,3), back]),
-            np.hstack([up_down, np.repeat(zeros,4)])
+        print(step.size)
+        print(back.size)
+        print(up_down.size)
+
+        self.steps1 = np.array([
+            zeros,
+            np.hstack([step,stepped,stepped,stepped,back]),
+            np.hstack([up_down,zero,zero,zero,zero])
         ])
 
-        s2 = np.array([
-            np.repeat(zeros,5),
-            np.hstack([zeros, step, np.repeat(stepped,2), back]),
-            np.hstack([zeros, up_down, np.repeat(stepped,3)])
+        self.steps2 = np.array([
+            zeros,
+            np.hstack([zero, step, stepped, stepped, back]),
+            np.hstack([zero, up_down, zero, zero, zero])
         ])
 
-        s3 = np.array([
-            np.repeat(zeros,5),
-            np.hstack([np.repeat(zeros,2), -step, -stepped, back]),
-            np.hstack([np.repeat(zeros,2), up_down, np.repeat(zeros,2)])
+        self.steps3 = np.array([
+            zeros,
+            np.hstack([zero, zero, -step, stepped, back]),
+            np.hstack([zero, zero, up_down, zero, zero])
         ])
 
-        s4 = np.array([
-            np.repeat(zeros,5),
-            np.hstack([np.repeat(zeros,3), -step, back]),
-            np.hstack([np.repeat(zeros,3), up_down, zeros])
+        self.steps4 = np.array([
+            zeros,
+            np.hstack([zero, zero, zero, -step, back]),
+            np.hstack([zero, zero, zero, up_down, zero])
         ])
 
-        print(s1.shape)
-        print(self.num_steps*5)
+        self.steps1 = Gait.reshape_steps(self.steps1, self.num_steps * 5)
+        self.steps2 = Gait.reshape_steps(self.steps2, self.num_steps * 5)
+        self.steps3 = Gait.reshape_steps(self.steps3, self.num_steps * 5)
+        self.steps4 = Gait.reshape_steps(self.steps4, self.num_steps * 5)
 
-        self.steps1 = Gait.reshape_steps(s1, self.num_steps*5)
-        self.steps2 = Gait.reshape_steps(s2, self.num_steps*5)
-        self.steps3 = Gait.reshape_steps(s3, self.num_steps*5)
-        self.steps4 = Gait.reshape_steps(s4, self.num_steps*5)
