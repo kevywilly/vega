@@ -55,7 +55,7 @@ class Camera(Node):
         try:
             frame = cap.capture_array()
             frame = _convert_color(frame)
-            frame = cv2.flip(frame, 0)
+            frame = cv2.flip(frame, -1)
             self.value = frame
         except:
             self.logger.warn(f"Can't receive frame from camera")
