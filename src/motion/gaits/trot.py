@@ -16,7 +16,7 @@ class Trot(Gait):
         y = np.zeros(self.num_steps * 4)
 
         z = np.hstack([
-            np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
+            np.sin(np.radians(np.linspace(20, 180, self.num_steps))),
             np.zeros(self.num_steps * 3)
         ]) * (-self.clearance)
 
