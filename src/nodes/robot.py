@@ -140,7 +140,7 @@ class Robot(Node):
     def process_move(self, move_type: MoveTypes):
 
         if move_type == MoveTypes.FORWARD:
-            self.gait = TrotSimple(
+            self.gait = Trot(
                 p0=settings.position_ready + settings.position_forward_offsets,
                 **settings.trot_params
             )
