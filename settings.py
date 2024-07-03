@@ -7,14 +7,13 @@ import numpy as np
 import yaml
 
 from src.model.tilt import Tilt
-from src.vision.sensors import CameraSensor, CameraSensorMode
+from src.vision.sensors import CameraSensorMode
 
 """
     L1 - L0
      |   |   
     L2 - L3
 """
-
 
 # BNO sensor axes remap values.  These are the parameters to the BNO.set_axis_remap
 # function.  Don't change these without consulting section 3.4 of the datasheet.
@@ -32,10 +31,13 @@ from src.vision.sensors import CameraSensor, CameraSensorMode
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE_PATH = os.environ.get("VEGA_CONFIG_FILE", os.path.join(ROOT_DIR, "config.yml"))
+
+
 def load_settings():
     filename = os.path.join(ROOT_DIR, "settings.yml")
     with open(filename, "r") as f:
         return yaml.safe_load(f)
+
 
 class LegGroup(List, Enum):
     front = [0, 1]
@@ -50,7 +52,7 @@ class Settings:
     def __init__(self, config: Optional[Dict] = {}):
         self.debug: str = config.get("debug", False)
         self.environment: str = os.environ.get("VEGA_ENVIRONMENT", config.get("environment", "development"))
-        self.api_url: str = os.environ.get("VEGA_API_URL", config.get("api_url","http://localhost:5000/api"))
+        self.api_url: str = os.environ.get("VEGA_API_URL", config.get("api_url", "http://localhost:5000/api"))
         self.serial_port: str = os.environ.get("SERIAL_PORT", config.get("serial_port", "/dev/serial0"))
 
         self.servos: np.ndarray = np.array(config.get("servos", []))
@@ -60,15 +62,15 @@ class Settings:
         _camera = _sensors.get("camera", {})
 
         self.default_sensor_mode: CameraSensorMode = CameraSensorMode[_camera.get("sensor_mode")]
-        self.camera_matrix: np.ndarray = np.array(_camera.get("matrix",None)).reshape(3, 3)
-        self.distortion_coefficients: np.ndarray = np.array(_camera.get("distortion",None)).reshape(1,
-                                                                                                                     5)
+        self.camera_matrix: np.ndarray = np.array(_camera.get("matrix", None)).reshape(3, 3)
+        self.distortion_coefficients: np.ndarray = np.array(_camera.get("distortion", None)).reshape(1,
+                                                                                                     5)
         # imu
 
         _imu = config.get("imu", {})
         _imu_offsets = _imu.get("offsets", {})
 
-        self.bno_axis_remap: Optional[Tuple] = _imu.get("bno_axis_remap",None)  # (0, 1, 2, 1, 0, 1)
+        self.bno_axis_remap: Optional[Tuple] = _imu.get("bno_axis_remap", None)  # (0, 1, 2, 1, 0, 1)
         self.imu_magnetic_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get("magnetic")
         self.imu_gyro_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get("gyro")
         self.imu_acceleration_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get("acceleration")
@@ -96,7 +98,7 @@ class Settings:
 
         _positioning = config.get("positioning", {})
 
-        self.angle_flip: np.ndarray = np.array(_positioning.get("angle_flip", np.ones((4,3)))).astype(int)
+        self.angle_flip: np.ndarray = np.array(_positioning.get("angle_flip", np.ones((4, 3)))).astype(int)
         self.angle_zero: np.ndarray = np.radians(np.array(_positioning.get("angle_zero")))
         self.default_position_offsets = np.array(_positioning.get("offsets")).astype(int)
         self.position_offsets: np.ndarray = np.copy(self.default_position_offsets)
@@ -113,7 +115,6 @@ class Settings:
         self.sidestep_params: Dict[str, int] = _gait_params.get("sidestep", {})
         self.turn_params: Dict[str, int] = _gait_params.get("turn", {})
         self.walk_params: Dict[str, int] = _gait_params.get("walk", {})
-
 
     @cached_property
     def servo_ids(self) -> np.ndarray:
@@ -146,8 +147,6 @@ class Settings:
         ar[:, 0] += [10, 10, -25, -35]
         return ar.astype(int)
 
-
-
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):
         if group is None:
             group = LegGroup.all
@@ -160,7 +159,6 @@ class Settings:
 
     def reset_offsets(self):
         self.position_offsets = self.default_position_offsets
-
 
 
 settings = Settings(load_settings())

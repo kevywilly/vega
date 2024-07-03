@@ -47,13 +47,13 @@ class IMU(Node):
             self.sensor.axis_remap = settings.bno_axis_remap
 
         if settings.imu_gyro_offsets:
-            self.sensor.offsets_gyroscope = settings.imu_gyro_offsets
+            self.sensor.offsets_gyroscope = tuple(settings.imu_gyro_offsets)
 
         if settings.imu_magnetic_offsets:
-            self.sensor.offsets_magnetometer = settings.imu_magnetic_offsets
+            self.sensor.offsets_magnetometer = tuple(settings.imu_magnetic_offsets)
 
         if settings.imu_acceleration_offsets:
-            self.sensor.offsets_accelerometer = settings.imu_acceleration_offsets
+            self.sensor.offsets_accelerometer = tuple(settings.imu_acceleration_offsets)
 
         self.read_measurements()
 
