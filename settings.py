@@ -30,11 +30,11 @@ from src.vision.sensors import CameraSensorMode
 # BNO_AXIS_REMAP = (0,1,2,0,0,0)
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE_PATH = os.environ.get("VEGA_CONFIG_FILE", os.path.join(ROOT_DIR, "config.yml"))
+CONFIG_FILE_PATH = os.environ.get("VEGA_CONFIG_FILE", os.path.join(ROOT_DIR, "settings.yml"))
 
 
 def load_settings():
-    filename = os.path.join(ROOT_DIR, "settings.yml")
+    filename = CONFIG_FILE_PATH
     with open(filename, "r") as f:
         return yaml.safe_load(f)
 
