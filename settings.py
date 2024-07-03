@@ -4,9 +4,10 @@ from functools import cached_property
 from typing import Tuple, Dict, List, Optional
 
 import numpy as np
+import yaml
 
 from src.model.tilt import Tilt
-from src.vision.sensors import CameraSensor
+from src.vision.sensors import CameraSensor, CameraSensorMode
 
 """
     L1 - L0
@@ -29,6 +30,13 @@ from src.vision.sensors import CameraSensor
 
 # BNO_AXIS_REMAP = (0,1,2,0,0,0)
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE_PATH = os.environ.get("VEGA_CONFIG_FILE", os.path.join(ROOT_DIR, "config.yml"))
+def load_settings():
+    filename = os.path.join(ROOT_DIR, "settings.yml")
+    with open(filename, "r") as f:
+        return yaml.safe_load(f)
+
 class LegGroup(List, Enum):
     front = [0, 1]
     back = [2, 3]
@@ -38,51 +46,78 @@ class LegGroup(List, Enum):
 
 
 class Settings:
-    debug: str = os.environ.get("VEGA_DEBUT", True)
 
-    environment: str = os.environ.get("VEGA_ENVIRONMENT", "development")
-    api_url: str = os.environ.get("VEGA_API_URL", "http://localhost:5000/api")
-    serial_port: str = os.environ.get("SERIAL_PORT", "/dev/serial0")
+    def __init__(self, config: Optional[Dict] = {}):
+        self.debug: str = config.get("debug", False)
+        self.environment: str = os.environ.get("VEGA_ENVIRONMENT", config.get("environment", "development"))
+        self.api_url: str = os.environ.get("VEGA_API_URL", config.get("api_url","http://localhost:5000/api"))
+        self.serial_port: str = os.environ.get("SERIAL_PORT", config.get("serial_port", "/dev/serial0"))
 
-    bno_axis_remap: Optional[Tuple] = None  # (0, 1, 2, 1, 0, 1)
-    servos: np.ndarray = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]])
+        self.servos: np.ndarray = np.array(config.get("servos", []))
 
-    @property
+        # sensors
+        _sensors = config.get("sensors", {})
+        _camera = _sensors.get("camera", {})
+
+        self.default_sensor_mode: CameraSensorMode = CameraSensorMode[_camera.get("sensor_mode")]
+        self.camera_matrix: np.ndarray = np.array(_camera.get("matrix",None)).reshape(3, 3)
+        self.distortion_coefficients: np.ndarray = np.array(_camera.get("distortion",None)).reshape(1,
+                                                                                                                     5)
+        # imu
+
+        _imu = config.get("imu", {})
+        _imu_offsets = _imu.get("offsets", {})
+
+        self.bno_axis_remap: Optional[Tuple] = _imu.get("bno_axis_remap",None)  # (0, 1, 2, 1, 0, 1)
+        self.imu_magnetic_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get("magnetic")
+        self.imu_gyro_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get("gyro")
+        self.imu_acceleration_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get("acceleration")
+
+        # Dimensions (mm)
+
+        _dimensions = config.get("dims", {})
+
+        self.robot_width: int = _dimensions.get("robot_width", 142)
+        self.robot_length: int = _dimensions.get("robot_length", 223)
+        self.coxa_length: int = _dimensions.get("coxa_length", 53)
+        self.femur_length: int = _dimensions.get("femur_length", 102)
+        self.tibia_length: int = _dimensions.get("tibia_length", 114)
+
+        # Leveling
+
+        _leveling = config.get("leveling", {})
+
+        self.yaw_threshold: float = _leveling.get("yaw_threshold", 0.5)
+        self.pitch_threshold: float = _leveling.get("pitch_threshold", 0.5)
+        self.auto_level: bool = _leveling.get("auto_level", False)
+        self.tilt: Tilt = Tilt(**_leveling.get("tilt", {}))
+
+        # Positioning
+
+        _positioning = config.get("positioning", {})
+
+        self.angle_flip: np.ndarray = np.array(_positioning.get("angle_flip", np.ones((4,3)))).astype(int)
+        self.angle_zero: np.ndarray = np.radians(np.array(_positioning.get("angle_zero")))
+        self.default_position_offsets = np.array(_positioning.get("offsets")).astype(int)
+        self.position_offsets: np.ndarray = np.copy(self.default_position_offsets)
+        self.position_forward_offsets = np.array(_positioning.get("forward_offsets", np.zeros(3))).astype(int)
+        self.position_backward_offsets = np.array(_positioning.get("backward_offsets", np.zeros(3))).astype(int)
+        self.position_ready_height_pct: float = _positioning.get("ready_height_pct", 0.5)
+
+        # Gait Parameters
+
+        _gait_params = config.get("gait_params", {})
+
+        self.trot_params: Dict[str, int] = _gait_params.get("trot", {})
+        self.trot_reverse_params: Dict[str, int] = _gait_params.get("trot_reverse", {})
+        self.sidestep_params: Dict[str, int] = _gait_params.get("sidestep", {})
+        self.turn_params: Dict[str, int] = _gait_params.get("turn", {})
+        self.walk_params: Dict[str, int] = _gait_params.get("walk", {})
+
+
+    @cached_property
     def servo_ids(self) -> np.ndarray:
         return self.servos.reshape(-1)
-
-    #flip_v10: np.ndarray = np.array([[1, 1, 1], [-1, -1, -1], [-1, -1, -1], [1, 1, 1]])
-    flip: np.ndarray = np.array([[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]])
-
-    default_sensor_mode: CameraSensor = CameraSensor.MODE1640x1232X29
-
-    # Camera
-    camera_matrix: np.ndarray = np.array([
-        848.72138, 0., 939.50914,
-        0., 848.9676, 596.15355,
-        0., 0., 1.
-    ]).reshape(3, 3)
-
-    distortion_coefficients: np.ndarray = np.array([-0.296850, 0.061372, 0.002562, -0.002645, 0.000000]).reshape(1, 5)
-
-    # IMU
-    # imu_magnetic_offsets: Tuple[int, int, int] = (419, -250, -597)
-    # imu_gyro_offsets: Tuple[int, int, int] = (0, -2, -1)
-    # imu_accel_offsets: Tuple[int, int, int] = (16, -31, 14)
-
-    imu_magnetic_offsets = (32418, 32685, -32271)
-    imu_gyro_offsets = (0, -1, 0)
-    imu_accel_offsets = (-40, 42, -18)
-
-    yaw_threshold: float = 0.5
-    pitch_threshold: float = 0.5
-
-    # Dimensions
-    robot_width: int = 142
-    robot_length: int = 223
-    coxa_length: int = 53
-    femur_length: int = 102
-    tibia_length: int = 114
 
     @cached_property
     def robot_max_height(self) -> int:
@@ -91,20 +126,6 @@ class Settings:
     @cached_property
     def joint_lengths(self) -> np.ndarray:
         return np.array([self.coxa_length, self.femur_length, self.tibia_length])
-
-    angles_zero: np.ndarray = np.radians(np.array([[-2, 90, 30], [-2, 90, 30], [2, 90, 30], [2, 90, 30]]))
-
-    default_position_offsets: np.ndarray = np.zeros((4, 3)).astype(int)
-    position_offsets: np.ndarray = np.zeros((4, 3)).astype(int)
-
-    position_ready_height_pct: float = 0.65
-    position_forward_offsets: np.ndarray = np.array([
-        [-10, 0, 0]
-    ])
-
-    position_backward_offsets: np.ndarray = np.array([
-        [5, 0, 0]
-    ])
 
     @cached_property
     def position_home(self) -> np.ndarray:
@@ -125,11 +146,7 @@ class Settings:
         ar[:, 0] += [10, 10, -25, -35]
         return ar.astype(int)
 
-    trot_params: Dict[str, int] = {"stride": 50, "clearance": 60}
-    trot_reverse_params: Dict[str, int] = {"stride": -30, "clearance": 40}
-    sidestep_params: Dict[str, int] = {"stride": 20, "clearance": 30}
-    turn_params: Dict[str, int] = {"stride": 20, "clearance": 40, "step_size": 12}
-    walk_params: Dict[str, int] = {"stride": 50, "clearance": 60}
+
 
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):
         if group is None:
@@ -144,9 +161,6 @@ class Settings:
     def reset_offsets(self):
         self.position_offsets = self.default_position_offsets
 
-    auto_level: bool = True
-
-    tilt: Tilt = Tilt()
 
 
-settings = Settings()
+settings = Settings(load_settings())

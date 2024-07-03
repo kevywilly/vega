@@ -44,19 +44,19 @@ def _positions_from_angles(angles: np.ndarray):
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
-    adjusted_angles = angles - settings.angles_zero
+    adjusted_angles = angles - settings.angle_zero
     return dict(
         zip(
             settings.servo_ids,
-            ((adjusted_angles * settings.flip * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
+            ((adjusted_angles * settings.angle_flip * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
         )
     )
 
 
 def _angles_from_servo_positions(servo_positions):
     pos = _servo_positions_to_numpy(servo_positions)
-    angles = (pos - 500) * SERVO_MAX_ANGLE / (settings.flip * 1000)
-    return angles + settings.angles_zero
+    angles = (pos - 500) * SERVO_MAX_ANGLE / (settings.angle_flip * 1000)
+    return angles + settings.angle_zero
 
 
 def _servo_positions_to_numpy(servo_positions):
