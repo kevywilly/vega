@@ -7,59 +7,28 @@ from src.motion.gaits.gait import Gait
 class Trot(Gait):
 
     def build_steps(self):
+
+        x_forward = np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
+        x_back_to_start = np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
+        x_kick_back = np.cos(np.radians(np.linspace(90, 90 + 45, self.num_steps * 2)))
+        z_up_down = np.sin(np.radians(np.linspace(45, 180, self.num_steps)))
+        zeros = np.zeros(self.num_steps)
+
         x = np.hstack([
-            np.sin(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.cos(np.radians(np.linspace(0, 90, self.num_steps))),
-            np.cos(np.radians(np.linspace(90, 90 + 45, self.num_steps * 2))),
+            x_forward,
+            x_back_to_start,
+            x_kick_back,
         ]) * int(self.stride)
 
-        y = np.zeros(self.num_steps * 4)
+        y = np.repeat(zeros,4)
 
         z = np.hstack([
-            np.sin(np.radians(np.linspace(20, 180, self.num_steps))),
-            np.zeros(self.num_steps * 3)
+            z_up_down,
+            np.repeat(zeros,3),
         ]) * (-self.clearance)
 
         self.steps1 = Gait.reshape_steps(np.array([x, y, z]), self.num_steps * 4)
         self.steps2 = np.roll(self.steps1, self.num_steps * 2, axis=0)
-
-
-class TrotSimple(Gait):
-
-    def build_steps(self):
-        x_step = np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
-        x_back = np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
-        x_back2 = np.cos(np.radians(np.linspace(90, 135, self.num_steps)))
-        z_step = np.sin(np.radians(np.linspace(0, 180, self.num_steps)))
-        zeros = np.zeros(self.num_steps)
-
-        x1 = np.hstack([
-            x_step,
-            x_back,
-            x_back2
-        ]) * int(self.stride)
-        x2 = np.hstack([
-            x_back2,
-            x_step,
-            x_back
-        ]) * int(self.stride)
-
-        y = np.zeros(self.num_steps * 3)
-
-        z1 = np.hstack([
-            z_step,
-            zeros,
-            zeros
-        ]) * (-self.clearance)
-
-        z2 = np.hstack([
-            zeros,
-            z_step,
-            zeros
-        ]) * (-self.clearance)
-
-        self.steps1 = Gait.reshape_steps(np.array([x1, y, z1]), self.num_steps * 3)
-        self.steps2 = Gait.reshape_steps(np.array([x2, y, z2]), self.num_steps * 3)
 
 
 if __name__ == "__main__":
