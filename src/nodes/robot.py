@@ -197,7 +197,7 @@ class Robot(Node):
             time.sleep(0.2)
             pitch_array = np.array([1, -1, -1, 1]).astype(int)
             yaw_array = np.array([-1, -1, 1, 1]).astype(int)
-            zeros = np.zeros((4))
+            zeros = np.zeros(4)
             roll, pitch, yaw = self.imu.euler
 
             for i in range(10):
