@@ -48,8 +48,9 @@ var ControlPanel = (function (id, params={}) {
             if(currentValue !== "STOP") {
                 document.getElementById(currentValue).style.opacity = 0.5;
             }
-            document.getElementById(previousValue).style.opacity = 1.0;
-
+            if(previousValue) {
+                document.getElementById(previousValue).style.opacity = 1.0;
+            }
         }
         onChange(currentValue);
 

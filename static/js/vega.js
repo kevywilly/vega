@@ -27,7 +27,7 @@ const positionsElem = document.getElementById("positions")
 const anglesElem = document.getElementById("angles")
 
 const handleControlPanelChange = (value) => {
-    console.log(value)
+    console.log(`change: ${value}`)
     post(`/api/move/${value}`)
 }
 
