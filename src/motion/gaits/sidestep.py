@@ -8,7 +8,7 @@ class Sidestep(Gait):
         mag_z = -self.clearance
         mag_y = self.stride
 
-        x = np.repeat(self.zeros,2)
+        x = np.repeat(self.zeros,3)
         y = np.hstack([
             self.stride_forward(),
             self.stride_front_to_back(self.num_steps*2),
