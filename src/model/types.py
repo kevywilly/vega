@@ -10,3 +10,4 @@ class MoveTypes(str, Enum):
     BACKWARD_LT = "BACKWARD_LT"
     BACKWARD = "BACKWARD"
     BACKWARD_RT = "BACKWARD_RT"
+    TROT_IN_PLACE = "TROT_IN_PLACE"

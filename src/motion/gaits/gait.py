@@ -26,8 +26,11 @@ class Gait(ABC):
         normal = 0
         fast = 1
 
-    def updown(self, num_steps=None):
-        return np.sin(np.radians(np.linspace(45, 180, num_steps or self.num_steps)))
+    def updown(self, num_steps=None, mode: UpdownMode = UpdownMode.fast):
+        if mode == self.UpdownMode.fast:
+            return np.sin(np.radians(np.linspace(45, 180, num_steps or self.num_steps)))
+        else:
+            return np.sin(np.radians(np.linspace(0, 180, num_steps or self.num_steps)))
 
     def stride_forward(self, num_steps=None):
         return np.sin(np.radians(np.linspace(0, 90, num_steps or self.num_steps)))

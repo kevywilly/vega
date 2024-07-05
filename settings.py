@@ -115,6 +115,7 @@ class Settings:
         self.sidestep_params: Dict[str, int] = _gait_params.get("sidestep", {})
         self.turn_params: Dict[str, int] = _gait_params.get("turn", {})
         self.walk_params: Dict[str, int] = _gait_params.get("walk", {})
+        self.trot_in_place_params: Dict[str, int] = _gait_params.get("walk", {"stride": 0, "clearance": 40, "step_size": 25})
 
     @cached_property
     def servo_ids(self) -> np.ndarray:

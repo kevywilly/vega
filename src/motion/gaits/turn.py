@@ -52,12 +52,11 @@ class Turn(Gait):
 class Turn2(Gait):
     def build_steps(self):
         clearance = -self.clearance
-
         stride = -self.stride * self.turn_direction
 
         step = self.stride_forward() * stride
-        back = self.stride_back() * stride
-        up_down = self.updown() * clearance
+        back = self.stride_home() * stride
+        up_down = self.updown(mode=self.UpdownMode.normal) * clearance
         zeros = self.zeros
         all_zeros = np.repeat(self.zeros, 5)
 

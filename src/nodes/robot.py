@@ -1,5 +1,5 @@
 import time
-from typing import Optional, Dict
+from typing import Optional
 
 import numpy as np
 import traitlets
@@ -133,8 +133,8 @@ class Robot(Node):
         # self.level()
         # time.sleep(0.2)
         return {
-                "moving": self.moving,
-                "move_type": self.move_type
+            "moving": self.moving,
+            "move_type": self.move_type
         }
 
     def process_move(self, move_type: MoveTypes):
@@ -161,6 +161,8 @@ class Robot(Node):
             self.gait = Sidestep(**settings.sidestep_params, is_reversed=True)
         elif move_type == MoveTypes.RIGHT:
             self.gait = Sidestep(**settings.sidestep_params)
+        elif move_type == MoveTypes.TROT_IN_PLACE:
+            self.gait = Trot(**settings.trot_in_place_params)
         elif move_type == MoveTypes.STOP:
             return self.stop()
 
@@ -168,7 +170,7 @@ class Robot(Node):
 
         if self.move_type != MoveTypes.STOP:
             self.moving = True
-            
+
         return {
             "moving": self.moving,
             "move_type": self.move_type
@@ -183,7 +185,14 @@ class Robot(Node):
             print(p)
             time.sleep(2)
 
+    def trot_in_place(self):
+        self.process_move(MoveTypes.TROT_IN_PLACE)
+        self.logger.info("trotting in place")
+        time.sleep(1)
+        self.stop()
+
     def auto_level(self):
+        self.trot_in_place()
         if settings.auto_level:
             for i in range(4):
                 self.logger.info(f"*** Leveling pass {i} ***")

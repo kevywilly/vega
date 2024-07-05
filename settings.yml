@@ -49,6 +49,10 @@ gait_params:
     stride: 50
     clearance: 60
     step_size: 12
+  trot_in_place:
+    stride: 0
+    clearance: 40
+    step_size: 25
 sensors:
   camera:
     matrix: [
