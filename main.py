@@ -145,6 +145,7 @@ def ready():
 
 @app.post('/api/level')
 def level():
+    app.robot.trot_in_place()
     app.robot.level()
     return settings.position_offsets.tolist()
 
