@@ -34,7 +34,7 @@ class Gait(ABC):
 
     def downupdown(self, num_steps=None):
         ns = num_steps or self.num_steps
-        ns1 = int(ns/8)
+        ns1 = int(ns/5)
         ns2 = ns-ns1
         return np.hstack([np.sin(np.radians(np.linspace(-20, 0, ns1))),np.sin(np.radians(np.linspace(40, 180, ns2)))])
 
