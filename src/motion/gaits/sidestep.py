@@ -16,6 +16,7 @@ class Sidestep(Gait):
         z = np.hstack([
             self.updown(),
             self.zeros
+            self.zeros
         ]) * mag_z
 
         self.steps1 = self.reshape_steps(np.array([x, y, z]), self.num_steps * 3)
