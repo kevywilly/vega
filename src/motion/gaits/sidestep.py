@@ -10,11 +10,11 @@ class Sidestep(Gait):
 
         x = np.repeat(self.zeros,2)
         y = np.hstack([
-            self.stride_forward(self.num_steps),
-            self.stride_front_to_back(self.num_steps),
+            self.stride_forward(),
+            self.stride_front_to_back(),
         ]) * mag_y
         z = np.hstack([
-            self.updown(self.num_steps),
+            self.updown(),
             self.zeros
         ]) * mag_z
 
