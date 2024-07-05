@@ -74,6 +74,10 @@ class Gait(ABC):
     def size(self):
         return self.steps1.size
 
+    @property
+    def shape(self):
+        return self.steps1.shape
+
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:
         """

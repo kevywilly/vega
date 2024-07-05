@@ -188,7 +188,7 @@ class Robot(Node):
     def trot_in_place(self):
         gait = Trot(**settings.trot_in_place_params)
         self.ready(200)
-        for i in range(int(gait.size/4)):
+        for i in range(int(gait.shape[0])):
             self.logger.info("trotting in place")
             position = next(gait)
             self.controller.move_to(position, 10)
