@@ -1,8 +1,9 @@
+import enum
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+from enum import Enum
 from settings import settings
 
 class Gait(ABC):
@@ -18,6 +19,34 @@ class Gait(ABC):
         steps1 (np.ndarray): Array to store step sequence 1.
         steps2 (np.ndarray): Array to store step sequence 2.
     """
+    class UpdownMode(Enum):
+        normal = 0
+        fast = 1
+
+    @staticmethod
+    def updown(num_steps: int, mode: UpdownMode = UpdownMode.normal):
+        if mode == Gait.UpdownMode.fast:
+            return np.sin(np.radians(np.linspace(45, 180, num_steps)))
+        else:
+            return np.sin(np.radians(np.linspace(0, 180, num_steps)))
+
+    @staticmethod
+    def stride_forward(num_steps: int):
+        return np.sin(np.radians(np.linspace(0, 90, num_steps)))
+
+    @staticmethod
+    def stride_home(num_steps: int):
+        return np.cos(np.radians(np.linspace(0, 90, num_steps)))
+
+    @staticmethod
+    def stride_back(num_steps: int):
+        return np.cos(np.radians(np.linspace(90, 180, num_steps)))
+
+    @staticmethod
+    def zeros(num_steps: int):
+        return np.zeros(num_steps)
+
+
 
     def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
                  turn_direction=1,

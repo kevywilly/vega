@@ -7,23 +7,18 @@ from src.motion.gaits.gait import Gait
 class Trot(Gait):
 
     def build_steps(self):
-
-        x_forward = np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
-        x_back_to_start = np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
-        x_kick_back = np.cos(np.radians(np.linspace(90, 180, self.num_steps * 2)))
-        z_up_down = np.sin(np.radians(np.linspace(45, 180, self.num_steps)))
-        zeros = np.zeros(self.num_steps)
+        zeros = self.zeros(self.num_steps)
 
         x = np.hstack([
-            x_forward,
-            x_back_to_start,
-            x_kick_back,
+            self.stride_forward(self.num_steps),
+            self.stride_home(self.num_steps),
+            self.stride_back(self.num_steps*2),
         ]) * int(self.stride)
 
         y = np.repeat(zeros,4)
 
         z = np.hstack([
-            z_up_down,
+            self.updown(self.num_steps, self.UpdownMode.fast),
             np.repeat(zeros,3),
         ]) * (-self.clearance)
 
