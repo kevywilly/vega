@@ -16,7 +16,7 @@ class Trot(Gait):
         y = np.repeat(self.zeros, 4)
 
         z = np.hstack([
-            self.updown(),
+            self.downupdown(),
             np.repeat(self.zeros, 3),
         ]) * (-self.clearance)
 

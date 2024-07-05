@@ -32,6 +32,12 @@ class Gait(ABC):
         else:
             return np.sin(np.radians(np.linspace(0, 180, num_steps or self.num_steps)))
 
+    def downupdown(self, num_steps=None):
+        ns = num_steps or self.num_steps
+        ns1 = int(ns/8)
+        ns2 = ns-ns1
+        return np.hstack([np.sin(np.radians(np.linspace(-20, 0, ns1))),np.sin(np.radians(np.linspace(40, 180, ns2)))])
+
     def stride_forward(self, num_steps=None):
         return np.sin(np.radians(np.linspace(0, 90, num_steps or self.num_steps)))
 
