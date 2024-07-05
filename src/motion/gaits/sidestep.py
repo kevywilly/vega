@@ -15,7 +15,7 @@ class Sidestep(Gait):
         ]) * mag_y
         z = np.hstack([
             self.updown(),
-            self.zeros
+            self.zeros,
             self.zeros
         ]) * mag_z
 
