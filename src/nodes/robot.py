@@ -198,17 +198,16 @@ class Robot(Node):
 
 
     def auto_level(self):
-        self.trot_in_place()
         if settings.auto_level:
-            for i in range(4):
+            for i in range(3):
                 self.logger.info(f"*** Leveling pass {i} ***")
-                if self.level():
-                    break
+                self.level()
 
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
         try:
-            self.ready(200)
+            self.trot_in_place()
+            self.ready(100)
             time.sleep(0.2)
             pitch_array = np.array([1, -1, -1, 1]).astype(int)
             yaw_array = np.array([-1, -1, 1, 1]).astype(int)
