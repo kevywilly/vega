@@ -70,6 +70,10 @@ class Gait(ABC):
         self.phase = 0
         self.max_index = self.steps1.shape[0]
 
+    @property
+    def size(self):
+        return self.steps1.size
+
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:
         """

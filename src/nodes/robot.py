@@ -186,10 +186,16 @@ class Robot(Node):
             time.sleep(2)
 
     def trot_in_place(self):
-        self.process_move(MoveTypes.TROT_IN_PLACE)
-        self.logger.info("trotting in place")
-        time.sleep(1)
-        self.stop()
+        gait = Trot(**settings.trot_in_place_params)
+        self.ready(200)
+        for i in range(gait.size*10):
+            self.logger.info("trotting in place")
+            position = next(gait)
+            self.controller.move_to(position, 10)
+
+        time.sleep(0.1)
+
+
 
     def auto_level(self):
         self.trot_in_place()
