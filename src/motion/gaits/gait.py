@@ -44,7 +44,7 @@ class Gait(ABC):
 
     @staticmethod
     def zeros(num_steps: int):
-        return np.zeros(num_steps)
+        return np.zeros()
 
 
 
