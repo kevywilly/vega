@@ -201,7 +201,8 @@ class Robot(Node):
         if settings.auto_level:
             for i in range(3):
                 self.logger.info(f"*** Leveling pass {i} ***")
-                self.level()
+                if self.level():
+                    return
 
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
