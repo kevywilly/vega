@@ -1,11 +1,12 @@
-import enum
 from abc import ABC, abstractmethod
+from enum import Enum
 from functools import cached_property
 
 import matplotlib.pyplot as plt
 import numpy as np
-from enum import Enum
+
 from settings import settings
+
 
 class Gait(ABC):
     """
@@ -20,35 +21,29 @@ class Gait(ABC):
         steps1 (np.ndarray): Array to store step sequence 1.
         steps2 (np.ndarray): Array to store step sequence 2.
     """
+
     class UpdownMode(Enum):
         normal = 0
         fast = 1
 
-    @cached_property
-    def updown(self):
-        return np.sin(np.radians(np.linspace(45, 180, self.num_steps)))
+    def updown(self, num_steps=None):
+        return np.sin(np.radians(np.linspace(45, 180, num_steps or self.num_steps)))
 
-    @cached_property
-    def stride_forward(self):
-        return np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
+    def stride_forward(self, num_steps=None):
+        return np.sin(np.radians(np.linspace(0, 90, num_steps or self.num_steps)))
 
-    @cached_property
-    def stride_home(self):
-        return np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
+    def stride_home(self, num_steps=None):
+        return np.cos(np.radians(np.linspace(0, 90, num_steps or self.num_steps)))
 
-    @cached_property
-    def stride_back(self):
-        return np.cos(np.radians(np.linspace(90, 180, self.num_steps)))
+    def stride_back(self, num_steps=None):
+        return np.cos(np.radians(np.linspace(90, 180, num_steps or self.num_steps)))
 
-    @cached_property
-    def stride_front_to_back(self):
-        return np.cos(np.radians(np.linspace(0, 180, self.num_steps)))
+    def stride_front_to_back(self, num_steps=None):
+        return np.cos(np.radians(np.linspace(0, 180, num_steps or self.num_steps)))
 
     @cached_property
     def zeros(self):
         return np.zeros(self.num_steps)
-
-
 
     def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
                  turn_direction=1,
