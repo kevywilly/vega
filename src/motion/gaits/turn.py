@@ -33,7 +33,7 @@ class Turn(Gait):
         self.steps2 = np.array([
             zeros,
             np.hstack([zero, step, stepped, stepped, back]),
-            np.hstack([zero, up_down,np.repeat(zero,3)])
+            np.hstack([zero, up_down,np.repeat(self.zeros,3)])
         ])
 
         self.steps3 = np.array([

@@ -24,29 +24,25 @@ class Gait(ABC):
         normal = 0
         fast = 1
 
-    @staticmethod
-    def updown(num_steps: int, mode: UpdownMode = UpdownMode.fast):
-        if mode == Gait.UpdownMode.fast:
-            return np.sin(np.radians(np.linspace(45, 180, num_steps)))
-        else:
-            return np.sin(np.radians(np.linspace(0, 180, num_steps)))
+    @cached_property
+    def updown(self):
+        return np.sin(np.radians(np.linspace(45, 180, self.num_steps)))
 
-    @staticmethod
-    def stride_forward(num_steps: int):
-        return np.sin(np.radians(np.linspace(0, 90, num_steps)))
+    @cached_property
+    def stride_forward(self):
+        return np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
 
-    @staticmethod
-    def stride_home(num_steps: int):
-        return np.cos(np.radians(np.linspace(0, 90, num_steps)))
+    @cached_property
+    def stride_home(self):
+        return np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
 
-    @staticmethod
-    def stride_back(num_steps: int):
-        return np.cos(np.radians(np.linspace(90, 180, num_steps)))
+    @cached_property
+    def stride_back(self):
+        return np.cos(np.radians(np.linspace(90, 180, self.num_steps)))
 
-    @staticmethod
-    def stride_front_to_back(num_steps: int):
-        return np.cos(np.radians(np.linspace(0, 180, num_steps)))
-
+    @cached_property
+    def stride_front_to_back(self):
+        return np.cos(np.radians(np.linspace(0, 180, self.num_steps)))
 
     @cached_property
     def zeros(self):
