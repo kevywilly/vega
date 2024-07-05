@@ -5,7 +5,6 @@ import numpy as np
 
 from settings import settings
 
-
 class Gait(ABC):
     """
     Abstract base class for defining different gaits for a quadruped robot.

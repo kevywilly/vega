@@ -7,6 +7,7 @@ from src.motion.gaits.gait import Gait
 class Walk(Gait):
 
     def build_steps(self):
+        up_down = np.sin(np.radians(np.linspace(0, 180, self.num_steps)))
         x = np.hstack([
             np.sin(np.radians(np.linspace(0, 90, self.num_steps * 1))),
             np.cos(np.radians(np.linspace(0, 90, self.num_steps * 1))),

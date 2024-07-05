@@ -10,7 +10,7 @@ class Trot(Gait):
 
         x_forward = np.sin(np.radians(np.linspace(0, 90, self.num_steps)))
         x_back_to_start = np.cos(np.radians(np.linspace(0, 90, self.num_steps)))
-        x_kick_back = np.cos(np.radians(np.linspace(90, 90 + 45, self.num_steps * 2)))
+        x_kick_back = np.cos(np.radians(np.linspace(90, 180, self.num_steps * 2)))
         z_up_down = np.sin(np.radians(np.linspace(45, 180, self.num_steps)))
         zeros = np.zeros(self.num_steps)
 
