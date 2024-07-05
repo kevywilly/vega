@@ -56,7 +56,7 @@ class Turn2(Gait):
 
         step = self.stride_forward() * stride
         back = self.stride_home() * stride
-        up_down = self.updown(mode=self.UpdownMode.normal) * clearance
+        up_down = self.downupdown(mode=self.UpdownMode.normal) * clearance
         zeros = self.zeros
         all_zeros = np.repeat(self.zeros, 5)
 
