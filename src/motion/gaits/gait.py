@@ -1,5 +1,6 @@
 import enum
 from abc import ABC, abstractmethod
+from functools import cached_property
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +25,7 @@ class Gait(ABC):
         fast = 1
 
     @staticmethod
-    def updown(num_steps: int, mode: UpdownMode = UpdownMode.normal):
+    def updown(num_steps: int, mode: UpdownMode = UpdownMode.fast):
         if mode == Gait.UpdownMode.fast:
             return np.sin(np.radians(np.linspace(45, 180, num_steps)))
         else:
@@ -43,8 +44,13 @@ class Gait(ABC):
         return np.cos(np.radians(np.linspace(90, 180, num_steps)))
 
     @staticmethod
-    def zeros(num_steps: int):
-        return np.zeros()
+    def stride_front_to_back(num_steps: int):
+        return np.cos(np.radians(np.linspace(0, 180, num_steps)))
+
+
+    @cached_property
+    def zeros(self):
+        return np.zeros(self.num_steps)
 
 
 

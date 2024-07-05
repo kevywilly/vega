@@ -7,7 +7,6 @@ from src.motion.gaits.gait import Gait
 class Trot(Gait):
 
     def build_steps(self):
-        zeros = self.zeros(self.num_steps)
 
         x = np.hstack([
             self.stride_forward(self.num_steps),
@@ -15,11 +14,11 @@ class Trot(Gait):
             self.stride_back(self.num_steps*2),
         ]) * int(self.stride)
 
-        y = np.repeat(zeros,4)
+        y = np.repeat(self.zeros,4)
 
         z = np.hstack([
             self.updown(self.num_steps, self.UpdownMode.fast),
-            np.repeat(zeros,3),
+            np.repeat(self.zeros,3),
         ]) * (-self.clearance)
 
         self.steps1 = Gait.reshape_steps(np.array([x, y, z]), self.num_steps * 4)
