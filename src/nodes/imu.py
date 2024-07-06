@@ -61,13 +61,13 @@ class IMU(Node):
 
     def read_measurements(self):
         try:
-            self.acceleration = np.array(self.sensor.acceleration)
-            self.magnetic = np.array(self.sensor.magnetic)
-            self.gyro = np.array(self.sensor.gyro)
-            self.euler = np.array(self.sensor.euler)
-            self.quaternion = np.array(self.sensor.quaternion)
-            self.linear_acceleration = np.array(self.sensor.linear_acceleration)
-            self.gravity = np.array(self.sensor.gravity)
+            self.acceleration = np.round(np.array(self.sensor.acceleration),3)
+            self.magnetic = np.round(np.array(self.sensor.magnetic),3)
+            self.gyro = np.round(np.array(self.sensor.gyro),3)
+            self.euler = np.round(np.array(self.sensor.euler),3)
+            self.quaternion = np.round(np.array(self.sensor.quaternion),3)
+            self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
+            self.gravity = np.round(np.array(self.sensor.gravity),3)
         except Exception as e:
             self.logger.error(f"could not read imu {e.__str__()}")
 

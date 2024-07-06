@@ -9,7 +9,7 @@ class BNO055_I2C:
         self.offsets_gyroscope = (0, 0, 0)
         self.offsets_magnetometer = (0, 0, 0)
         self.offsets_accelerometer = (0, 0, 0)
-
+        self.velocity = (0,0,0)
         self.acceleration = (0.0, 0.0, 0.0)
         self.magnetic = (0.0, 0.0, 0.0)
         self.gyro = (0.0, 0.0, 0.0)

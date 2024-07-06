@@ -13,14 +13,13 @@ const post = (url, data, callback = null) => {
 const get = (url, callback = null) => {
     $.ajax({
         method: "GET",
+        dataType: "json",
         url: url,
         contentType: "application/json; charset=utf-8",
         success: callback,
     });
 }
 
-
-let mode= 0
 
 const offsetsElem = document.getElementById("offsets")
 const positionsElem = document.getElementById("positions")
@@ -88,10 +87,11 @@ const display4x3Table = (elem, data) => {
 }
 
 const displayStats = (data) => {
-    $('#displayHeading').text(data.heading);
-    $('#displayPitch').text(data.pitch);
-    $('#displayYaw').text(data.yaw);
-    $('#displayVoltage').text(data.voltage);
+    $('#displayHeading').text(data.euler.heading);
+    $('#displayPitch').text(data.euler.pitch);
+    $('#displayYaw').text(data.euler.yaw);
+    $('#displayAngularVel').text(`(${data.angular_velocity.x}, ${data.angular_velocity.y}, ${data.angular_velocity.z})`)
+    $('#displayAngularAccel').text(`(${data.angular_acceleration.x}, ${data.angular_acceleration.y}, ${data.angular_acceleration.z})`)
 
     display4x3Table(positionsElem, data.positions)
     display4x3Table(anglesElem, data.angles)
@@ -140,16 +140,11 @@ $(function () {
         post(`/api/pose/ready`, null);
     })
     $("#btnLevel").on("click", () => {
-        post("/api/level")
+        post("/api/level");
     });
-    $("#btnMode").on("click", () => {
-        mode = mode == 1 ? 0 : 1;
-        if(mode==1) {
-            document.getElementById("btnMode").innerText="Mode: Walk";
-        } else {
-            document.getElementById("btnMode").innerText="Mode: Trot";
-        }
+    $("#btnResetOffsets").on("click", () => {
+        post("/api/offsets/reset");
     });
-    setInterval(getStats, 1000);
+    setInterval(getStats, 500);
 });
 

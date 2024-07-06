@@ -22,8 +22,12 @@
             <div id="displayPitch"></div>
             <div>Yaw:</div>
             <div id="displayYaw"></div>
-            <div>Voltage:</div>
-            <div id="displayVoltage"></div>
+        </div>
+        <div class="flex flex-row gap-2 justify-between">
+            <div>Angular Vel:</div>
+            <div id="displayAngularVel"></div>
+            <div>Angular Accel:</div>
+            <div id="displayAngularAccel"></div>
         </div>
     </div>
     <div class="flex flex-col p-4 text-xs border rounded-md">
@@ -36,7 +40,6 @@
             <button class="button-blue bg-green-600 text-sm w-full" id="btnSit">Sit</button>
             <button class="button-blue bg-green-600 text-sm  w-full" id="btnCrouch">Crouch</button>
             <button class="button-blue bg-green-600 text-sm  w-full" id="btnReady">Ready</button>
-            <button class="button-blue bg-green-600 text-sm  w-full" id="btnTrotInPlace">Ready</button>
             <button class="button-blue bg-green-600 text-sm  w-full" id="btnDemo">Demo</button>
         </div>
         <hr>
@@ -52,17 +55,7 @@
             <div class="data-grid-4" id="positions">
             </div>
         </div>
-        <div class="w-full">
-            <h1 class="section-header">Offsets</h1>
-            <div class="data-grid-4 font-bold">
-                <div></div>
-                <div>X</div>
-                <div>Y</div>
-                <div>Z</div>
-            </div>
-            <div class="data-grid-4" id="offsets">
-            </div>
-        </div>
+
         <div class="w-full">
             <h1 class="section-header">Angles</h1>
             <div class="data-grid-4 font-bold">
@@ -74,10 +67,22 @@
             <div class="data-grid-4" id="angles">
             </div>
         </div>
+        <div class="w-full">
+            <h1 class="section-header">Offsets</h1>
+            <div class="data-grid-4 font-bold">
+                <div></div>
+                <div>X</div>
+                <div>Y</div>
+                <div>Z</div>
+            </div>
+            <div class="data-grid-4" id="offsets">
+            </div>
+            <div class="text-center"></div>
+        </div>
         <hr>
         <div class="flex flex-row w-full justify-around">
-            <button class="button-blue text-sm" id="btnMode">Mode: Trot</button>
             <button class="button-blue text-sm" id="btnLevel">Auto Level</button>
+            <button class="button-blue text-sm" id="btnResetOffsets">Reset Offsets</button>
         </div>
     </div>
 </div>

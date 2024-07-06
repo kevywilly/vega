@@ -3,14 +3,15 @@
 import logging
 import os
 import time
-
+import gzip
 import numpy as np
-from flask import Flask, Response, request, render_template
+from flask import Flask, Response, request, render_template, make_response
 from flask_cors import CORS
-
+from flask_compress import Compress
 from settings import settings
 from src.model.types import MoveTypes
 from src.nodes.robot import Robot
+import json
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger('werkzeug')
@@ -26,24 +27,10 @@ CORS(app, resource={
     }
 })
 
+Compress(app)
 
 def get_stats():
-
-    heading, pitch, yaw = app.robot.imu.euler
-    voltage = app.robot.controller.voltage()
-    pose = app.robot.controller.pose
-    return {
-        "heading": heading,
-        "pitch": pitch,
-        "yaw": yaw,
-        "voltage": voltage,
-        "angles": pose.angles_in_degrees.tolist(),
-        "positions": pose.positions.astype(int).tolist(),
-        "offsets": settings.position_offsets.astype(int).tolist(),
-        "tilt": settings.tilt.json(),
-        "height": pose.height,
-        "height_pct": app.robot.controller.pose.height_pct,
-    }
+    return app.robot.stats
 
 
 @app.get('/')
@@ -148,14 +135,10 @@ def level():
     app.robot.level()
     return settings.position_offsets.tolist()
 
-@app.post('/api/offsets')
-def post_ready():
-    data = request.get_json()
-    if not data:
-        settings.reset_offsets()
-    else:
-        settings.position_offsets = np.array(data).astype(int)
 
+@app.post('/api/offsets/reset')
+def reset_offsets():
+    settings.reset_offsets()
     return settings.position_offsets.tolist()
 
 

@@ -252,6 +252,24 @@ class Robot(Node):
     def ready(self, millis=200):
         self.controller.move_to(settings.position_ready, millis)
 
+    @property
+    def stats(self) -> dict:
+        euler = dict(zip(['heading',"pitch","yaw"], self.imu.euler))
+        angular_velocity = dict(zip(["x", "y", "z"], self.imu.gyro))
+        angular_acceleration = dict(zip(["x", "y", "z"], self.imu.acceleration))
+        pose = self.controller.pose
+        return {
+            "euler": euler,
+            "angular_velocity": angular_velocity,
+            "angular_acceleration": angular_acceleration,
+            "angles": pose.angles_in_degrees.tolist(),
+            "positions": pose.positions.astype(int).tolist(),
+            "offsets": settings.position_offsets.astype(int).tolist(),
+            "tilt": settings.tilt.json(),
+            "height": pose.height,
+            "height_pct": pose.height_pct,
+        }
+
     def spinner(self):
         if self.moving and self.gait is not None:
             position = next(self.gait)
