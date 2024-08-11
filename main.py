@@ -3,15 +3,13 @@
 import logging
 import os
 import time
-import gzip
 import numpy as np
-from flask import Flask, Response, request, render_template, make_response
+from flask import Flask, Response, request, render_template
 from flask_cors import CORS
 from flask_compress import Compress
 from settings import settings
 from src.model.types import MoveTypes
 from src.nodes.robot import Robot
-import json
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger('werkzeug')
