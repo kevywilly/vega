@@ -37,7 +37,7 @@ def run(gait: Gait):
 #    ))
 
 run(Jump(
-        p0=settings.position_crouch,
+        p0=settings.position_ready,
         stride=0,  # No forward movement
         clearance=60,  # Height of the jump
         step_size=20
