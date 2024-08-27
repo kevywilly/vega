@@ -31,9 +31,9 @@ def run(gait: Gait):
 # run(Trot(stride=60, clearance=60, step_size=25))
 run(TigerRun(
         p0=settings.position_ready,
-        stride=50,  # Increase stride length for a more dynamic run
-        clearance=50,  # Increase clearance for higher leg lift
-        step_size=10  # Adjust step size for smoother transitions
+        stride=70,  # Increase stride length for a more dynamic run
+        clearance=70,  # Increase clearance for higher leg lift
+        step_size=5  # Adjust step size for smoother transitions
     ))
 
 run(Jump(
