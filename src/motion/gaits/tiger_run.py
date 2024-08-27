@@ -5,7 +5,7 @@ class TigerRun(Gait):
     def build_steps(self):
         # Define the magnitude of the stride and clearance
         mag_z = -self.clearance
-        mag_z = self.stride
+        mag_z = -self.stride
 
         # Define the x, y, z coordinates for the steps
         x = np.hstack([
