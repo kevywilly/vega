@@ -21,7 +21,7 @@ def demo():
 
 def run(gait: Gait):
     robot.controller.move_to(gait.p0)
-    time.sleep(0.5)
+    time.sleep(1)
     positions = gait.p0
     while positions is not None:
         robot.controller.move_to(positions, 50)
@@ -40,7 +40,7 @@ run(Jump(
         p0=settings.position_crouch,
         stride=0,  # No forward movement
         clearance=60,  # Height of the jump
-        step_size=1
+        step_size=20
     ))
 
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
