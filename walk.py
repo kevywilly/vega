@@ -4,6 +4,9 @@ from settings import settings
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.walk import Walk
+from src.motion.gaits.tiger_run import TigerRun
+from src.motion.gaits.jump import Jump
+
 from src.nodes.robot import Robot
 
 robot = Robot()
@@ -27,6 +30,20 @@ def run(gait: Gait):
         positions = next(gait)
 
 
-run(Trot(stride=60, clearance=60, step_size=25))
+# run(Trot(stride=60, clearance=60, step_size=25))
+run(TigerRun(
+        p0=settings.position_ready,
+        stride=100,  # Increase stride length for a more dynamic run
+        clearance=80,  # Increase clearance for higher leg lift
+        step_size=10  # Adjust step size for smoother transitions
+    ))
+
+run(Jump(
+        p0=settings.position_ready,
+        stride=0,  # No forward movement
+        clearance=50,  # Height of the jump
+        step_size=1
+    ))
+
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
