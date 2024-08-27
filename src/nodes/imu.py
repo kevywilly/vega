@@ -1,12 +1,17 @@
 import atexit
-import math
 
-import adafruit_bno055
-import board
+try:
+    import adafruit_bno055
+    import board
+except:
+    from src.mock import adafruit_bno055
+    from src.mock.board import board
+
 import numpy as np
 import traitlets
-from config import ImuOffsets, BNO_AXIS_REMAP
+from settings import settings
 from src.nodes.node import Node
+
 
 class IMUMode:
     CONFIG_MODE = 0x00
@@ -23,6 +28,7 @@ class IMUMode:
     NDOF_FMC_OFF_MODE = 0x0B
     NDOF_MODE = 0x0C
 
+
 class IMU(Node):
     acceleration = traitlets.Any()
     magnetic = traitlets.Any()
@@ -32,27 +38,38 @@ class IMU(Node):
     linear_acceleration = traitlets.Any()
     gravity = traitlets.Any()
 
-    def __init__(self, *args, **kwargs):
-        super(IMU, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(IMU, self).__init__(**kwargs)
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
-        self.sensor.axis_remap = BNO_AXIS_REMAP
-        self.sensor.offsets_gyroscope = ImuOffsets.gyro
-        self.sensor.offsets_magnetometer = ImuOffsets.magnetic
-        self.sensor.offsets_accelerometer = ImuOffsets.accel
+
+        if settings.bno_axis_remap:
+            self.sensor.axis_remap = settings.bno_axis_remap
+
+        if settings.imu_gyro_offsets:
+            self.sensor.offsets_gyroscope = tuple(settings.imu_gyro_offsets)
+
+        if settings.imu_magnetic_offsets:
+            self.sensor.offsets_magnetometer = tuple(settings.imu_magnetic_offsets)
+
+        if settings.imu_acceleration_offsets:
+            self.sensor.offsets_accelerometer = tuple(settings.imu_acceleration_offsets)
+
         self.read_measurements()
 
         atexit.register(self.shutdown)
 
     def read_measurements(self):
-        self.acceleration = np.array(self.sensor.acceleration)
-        self.magnetic = np.array(self.sensor.magnetic)
-        self.gyro = np.array(self.sensor.gyro)
-        self.euler = np.array(self.sensor.euler)
-        self.quaternion = np.array(self.sensor.quaternion)
-        self.linear_acceleration = np.array(self.sensor.linear_acceleration)
-        self.gravity = np.array(self.sensor.gravity)
-
+        try:
+            self.acceleration = np.round(np.array(self.sensor.acceleration),3)
+            self.magnetic = np.round(np.array(self.sensor.magnetic),3)
+            self.gyro = np.round(np.array(self.sensor.gyro),3)
+            self.euler = np.round(np.array(self.sensor.euler),3)
+            self.quaternion = np.round(np.array(self.sensor.quaternion),3)
+            self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
+            self.gravity = np.round(np.array(self.sensor.gravity),3)
+        except Exception as e:
+            self.logger.error(f"could not read imu {e.__str__()}")
 
     def spinner(self):
         self.read_measurements()

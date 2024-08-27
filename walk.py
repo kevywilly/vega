@@ -1,53 +1,32 @@
-from src.motion.gaits.sideways import Sideways
-from src.motion.gaits.turn import Turn
-from src.nodes.robot import Robot
-from src.motion.gaits.trot import Trot, BasicTrot
-from config import Positions
-robot = Robot()
-
 import time
-target = Positions.crouch
-num_steps = 54
-import numpy as np
 
+from settings import settings
+from src.motion.gaits.gait import Gait
+from src.motion.gaits.trot import Trot
+from src.motion.gaits.walk import Walk
+from src.nodes.robot import Robot
+
+robot = Robot()
 
 
 def demo():
-    positions = [Positions.ready, Positions.crouch, Positions.ready]
+    positions = [settings.position_ready, settings.position_crouch, settings.position_ready]
     print(positions)
     for p in positions:
         robot.set_targets(p)
         robot.move_to_targets()
-        robot.print_stats()
         time.sleep(2)
 
 
-def trot():
-    gait = Trot(p0 = Positions.ready2, mag_x=60, mag_y=0, mag_z=60, step_size=15)
-    robot.controller.move_to(Positions.ready2)
+def run(gait: Gait):
+    robot.controller.move_to(gait.p0)
     time.sleep(0.5)
-    while 1:
-        for position in gait.step_generator(reverse=False):
-            robot.controller.move_to(position, 50)
+    positions = gait.p0
+    while positions is not None:
+        robot.controller.move_to(positions, 50)
+        positions = next(gait)
 
 
-def side():
-    trotter = Sideways(p0 = Positions.ready2, mag_x=0, mag_y=-30, mag_z=50, step_size=15)
-    robot.controller.move_to(Positions.ready2)
-    time.sleep(0.5)
-    while 1:
-        for position in trotter.step_generator(reverse=True):
-            robot.controller.move_to(position, 80)
-
-def turn():
-    gait = Turn(p0 = Positions.ready2, mag_x=20, mag_y=20, mag_z=40, step_size=15)
-    robot.controller.move_to(Positions.ready2)
-    time.sleep(0.5)
-    while 1:
-        for position in gait.step_generator(reverse=False):
-            robot.controller.move_to(position, 50)
-
-
-
-turn()
-
+run(Trot(stride=60, clearance=60, step_size=25))
+# run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
+# run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))

@@ -4,7 +4,14 @@ from typing import Optional
 import numpy as np
 import traitlets
 
+from settings import settings
 from src.interfaces.msgs import Twist
+from src.interfaces.pose import Pose
+from src.model.types import MoveTypes
+from src.motion.gaits.gait import Gait
+from src.motion.gaits.sidestep import Sidestep
+from src.motion.gaits.trot import Trot
+from src.motion.gaits.turn import Turn
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
@@ -14,6 +21,10 @@ from src.vision.image import Image, ImageUtils
 
 class Measurement(traitlets.HasTraits):
     value = traitlets.Any(allow_none=True)
+
+
+class PoseStatus(traitlets.HasTraits):
+    pose = traitlets.Instance(Pose, allow_none=True)
 
 
 class CmdVel(traitlets.HasTraits):
@@ -26,10 +37,20 @@ class CmdVel(traitlets.HasTraits):
             return np.array([self.value.linear.x, self.value.linear.y, self.value.angular.z])
 
 
+class DriveCmd(traitlets.HasTraits):
+    stride = traitlets.Int(allow_none=True)
+
+
 class Robot(Node):
     image = traitlets.Instance(Image)
     measurement = traitlets.Instance(Measurement)
     cmd_vel = traitlets.Instance(CmdVel)
+    moving = traitlets.Bool(allow_none=True, default=False)
+    move_type = traitlets.Unicode(allow_none=True, default=MoveTypes.STOP)
+    joy_id = traitlets.Int(allow_none=True)
+    gait = traitlets.Any(Gait, allow_none=True)
+    yaw_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
+    pitch_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
@@ -55,6 +76,9 @@ class Robot(Node):
 
         self._start_nodes()
         self._setup_subscriptions()
+        time.sleep(0.2)
+
+        self.auto_level()
 
         self.loaded()
 
@@ -101,10 +125,152 @@ class Robot(Node):
             except Exception:
                 pass
 
-    def print_stats(self):
-        print("cmd", self.controller.pose.cmd)
-        # print("targets", self.controller.pose.target_positions)
-        # print("target_angles", self.controller.pose.target_angles)
+    def stop(self):
+        self.moving = False
+        self.move_type = MoveTypes.STOP
+        self.ready()
+        # time.sleep(0.2)
+        # self.level()
+        # time.sleep(0.2)
+        return {
+            "moving": self.moving,
+            "move_type": self.move_type
+        }
+
+    def process_move(self, move_type: MoveTypes):
+
+        if move_type == MoveTypes.FORWARD:
+            self.gait = Trot(
+                p0=settings.position_ready + settings.position_forward_offsets,
+                **settings.trot_params
+            )
+        elif move_type == MoveTypes.FORWARD_LT:
+            self.gait = Turn(**settings.turn_params, turn_direction=1)
+        elif move_type == MoveTypes.FORWARD_RT:
+            self.gait = Turn(**settings.turn_params, turn_direction=-1)
+        elif move_type == MoveTypes.BACKWARD:
+            self.gait = Trot(
+                p0=settings.position_ready + settings.position_backward_offsets,
+                **settings.trot_reverse_params
+            )
+        elif move_type == MoveTypes.BACKWARD_LT:
+            self.gait = Turn(**settings.turn_params, turn_direction=-1, is_reversed=True)
+        elif move_type == MoveTypes.BACKWARD_RT:
+            self.gait = Turn(**settings.turn_params, turn_direction=1, is_reversed=True)
+        elif move_type == MoveTypes.LEFT:
+            self.gait = Sidestep(**settings.sidestep_params, is_reversed=True)
+        elif move_type == MoveTypes.RIGHT:
+            self.gait = Sidestep(**settings.sidestep_params)
+        elif move_type == MoveTypes.TROT_IN_PLACE:
+            self.gait = Trot(**settings.trot_in_place_params)
+        elif move_type == MoveTypes.STOP:
+            return self.stop()
+
+        self.move_type = move_type
+
+        if self.move_type != MoveTypes.STOP:
+            self.moving = True
+
+        return {
+            "moving": self.moving,
+            "move_type": self.move_type
+        }
+
+    def demo(self):
+        positions = [settings.position_ready, settings.position_crouch, settings.position_ready, settings.position_sit]
+
+        for p in positions:
+            self.set_targets(p)
+            self.move_to_targets()
+            print(p)
+            time.sleep(2)
+
+    def trot_in_place(self):
+        gait = Trot(**settings.trot_in_place_params)
+        self.ready(200)
+        for i in range(int(gait.shape[0]*2)):
+            self.logger.info("trotting in place")
+            position = next(gait)
+            self.controller.move_to(position, 10)
+
+        time.sleep(0.1)
+
+
+
+    def auto_level(self):
+        if settings.auto_level:
+            for i in range(3):
+                self.logger.info(f"*** Leveling pass {i} ***")
+                if self.level():
+                    return
+
+    def level(self) -> bool:
+        self.logger.info("**** Performing Level Calibration ***")
+        try:
+            self.trot_in_place()
+            self.ready(100)
+            time.sleep(0.2)
+            pitch_array = np.array([1, -1, -1, 1]).astype(int)
+            yaw_array = np.array([-1, -1, 1, 1]).astype(int)
+            zeros = np.zeros(4)
+            roll, pitch, yaw = self.imu.euler
+
+            for i in range(10):
+
+                if abs(pitch) > settings.pitch_threshold:
+                    pitch_offset = pitch_array if pitch >= 0 else -pitch_array
+                else:
+                    pitch_offset = zeros
+
+                if abs(yaw) > settings.yaw_threshold:
+                    yaw_offset = yaw_array if (yaw >= 0) else -yaw_array
+                else:
+                    yaw_offset = zeros
+
+                settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
+                self.logger.info(
+                    f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}")
+                self.ready(10)
+
+                time.sleep(0.3)
+
+                roll, pitch, yaw = self.imu.euler
+
+                if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
+                    self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
+                    return True
+
+        except Exception as ex:
+            self.ready(200)
+            self.logger.error(ex)
+
+        self.logger.info(f"leveling failed...pitch...{pitch} yaw...{yaw}")
+        settings.reset_offsets()
+        self.ready(200)
+        return False
+
+    def ready(self, millis=200):
+        self.controller.move_to(settings.position_ready, millis)
+
+    @property
+    def stats(self) -> dict:
+        euler = dict(zip(['heading',"pitch","yaw"], self.imu.euler))
+        angular_velocity = dict(zip(["x", "y", "z"], self.imu.gyro))
+        angular_acceleration = dict(zip(["x", "y", "z"], self.imu.acceleration))
+        pose = self.controller.pose
+        return {
+            "euler": euler,
+            "angular_velocity": angular_velocity,
+            "angular_acceleration": angular_acceleration,
+            "angles": pose.angles_in_degrees.tolist(),
+            "positions": pose.positions.astype(int).tolist(),
+            "offsets": settings.position_offsets.astype(int).tolist(),
+            "tilt": settings.tilt.json(),
+            "height": pose.height,
+            "height_pct": pose.height_pct,
+        }
 
     def spinner(self):
-        pass
+        if self.moving and self.gait is not None:
+            position = next(self.gait)
+            self.controller.move_to(position, 10)

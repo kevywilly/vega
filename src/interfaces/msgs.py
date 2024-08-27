@@ -1,14 +1,15 @@
+import time
 from abc import abstractmethod, ABC
-from typing import Optional, Dict
+from typing import Optional
+
 import numpy as np
 from numpy import ndarray
-import time
 
 
 class DataModel(ABC):
     @abstractmethod
     def numpy(self) -> ndarray:
-        return np.array()
+        return np.array([])
 
 
 class Vector3(DataModel):
@@ -31,9 +32,9 @@ class Vector3(DataModel):
         return Vector3(x, y, z)
 
     @classmethod
-    def from_numpy(cls, input: np.array) -> "Vector3":
-        assert input.shape == (3,), f"expected np array with shape (3,) got array with shape {input.shape}"
-        x, y, z = input
+    def from_numpy(cls, a: np.array) -> "Vector3":
+        assert a.shape == (3,), f"expected np array with shape (3,) got array with shape {a.shape}"
+        x, y, z = a
         return Vector3(x, y, z)
 
     def numpy(self):
@@ -59,9 +60,9 @@ class Vector4(DataModel):
         self.w = w
 
     @classmethod
-    def from_numpy(cls, input: np.array) -> "Vector4":
-        assert input.shape == (4,), f"expected np array with shape (3,) got array with shape {input.shape}"
-        x, y, z, w = input
+    def from_numpy(cls, a: np.array) -> "Vector4":
+        assert a.shape == (4,), f"expected np array with shape (3,) got array with shape {a.shape}"
+        x, y, z, w = a
         return Vector4(x, y, z, w)
 
     def numpy(self):
@@ -81,7 +82,7 @@ class Time(DataModel):
 
     def __init__(self,
                  sec: Optional[int] = int(time.time()),
-                 nanosec: Optional[int] = int(time.time() * (1000000000))
+                 nanosec: Optional[int] = int(time.time() * 1000000000)
                  ):
         self.sec = sec
         self.nanosec = nanosec
@@ -119,7 +120,7 @@ class Twist(DataModel):
         return np.concatenate((self.linear.numpy, self.angular.numpy))
 
     def csv(self):
-        return ",".join([self.linear.csv(), self.angular().csv()])
+        return ",".join([self.linear.csv(), self.angular.csv()])
 
     def dict(self):
         return {'linear': self.linear.dict(), 'angular': self.angular.dict()}
@@ -140,7 +141,7 @@ class Pose(DataModel):
         self.orientation = orientation
 
     def csv(self):
-        return ",".join([self.position.csv(), self.orientation().csv()])
+        return ",".join([self.position.csv(), self.orientation.csv()])
 
     def numpy(self):
         return np.concatenate((self.position.numpy, self.orientation.numpy))

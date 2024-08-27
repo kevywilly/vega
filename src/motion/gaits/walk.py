@@ -1,50 +1,51 @@
 import numpy as np
 
-class Walk:
-    def __init__(self, mag_x=60, mag_y=20, mag_z=60, step_size=30):
-        self.mag_x = mag_x
-        self.mag_y = mag_y
-        self.mag_z = mag_z
-        step_size = step_size
-
-        phase1_x = np.sin(np.radians(np.arange(0,90, step_size))) * self.mag_x      # 90
-        phase2_x = np.sin(np.radians(np.arange(90,180, step_size))) * mag_x         # 90
-        phase1_z = np.sin(np.radians(np.arange(0,180, step_size*2))) * self.mag_x   # 90
-        phase2_z = np.zeros(int(90/step_size))                                      # 90
+from settings import settings
+from src.motion.gaits.gait import Gait
 
 
-        self.x = np.hstack([phase1_x, phase2_x])
-        self.y = np.full(self.x.size, -mag_y)
-        self.z = np.hstack([phase1_z, phase2_z])
+class Walk(Gait):
 
-        phase3_x = np.cos(np.radians(np.arange(90,180,step_size/2))) * self.mag_x
-        phase3_y = np.full(phase3_x.size,-mag_y)
-        phase3_z = np.zeros(phase3_x.size)
+    def build_steps(self):
+        up_down = np.sin(np.radians(np.linspace(0, 180, self.num_steps)))
+        x = np.hstack([
+            np.sin(np.radians(np.linspace(0, 90, self.num_steps * 1))),
+            np.cos(np.radians(np.linspace(0, 90, self.num_steps * 1))),
+            np.cos(np.radians(np.linspace(90, 180, self.num_steps * 4))),
+        ]) * int(self.stride)
+        z = np.hstack([
+            np.sin(np.radians(np.linspace(90, 180, self.num_steps))),
+            np.zeros(self.num_steps*5)
+        ]) * (-self.clearance)
 
-        self.x2 = phase3_x
-        self.y2 = phase3_y
-        self.z2 = phase3_z
+        x = x.reshape((6,-1))
+        z = z.reshape((6,-1))
 
-        self.steps = np.array([self.x, self.y, self.z])
-        self.steps = -self.steps.reshape(-1, self.x.size).transpose(1, 0).astype(int)
+        x1 = np.array([x[0], x[1], x[2], x[3], x[4], x[5]]).flatten()
+        x2 = np.array([x[2], x[0], x[1], x[2], x[3], x[4]]).flatten()
+        x3 = np.array([x[2], x[3], x[0], x[1], x[2], x[3]]).flatten()
+        x4 = np.array([x[2], x[3], x[4], x[0], x[1], x[2]]).flatten()
 
-        self.steps2 = np.array([self.x2, self.y2, self.z2])
-        self.steps2 = -self.steps2.reshape(-1, self.x2.size).transpose(1, 0).astype(int)
+        z1 = z.flatten()
+        z2 = np.roll(z,1,0).flatten()
+        z3 = np.roll(z,2,0).flatten()
+        z4 = np.roll(z,3,0).flatten()
 
-    def step_generator(self, reverse=False):
+        y = np.zeros(x1.size)
 
-        direction = np.array([-1,1,1]) if reverse else np.array([1,1,1])
-        for i in range(self.x.size):
+        self.steps1 = Gait.reshape_steps(np.array([x4,y,z4]), x1.size) # leg 0
+        self.steps2 = Gait.reshape_steps(np.array([x2,y,z2]), x1.size) # leg 1
+        self.steps3 = Gait.reshape_steps(np.array([x1, y, z1]), x1.size) # leg 2
+        self.steps4 = Gait.reshape_steps(np.array([x3,y,z3]), x1.size) # leg 3
 
-            l1_3 = self.steps[i] * direction
-            l2_4 = self.steps2[i] * direction
 
-            yield np.array([l1_3, l2_4, l1_3, l2_4])
+if __name__ == "__main__":
 
-        for i in range(self.x.size):
+    gait = Walk(
+        p0=settings.position_ready,
+        stride=50,
+        clearance=50,
+        step_size=1
+    )
 
-            l1_3 = self.steps2[i] * direction
-            l2_4 = self.steps[i] * direction
-
-            yield np.array([l1_3, l2_4, l1_3, l2_4])
-
+    gait.plotit()

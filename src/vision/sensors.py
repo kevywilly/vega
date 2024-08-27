@@ -1,14 +1,6 @@
-class CameraSensor:
-    """
-            return [
-            cls(0, 3264, 2464, 21),
-            cls(1, 3264, 1848, 28),
-            cls(2, 1928, 1080, 29),
-            cls(3, 1640, 1232, 29),
-            cls(4, 1280, 720, 59),
-            cls(5, 1280, 720, 120)
-        ]
-    """
+from enum import Enum
+
+class CameraSensorMode(int, Enum):
     MODE3264X2464X21 = 0
     MODE3264X1848X28 = 1
     MODE1928X1080X29 = 2
@@ -16,6 +8,7 @@ class CameraSensor:
     MODE1280x720x59 = 4
     MODE1280X720x120 = 5
 
+class CameraSensor:
 
     def __init__(self, id: int, width: int, height: int, framerate: int):
         self.id = id

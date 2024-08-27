@@ -1,12 +1,12 @@
 import atexit
 import logging
+import time
 
 import numpy as np
 import serial
 import traitlets
 
-import config
-from config import Positions, Angles, Dims, SERVO_IDS, FLIP
+from settings import settings
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import Kinematics
@@ -15,10 +15,10 @@ from src.nodes.node import Node
 
 logger = logging.getLogger('VEGA')
 
-_km = Kinematics(Dims.coxa, Dims.femur, Dims.tibia)
+_km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_length, settings.robot_width, settings.robot_length)
 
 try:
-    _sc = ServoController(serial.Serial(config.serial_port))
+    _sc = ServoController(serial.Serial(settings.serial_port))
 except:
     _sc = None
     logger.debug(f"Robot will not move - couldn't open serial port.")
@@ -29,7 +29,7 @@ SERVO_MAX_ANGLE = np.radians(240)
 
 def _angles_from_positions(positions: np.ndarray):
     angles = np.zeros((4, 3))
-    for i, pos in enumerate(positions):
+    for i, pos in enumerate(positions+settings.position_offsets):
         angles[i] = _km.ik(pos)
 
     return angles
@@ -40,23 +40,23 @@ def _positions_from_angles(angles: np.ndarray):
     for i, ang in enumerate(angles):
         positions[i] = _km.fk(ang)
 
-    return positions
+    return positions - settings.position_offsets
 
 
 def _servo_positions_from_angles(angles: np.ndarray):
-    adjusted_angles = angles - Angles.zero
+    adjusted_angles = angles - settings.angle_zero
     return dict(
         zip(
-            config.SERVOS.reshape(-1),
-            ((adjusted_angles * FLIP * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
+            settings.servo_ids,
+            ((adjusted_angles * settings.angle_flip * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
         )
     )
 
 
 def _angles_from_servo_positions(servo_positions):
     pos = _servo_positions_to_numpy(servo_positions)
-    angles = (pos - 500) * SERVO_MAX_ANGLE / (FLIP * 1000)
-    return angles + Angles.zero
+    angles = (pos - 500) * SERVO_MAX_ANGLE / (settings.angle_flip * 1000)
+    return angles + settings.angle_zero
 
 
 def _servo_positions_to_numpy(servo_positions):
@@ -73,22 +73,22 @@ class Controller(Node):
     publish_frequency_hz = traitlets.Int(default_value=10, config=True)
     camera_image = traitlets.Any(allow_none=True)
     euler = traitlets.Any(allow_none=True)
-
+    pose = traitlets.Instance(Pose, allow_none=True)
     attitude_data = traitlets.Any()
     magnometer_data = traitlets.Any()
     gyroscope_data = traitlets.Any()
     accelerometer_data = traitlets.Any()
     motion_data = traitlets.Any()
 
-    def __init__(self, *args, **kwargs):
-        super(Controller, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(Controller, self).__init__(**kwargs)
         self.positions = None
         self.offsets = None
         self.pose = Pose()
         self.cmd = None
         self._read_positions()
-        self.set_targets(Positions.ready2)
-        self.move_to(Positions.ready2)
+        self.set_targets(settings.position_ready)
+        self.move_to(settings.position_ready, 400)
 
         atexit.register(self.shutdown)
 
@@ -100,9 +100,11 @@ class Controller(Node):
         self._apply_cmd_vel(change.new)
 
     def shutdown(self):
-        self.move_to(Positions.crouch)
+        self.move_to(settings.position_sit,500)
+        time.sleep(0.2)
+
         if _sc:
-            _sc.unload(SERVO_IDS)
+            _sc.unload(settings.servo_ids)
 
     def set_targets(self, positions: np.ndarray):
         self.pose.target_positions = positions
@@ -115,7 +117,7 @@ class Controller(Node):
     def move_to_targets(self, millis=DEFAULT_MILLIS):
         return self.move_to(self.pose.target_positions, millis_or_default(millis))
 
-    def move_to(self, positions: np.ndarray, millis=800):
+    def move_to(self, positions: np.ndarray, millis=500):
         angles = _angles_from_positions(positions)
         cmd = _servo_positions_from_angles(angles)
 
@@ -125,11 +127,12 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
+        print(self.pose)
         return cmd
 
     def _read_positions(self):
         try:
-            self.logger.info(_sc.get_positions(SERVO_IDS))
+            self.logger.info(_sc.get_positions(settings.servo_ids))
             self.logger.info(f"battery: {_sc.get_battery_voltage()}")
             # self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             # self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
@@ -137,13 +140,9 @@ class Controller(Node):
         except:
             pass
 
-    def voltage(self):
-        return _sc.get_battery_voltage()
-
-    @traitlets.observe('euler')
-    def _on_euler(self, change):
-        # self.logger.info(f'euler: {self.euler}')
-        pass
+    @staticmethod
+    def voltage():
+        return 0.0
 
     def spinner(self):
         pass

@@ -1,19 +1,23 @@
 import cv2
 import traitlets
-from picamera2 import Picamera2
 
-from config import CAMERA_MATRIX, DISTORTION_COEFFICIENTS
+try:
+    from picamera2 import Picamera2
+except:
+    from src.mock.picamera2 import Picamera2
+
+from settings import settings
 from src.nodes.node import Node
 
 
 def _convert_color(frame):
-    #return frame
+    # return frame
     # XBGR8888  - SBGR10_CSI2P is what we get
     return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
 def _un_distort(frame):
-    return cv2.undistort(frame, CAMERA_MATRIX, DISTORTION_COEFFICIENTS)
+    return cv2.undistort(frame, settings.camera_matrix, settings.distortion_coefficients)
 
 
 class Camera(Node):
@@ -51,7 +55,7 @@ class Camera(Node):
         try:
             frame = cap.capture_array()
             frame = _convert_color(frame)
-            frame = cv2.flip(frame, 0)
+            frame = cv2.flip(frame, -1)
             self.value = frame
         except:
             self.logger.warn(f"Can't receive frame from camera")
@@ -63,5 +67,3 @@ class Camera(Node):
         self.logger.info("stopping camera")
         self.cap.stop()
         self.cap.close()
-
-

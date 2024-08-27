@@ -12,8 +12,8 @@ class Node(Configurable):
     logger = logging.getLogger('VEGA')
     frequency = traitlets.Float(default_value=10).tag(config=True)
 
-    def __init__(self, *args, **kwargs):
-        super(Node, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(Node, self).__init__(**kwargs)
         print("\n")
         self.logger.info(f"******************************************************************\n")
         self.logger.info(f"*\tStarting {self.__class__.__name__} Node @ {self.frequency}Hz\n")
@@ -32,7 +32,6 @@ class Node(Configurable):
     def spinner(self):
         pass
 
-    @abstractmethod
     def shutdown(self):
         pass
 

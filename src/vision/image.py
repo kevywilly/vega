@@ -1,5 +1,5 @@
-import traitlets
 import cv2
+import traitlets
 
 
 class Image(traitlets.HasTraits):

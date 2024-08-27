@@ -3,12 +3,11 @@ __all__ = [
     'TimeoutError',
 ]
 
+import logging
+import threading
+from itertools import chain
 
 from serial.serialutil import Timeout
-from functools import partial
-from itertools import chain
-import threading
-import logging
 
 TEST_MODE = False
 
@@ -30,7 +29,7 @@ def higher_byte(value):
 
 
 def word(low, high):
-    return int(low) + int(high)*256
+    return int(low) + int(high) * 256
 
 
 def hex_data(data):
@@ -99,7 +98,7 @@ class ServoController(object):
             length = data[2]
             cmd = data[3]
 
-            data += read(length-2) if length > 2 else []
+            data += read(length - 2) if length > 2 else []
             params = data[4:]
 
             LOGGER.debug('Got command %s response: %s', cmd, hex_data(data))
@@ -143,7 +142,7 @@ class ServoController(object):
         """
         response = self._query(CMD_MULT_SERVO_POS_READ, len(servo_ids), *servo_ids)
         return {
-            response[1 + 3*i]: word(response[2 + 3*i], response[3 + 3*i])
+            response[1 + 3 * i]: word(response[2 + 3 * i], response[3 + 3 * i])
             for i in range(response[0])
         }
 

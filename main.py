@@ -1,15 +1,14 @@
-
-#!/usr/bin/python3i
+#!/usr/bin/python3
 
 import logging
-import time
 import os
+import time
+import numpy as np
+from flask import Flask, Response, request, render_template
 from flask_cors import CORS
-from flask import Flask, Response, request
-
-from src.interfaces.vector import Pos3d, Vector3
-
-from config import Positions
+from flask_compress import Compress
+from settings import settings
+from src.model.types import MoveTypes
 from src.nodes.robot import Robot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -26,57 +25,128 @@ CORS(app, resource={
     }
 })
 
+Compress(app)
 
-def demo():
-    positions = [Positions.ready, Positions.crouch, Positions.ready]
+def get_stats():
+    return app.robot.stats
 
-    for p in positions:
-        app.robot.set_targets(p)
-        app.robot.move_to_targets()
-        app.robot.print_stats()
-        time.sleep(2)
-
-    """
-    command {11: 491, 12: 500, 13: 375, 21: 508, 22: 500, 23: 625, 31: 508, 32: 500, 33: 625, 41: 491, 42: 500, 43: 375}
-    ready {11: 491, 12: 315, 13: 720, 21: 508, 22: 684, 23: 279, 31: 508, 32: 684, 33: 279, 41: 491, 42: 315, 43: 720}
-    crouch {11: 491, 12: 166, 13: 966, 21: 508, 22: 833, 23: 33, 31: 508, 32: 833, 33: 33, 41: 491, 42: 166, 43: 966}
-    """
 
 @app.get('/')
 def _index():
+    return render_template('index.html')
+
+
+@app.get('/healthcheck')
+def _health_check():
     return OK
 
-@app.get('/demo')
+
+@app.get('/api/demo')
 def _demo():
-    demo()
+    app.robot.demo()
     return OK
 
-@app.post('/target')
+
+@app.post('/api/target')
 def _target():
     data = request.get_json()
-    pos = Pos3d(**data)
     return data
 
-@app.get('/stream')
+
+@app.post('/api/move/<move_type>')
+def _move(move_type: MoveTypes):
+    return app.robot.process_move(move_type)
+
+
+@app.get('/api/stream')
 def stream():
     return Response(app.robot.get_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.get('/stats')
-def stats():
-    heading, pitch, yaw = app.robot.imu.euler
-    voltage = app.robot.controller.voltage()
-    return {
-        "stats" : {
-            "heading": heading,
-            "pitch": pitch,
-            "yaw": yaw,
-            "voltage": voltage
-        }
-    }
 
+@app.get('/api/stats')
+def stats():
+    return get_stats()
+
+
+@app.get('/api/targets')
+def _get_targets():
+    return app.robot.controller.pose.target_positions.tolist()
+
+
+@app.post('/api/pose/<value>')
+def _set_pose(value: str):
+    v = value.lower()
+
+    p = None
+
+    if v == "ready":
+        p = settings.position_ready
+    elif v == "sit":
+        p = settings.position_sit
+    elif v == "crouch":
+        p = settings.position_crouch
+    else:
+        return {"status": "error, unknown pose"}
+
+    if app.robot.moving:
+        app.robot.stop()
+        time.sleep(0.5)
+
+    app.robot.set_targets(p)
+    app.robot.move_to_targets()
+
+    return {"status": "ok"}
+
+
+@app.post('/api/tilt/<type>/<degrees>')
+def _set_tilt(type: str, degrees: int):
+    if type == "yaw":
+        settings.tilt.yaw = int(degrees)
+    elif type == "pitch":
+        settings.tilt.pitch = int(degrees)
+
+    return settings.tilt.json()
+
+@app.get('/api/tilt')
+def _get_tilt():
+    return settings.tilt.json()
+
+@app.post('/api/targets')
+def _set_targets():
+    data = request.get_json()
+    if not data:
+        app.robot.set_targets(settings.position_ready)
+    else:
+        app.robot.set_targets(np.array(data).astype(np.int16))
+
+    app.robot.move_to_targets()
+
+    return app.robot.controller.pose.target_positions.tolist()
+
+
+@app.get('/api/offsets')
+def ready():
+    return settings.position_offsets.tolist()
+
+@app.post('/api/level')
+def level():
+    app.robot.level()
+    return settings.position_offsets.tolist()
+
+
+@app.post('/api/offsets/reset')
+def reset_offsets():
+    settings.reset_offsets()
+    return settings.position_offsets.tolist()
+
+
+@app.get('/api/stop')
+def stop():
+    app.robot.stop()
+    return {"status": "stopped"}
 
 
 if __name__ == "__main__":
     app.robot = Robot()
     app.robot.spin(frequency=50)
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', debug=settings.environment == "development")

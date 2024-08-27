@@ -4,56 +4,91 @@ from src.motion.gaits.gait import Gait
 
 
 class Turn(Gait):
-
-    def make_steps(self):
-        l0 = np.array([
-            [self.mag_x/2, -self.mag_y/2, self.mag_z],
-            [self.mag_x, -self.mag_y, 0]
-        ])
     def build_steps(self):
+        mag_z = -self.clearance
+        mag_y = -self.stride
 
-        l1_x = np.hstack([
-            np.sin(np.radians(np.linspace(0, 180, self.num_steps*2)))
-        ]) * -self.mag_x
+        step = np.sin(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
+        back = np.cos(np.radians(np.linspace(0, 90, self.num_steps))) * mag_y * self.turn_direction
+        up_down = np.sin(np.radians(np.linspace(0, 180, self.num_steps))) * mag_z
+        stepped = np.zeros(self.num_steps)
+        zero = np.zeros(self.num_steps)
+        zeros = np.repeat(zero, 5)
 
-        l1_y = np.hstack([
-            np.sin(np.radians(np.linspace(0, 180, self.num_steps*2)))
-        ]) * -self.mag_y
+        print(step.size)
+        print(back.size)
+        print(up_down.size)
 
-        l1_z = np.hstack([
-                np.sin(np.radians(np.linspace(0, 180, self.num_steps))),
-                np.hstack(np.zeros(self.num_steps))
-        ]) * -self.mag_z
+        self.steps1 = np.array([
+            zeros,
+            np.hstack([step, stepped, stepped, stepped, back]),
+            np.hstack([up_down, np.repeat(zero, 4)])
+        ])
 
-        l2_x = np.hstack([
-            np.cos(np.radians(np.linspace(0, 90, self.num_steps*2)))
-        ]) * -self.mag_x
+        self.steps2 = np.array([
+            zeros,
+            np.hstack([zero, step, stepped, stepped, back]),
+            np.hstack([zero, up_down, np.repeat(zero, 3)])
+        ])
 
-        l2_y = np.hstack([
-            np.cos(np.radians(np.linspace(0, 90, self.num_steps*2)))
-        ]) * -self.mag_y
+        self.steps3 = np.array([
+            zeros,
+            np.hstack([np.repeat(zero, 2), -step, stepped, back]),
+            np.hstack([np.repeat(zero, 2), up_down, np.repeat(zero, 2)])
+        ])
 
-        l2_z = np.hstack([
-                np.zeros(self.num_steps * 2)
-        ]) * -self.mag_z
+        self.steps4 = np.array([
+            zeros,
+            np.hstack([np.repeat(zero, 3), -step, back]),
+            np.hstack([np.repeat(zero, 3), up_down, zero])
+        ])
 
-        self.steps1 = np.array([l1_x, l1_y, l1_z]).reshape(-1, self.num_steps * 2).transpose(1, 0).astype(int)
+        self.steps1 = Gait.reshape_steps(self.steps1, self.num_steps * 5)
+        self.steps2 = Gait.reshape_steps(self.steps2, self.num_steps * 5)
+        self.steps3 = Gait.reshape_steps(self.steps3, self.num_steps * 5)
+        self.steps4 = Gait.reshape_steps(self.steps4, self.num_steps * 5)
 
-        self.steps2 = np.array([l2_x, l2_y, l2_z]).reshape(-1, self.num_steps * 2).transpose(1, 0).astype(int)
 
-        self.steps3 = self.steps1 * np.array([-1, -1, 1])
+class Turn2(Gait):
+    def build_steps(self):
+        clearance = -self.clearance
+        stride = -self.stride * self.turn_direction
 
-        self.steps4 = self.steps2 * np.array([1, -1, 1])
+        step = self.stride_forward() * stride
+        back = self.stride_home() * stride
+        up_down = self.downupdown(mode=self.UpdownMode.normal) * clearance
+        zeros = self.zeros
+        all_zeros = np.repeat(self.zeros, 5)
 
-    def step_generator(self, reverse=False):
+        print(step.size)
+        print(back.size)
+        print(up_down.size)
 
-        for phase in [0, 1]:
-            for i in range(self.steps1.shape[0]):
+        self.steps1 = np.array([
+            all_zeros,
+            np.hstack([step, zeros, zeros, zeros, back]),
+            np.hstack([up_down, zeros, zeros, zeros, zeros])
+        ])
 
-                offsets = np.array([self.steps1[i], self.steps2[i], self.steps3[i],self.steps4[i]])
+        self.steps2 = np.array([
+            all_zeros,
+            np.hstack([zeros, step, zeros, zeros, back]),
+            np.hstack([zeros, up_down, zeros, zeros, zeros])
+        ])
 
-                if phase == 0:
-                    yield self.p0 + offsets
-                else:
-                    yield self.p0 + offsets[::-1]
+        self.steps3 = np.array([
+            all_zeros,
+            np.hstack([zeros, zeros, -step, zeros, back]),
+            np.hstack([zeros, zeros, up_down, zeros, zeros])
+        ])
 
+        self.steps4 = np.array([
+            all_zeros,
+            np.hstack([zeros, zeros, zeros, -step, back]),
+            np.hstack([zeros, zeros, zeros, up_down, zeros])
+        ])
+
+        self.steps1 = Gait.reshape_steps(self.steps1, self.num_steps * 5)
+        self.steps2 = Gait.reshape_steps(self.steps2, self.num_steps * 5)
+        self.steps3 = Gait.reshape_steps(self.steps3, self.num_steps * 5)
+        self.steps4 = Gait.reshape_steps(self.steps4, self.num_steps * 5)
