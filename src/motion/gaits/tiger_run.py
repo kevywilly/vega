@@ -5,14 +5,14 @@ class TigerRun(Gait):
     def build_steps(self):
         # Define the magnitude of the stride and clearance
         mag_z = -self.clearance
-        mag_y = self.stride
+        mag_z = self.stride
 
         # Define the x, y, z coordinates for the steps
-        x = np.repeat(self.zeros, 2)
-        y = np.hstack([
+        x = np.hstack([
             self.stride_forward(),
             self.stride_front_to_back(),
-        ]) * mag_y
+        ]) * mag_z
+        y = np.repeat(self.zeros, 2)
         z = np.hstack([
             self.downupdown(),
             self.zeros
