@@ -22,7 +22,7 @@ if __name__ == "__main__":
     from settings import settings
 
     gait = Jump(
-        p0=settings.position_ready,
+        p0=settings.position.crouch,
         stride=0,  # No forward movement
         clearance=50,  # Height of the jump
         step_size=1
