@@ -2,7 +2,6 @@ import time
 
 from settings import settings
 from src.motion.gaits.gait import Gait
-from src.motion.gaits.trot import Trot
 from src.motion.gaits.tiger_run import TigerRun
 from src.motion.gaits.jump import Jump
 
