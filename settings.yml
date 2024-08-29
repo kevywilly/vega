@@ -48,7 +48,7 @@ gait_params:
   walk:
     stride: 50
     clearance: 60
-    step_size: 12
+    step_size: 10
   trot_in_place:
     stride: 0
     clearance: 40
