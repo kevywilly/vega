@@ -45,3 +45,6 @@ flask-cors
 
 
 
+# https://qengineering.eu/install-pytorch-on-raspberry-pi-4.html
+# torch==1.13
+# torchvision=1.14
