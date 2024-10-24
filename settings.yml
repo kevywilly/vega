@@ -30,9 +30,9 @@ imu:
     acceleration: [-40,42,-10]
 gait_params:
   trot:
-    stride: 50
-    clearance: 60
-    step_size: 12
+    stride: 55
+    clearance: 65
+    step_size: 15
   trot_reverse:
     stride: -30
     clearance: 40
