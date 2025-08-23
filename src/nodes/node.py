@@ -54,8 +54,8 @@ class Node(Configurable):
         self.shutdown()
         self._running = False
         if self._thread:
-            print(f'{self.__class__.__name__} shutting down')
+            self.logger.info(f'{self.__class__.__name__} shutting down')
         try:
             self._thread.join()
         except Exception as ex:
-            print(f'{ex.__str__()}')
+            self.logger.error(f'{ex.__str__()}')

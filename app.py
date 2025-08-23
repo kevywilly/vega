@@ -3,7 +3,7 @@
 Vega Robot Control Interface - NiceGUI Implementation
 Converted from HTML template with mock functions for demonstration
 """
-
+import logging
 from nicegui import ui, app
 from fastapi import StreamingResponse
 import asyncio
@@ -11,6 +11,8 @@ from typing import Dict, List
 from src.model.types import MoveTypes
 from src.nodes.robot import Robot
 from settings import settings
+
+logging.basicConfig(level=logging.INFO)
 
 robot: Robot = Robot()
 
@@ -230,6 +232,7 @@ async def main_page():
     asyncio.create_task(update_displays())
 
 if __name__ in {"__main__", "__mp_main__"}:
+    print("🤖 Starting Vega Robot Control Interface...")
     robot.spin(frequency=50)
     ui.run(
         title='Vega Robot Control',

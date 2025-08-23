@@ -19,9 +19,9 @@ _km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_len
 
 try:
     _sc = ServoController(serial.Serial(settings.serial_port))
-except:
+except:  # noqa: E722
     _sc = None
-    logger.debug(f"Robot will not move - couldn't open serial port.")
+    logger.debug("Robot will not move - couldn't open serial port.")
 
 DEFAULT_MILLIS = 800
 SERVO_MAX_ANGLE = np.radians(240)
@@ -127,17 +127,17 @@ class Controller(Node):
         self.pose.angles = angles
         self.pose.positions = positions
         self.pose.cmd = cmd
-        print(self.pose)
+        logger.debug(self.pose)
         return cmd
 
     def _read_positions(self):
         try:
-            self.logger.info(_sc.get_positions(settings.servo_ids))
-            self.logger.info(f"battery: {_sc.get_battery_voltage()}")
+            self.logger.debug(_sc.get_positions(settings.servo_ids))
+            self.logger.debug(f"battery: {_sc.get_battery_voltage()}")
             # self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             # self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
             # self.pose.positions = _positions_from_angles(self.pose.angles)
-        except:
+        except:  # noqa: E722
             pass
 
     @staticmethod
