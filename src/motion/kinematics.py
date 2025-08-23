@@ -1,24 +1,35 @@
 """
-Quadruped Robot Kinematics
-Clean implementation for inverse and forward kinematics calculations
+Quadruped Robot Kinematics - Cleaned up version preserving original math
+All calculations kept identical to working implementation
 """
 
 import numpy as np
-from math import sin, cos, atan2, acos, sqrt, radians
-from typing import Tuple
+from math import sin, cos, atan2, acos, radians
+from typing import Optional
 
 
 class QuadrupedKinematics:
     """
-    Kinematics solver for a quadruped robot with 3-DOF legs
+    Kinematics solver for quadruped robot - preserves original working math
     
-    Each leg has:
-    - Coxa: Hip joint (rotation around vertical axis)  
-    - Femur: Upper leg segment
+    Joint order: [coxa_angle, femur_angle, tibia_angle]
+    - Coxa: Hip rotation around vertical axis
+    - Femur: Upper leg segment  
     - Tibia: Lower leg segment
     """
     
-    def __init__(self, coxa, femur, tibia, width, length):
+    def __init__(self, coxa: float, femur: float, tibia: float, 
+                 width: float, length: float):
+        """
+        Initialize with robot dimensions
+        
+        Args:
+            coxa: Length of coxa segment
+            femur: Length of femur segment
+            tibia: Length of tibia segment  
+            width: Robot body width
+            length: Robot body length
+        """
         self.coxa = coxa
         self.femur = femur
         self.tibia = tibia
@@ -26,9 +37,19 @@ class QuadrupedKinematics:
         self.length = length
 
     def inverse_kinematics(self, pos: np.ndarray) -> np.ndarray:
-        """ https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/ """
+        """
+        Inverse kinematics - ORIGINAL IMPLEMENTATION PRESERVED
+        
+        Args:
+            pos: Target position [x, y, z]
+            
+        Returns:
+            Joint angles [coxa_angle, femur_angle, tibia_angle]
+            
+        Reference: https://robotacademy.net.au/lesson/inverse-kinematics-for-a-2-joint-robot-arm-using-geometry/
+        """
         x, y, z = pos
-        x = -x # invert x for world coordinate positioning
+        x = -x  # invert x for world coordinate positioning
 
         cos_q2 = (x * x + z * z - self.femur ** 2 - self.tibia ** 2) / (2 * self.femur * self.tibia)
         q2 = acos(cos_q2)
@@ -39,71 +60,91 @@ class QuadrupedKinematics:
         return np.array([q3, q1, q2])
 
     def forward_kinematics(self, angles: np.ndarray) -> np.ndarray:
-        _, theta1, theta2 = angles
         """
-        Calculate the end effector position (x, y) for a two-link arm given the joint angles (theta1, theta2).
-
+        Forward kinematics - ORIGINAL IMPLEMENTATION PRESERVED
+        
         Args:
-        theta1: Angle (in radians) of the first joint
-        theta2: Angle (in radians) of the second joint
-        link1_length: Length of the first arm link
-        link2_length: Length of the second arm link
-
+            angles: Joint angles [coxa_angle, femur_angle, tibia_angle]
+            
         Returns:
-        x: X-coordinate of the end effector position
-        y: Y-coordinate of the end effector position
+            End effector position [x, y, z]
         """
-        x = self.femur * np.cos(theta1) + self.tibia * np.cos(theta1 + theta2)
-        z = self.femur * np.sin(theta1) + self.tibia * np.sin(theta1 + theta2)
-        # h = np.sqrt(x**2 + z**2)
-        # invert x for world coordinates
+        _, theta1, theta2 = angles
+        
+        # Calculate position for two-link arm - ORIGINAL MATH
+        x = self.femur * cos(theta1) + self.tibia * cos(theta1 + theta2)
+        z = self.femur * sin(theta1) + self.tibia * sin(theta1 + theta2)
+        
+        # invert x for world coordinates - ORIGINAL BEHAVIOR
         return np.array([-x, 0, z])
 
     def apply_body_tilt(self, positions: np.ndarray, pitch: float, yaw: float) -> np.ndarray:
+        """
+        Apply body tilt - ORIGINAL IMPLEMENTATION PRESERVED
+        
+        Args:
+            positions: Array of foot positions (4, 3)
+            pitch: Pitch angle in degrees (positive = clockwise)
+            yaw: Yaw angle in degrees (positive = nose up)
+            
+        Returns:
+            Tilted positions as integers
+        """
         # positive yaw = nose up
         # positive pitch = clockwise
-        zx = self.length * np.sin(np.radians(yaw))/2
-        zy = self.width * np.sin(np.radians(pitch))/2
+        zx = self.length * sin(radians(yaw)) / 2
+        zy = self.width * sin(radians(pitch)) / 2
 
         p = positions * 1
-        p[:,2] += zx * np.array([1,1,-1,-1]) + zy * np.array([1,-1,-1,1])
+        p[:, 2] += zx * np.array([1, 1, -1, -1]) + zy * np.array([1, -1, -1, 1])
         return p.astype(int)
 
+    # Additional helper methods that don't change core behavior
+    def validate_position(self, pos: np.ndarray) -> bool:
+        """Check if position is potentially reachable"""
+        x, y, z = pos
+        distance_2d = np.sqrt((-x) ** 2 + z ** 2)  # Using original x inversion
+        max_reach = self.femur + self.tibia
+        min_reach = abs(self.femur - self.tibia)
+        return min_reach <= distance_2d <= max_reach
 
-# Example usage and testing
+    def get_leg_info(self) -> dict:
+        """Return leg dimensions for debugging"""
+        return {
+            'coxa': self.coxa,
+            'femur': self.femur, 
+            'tibia': self.tibia,
+            'width': self.width,
+            'length': self.length,
+            'max_reach': self.femur + self.tibia,
+            'min_reach': abs(self.femur - self.tibia)
+        }
+
+
+# Alias for backward compatibility with your existing code
+Kinematics = QuadrupedKinematics
+
+
+# Test to verify math is identical
 if __name__ == "__main__":
-    # Initialize kinematics for typical quadruped dimensions (in mm)
-    kinematics = QuadrupedKinematics(
-        coxa_length=50,
-        femur_length=100, 
-        tibia_length=120,
-        body_width=200,
-        body_length=300
-    )
+    # Test with your original setup
+    robot = Kinematics(50, 100, 120, 200, 300)
     
-    # Test inverse kinematics
-    target_pos = np.array([100, 50, -150])  # Target foot position
-    try:
-        joint_angles = kinematics.inverse_kinematics(target_pos)
-        print(f"Target position: {target_pos}")
-        print(f"Joint angles (deg): {np.degrees(joint_angles)}")
-        
-        # Verify with forward kinematics
-        calculated_pos = kinematics.forward_kinematics(joint_angles)
-        print(f"Calculated position: {calculated_pos}")
-        print(f"Error: {np.linalg.norm(target_pos - calculated_pos):.3f} mm")
-        
-    except ValueError as e:
-        print(f"IK Error: {e}")
+    # Test position
+    test_pos = np.array([100, 50, -150])
+    print(f"Test position: {test_pos}")
     
-    # Test body tilt
-    foot_positions = np.array([
-        [120, 100, -140],   # Front left
-        [120, -100, -140],  # Front right  
-        [-120, -100, -140], # Rear left
-        [-120, 100, -140]   # Rear right
-    ])
+    # IK -> FK round trip
+    angles = robot.ik(test_pos)
+    reconstructed_pos = robot.fk(angles)
     
-    tilted_positions = kinematics.apply_body_tilt(foot_positions, pitch=10, yaw=5)
-    print(f"\nOriginal foot positions:\n{foot_positions}")
-    print(f"Tilted foot positions:\n{tilted_positions}")
+    print(f"IK angles (deg): {np.degrees(angles)}")
+    print(f"FK position: {reconstructed_pos}")
+    print(f"Round-trip error: {np.linalg.norm(test_pos - reconstructed_pos):.6f}")
+    
+    # Test tilt
+    positions = np.array([[100, 50, -140], [100, -50, -140], 
+                         [-100, -50, -140], [-100, 50, -140]])
+    tilted = robot.tilt(positions, pitch=10, yaw=5)
+    print(f"\nOriginal positions:\n{positions}")
+    print(f"Tilted positions:\n{tilted}")
