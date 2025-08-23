@@ -13,9 +13,15 @@ from src.motion.kinematics import Kinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.node import Node
 
-logger = logging.getLogger('VEGA')
+logger = logging.getLogger("VEGA")
 
-_km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_length, settings.robot_width, settings.robot_length)
+_km = Kinematics(
+    settings.coxa_length,
+    settings.femur_length,
+    settings.tibia_length,
+    settings.robot_width,
+    settings.robot_length,
+)
 
 try:
     _sc = ServoController(serial.Serial(settings.serial_port))
@@ -29,8 +35,8 @@ SERVO_MAX_ANGLE = np.radians(240)
 
 def _angles_from_positions(positions: np.ndarray):
     angles = np.zeros((4, 3))
-    for i, pos in enumerate(positions+settings.position_offsets):
-        angles[i] = _km.ik(pos)
+    for i, pos in enumerate(positions + settings.position_offsets):
+        angles[i] = _km.inverse_kinematics(pos)
 
     return angles
 
@@ -38,7 +44,7 @@ def _angles_from_positions(positions: np.ndarray):
 def _positions_from_angles(angles: np.ndarray):
     positions = np.zeros((4, 3))
     for i, ang in enumerate(angles):
-        positions[i] = _km.fk(ang)
+        positions[i] = _km.forward_kinematics(ang)
 
     return positions - settings.position_offsets
 
@@ -48,7 +54,9 @@ def _servo_positions_from_angles(angles: np.ndarray):
     return dict(
         zip(
             settings.servo_ids,
-            ((adjusted_angles * settings.angle_flip * 1000 / SERVO_MAX_ANGLE) + 500).reshape(-1).astype(int)
+            ((adjusted_angles * settings.angle_flip * 1000 / SERVO_MAX_ANGLE) + 500)
+            .reshape(-1)
+            .astype(int),
         )
     )
 
@@ -95,12 +103,12 @@ class Controller(Node):
     def _apply_cmd_vel(self, cmd: Twist):
         pass
 
-    @traitlets.observe('cmd_vel')
+    @traitlets.observe("cmd_vel")
     def _cmd_val_change(self, change):
         self._apply_cmd_vel(change.new)
 
     def shutdown(self):
-        self.move_to(settings.position_sit,500)
+        self.move_to(settings.position_sit, 500)
         time.sleep(0.2)
 
         if _sc:

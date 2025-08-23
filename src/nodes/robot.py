@@ -13,6 +13,7 @@ from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
+
 # from src.motion.gaits.turning_gait import TurningGait as Turn
 from src.nodes.camera import Camera
 from src.nodes.controller import Controller
@@ -20,11 +21,13 @@ from src.nodes.imu import IMU
 from src.nodes.node import Node
 from src.vision.image import Image, ImageUtils
 
-def _array_to_dict(ar, label:str = 'Leg'):
+
+def _array_to_dict(ar, label: str = "Leg"):
     return {
-        f'{label} {i}': {'x': float(x), 'y': float(y), 'z': z}
+        f"{label} {i}": {"x": float(x), "y": float(y), "z": z}
         for i, (x, y, z) in enumerate(ar)
     }
+
 
 class Measurement(traitlets.HasTraits):
     value = traitlets.Any(allow_none=True)
@@ -41,11 +44,14 @@ class CmdVel(traitlets.HasTraits):
         if self.value is None:
             return np.zeros(3)
         else:
-            return np.array([self.value.linear.x, self.value.linear.y, self.value.angular.z])
+            return np.array(
+                [self.value.linear.x, self.value.linear.y, self.value.angular.z]
+            )
 
 
 class DriveCmd(traitlets.HasTraits):
     stride = traitlets.Int(allow_none=True)
+
 
 @dataclass
 class RobotData:
@@ -54,11 +60,16 @@ class RobotData:
     yaw: float = 0.0
     angular_vel: float = 0.0
     angular_accel: float = 0.0
-    positions: dict = field(default_factory=lambda: _array_to_dict(Pose().positions)    )
-    angles: dict = field(default_factory=lambda: _array_to_dict(Pose().angles_in_degrees))
-    offsets: dict = field(default_factory=lambda: _array_to_dict(settings.default_position_offsets))
+    positions: dict = field(default_factory=lambda: _array_to_dict(Pose().positions))
+    angles: dict = field(
+        default_factory=lambda: _array_to_dict(Pose().angles_in_degrees)
+    )
+    offsets: dict = field(
+        default_factory=lambda: _array_to_dict(settings.default_position_offsets)
+    )
     moving: bool = False
     move_type: MoveTypes = MoveTypes.STOP
+
 
 class Robot(Node):
     image = traitlets.Instance(Image)
@@ -109,12 +120,18 @@ class Robot(Node):
 
     def _setup_subscriptions(self):
         if self.camera:
-            traitlets.dlink((self.camera, 'value'), (self.image, 'value'), transform=ImageUtils.bgr8_to_jpeg)
+            traitlets.dlink(
+                (self.camera, "value"),
+                (self.image, "value"),
+                transform=ImageUtils.bgr8_to_jpeg,
+            )
             if self.controller:
-                traitlets.dlink((self.camera, 'value'), (self.controller, 'camera_image'))
+                traitlets.dlink(
+                    (self.camera, "value"), (self.controller, "camera_image")
+                )
         if self.controller:
-            traitlets.dlink((self.controller, 'cmd_vel'), (self.cmd_vel, 'value'))
-            traitlets.dlink((self.imu, 'euler'), (self.controller, 'euler'))
+            traitlets.dlink((self.controller, "cmd_vel"), (self.cmd_vel, "value"))
+            traitlets.dlink((self.imu, "euler"), (self.controller, "euler"))
 
         # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
@@ -138,8 +155,8 @@ class Robot(Node):
             # ret, buffer = cv2.imencode('.jpg', frame)
             try:
                 yield (
-                        b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + self.get_image() + b'\r\n'
+                    b"--frame\r\n"
+                    b"Content-Type: image/jpeg\r\n\r\n" + self.get_image() + b"\r\n"
                 )  # concat frame one by one and show result
             except Exception:
                 pass
@@ -148,17 +165,13 @@ class Robot(Node):
         self.moving = False
         self.move_type = MoveTypes.STOP
         self.ready()
-        return {
-            "moving": self.moving,
-            "move_type": self.move_type
-        }
+        return {"moving": self.moving, "move_type": self.move_type}
 
     def process_move(self, move_type: MoveTypes):
-
         if move_type == MoveTypes.FORWARD:
             self.gait = Trot(
                 p0=settings.position_ready + settings.position_forward_offsets,
-                **settings.trot_params
+                **settings.trot_params,
             )
         elif move_type == MoveTypes.FORWARD_LT:
             self.gait = Turn(**settings.turn_params, turn_direction=1)
@@ -167,10 +180,12 @@ class Robot(Node):
         elif move_type == MoveTypes.BACKWARD:
             self.gait = Trot(
                 p0=settings.position_ready + settings.position_backward_offsets,
-                **settings.trot_reverse_params
+                **settings.trot_reverse_params,
             )
         elif move_type == MoveTypes.BACKWARD_LT:
-            self.gait = Turn(**settings.turn_params, turn_direction=-1, is_reversed=True)
+            self.gait = Turn(
+                **settings.turn_params, turn_direction=-1, is_reversed=True
+            )
         elif move_type == MoveTypes.BACKWARD_RT:
             self.gait = Turn(**settings.turn_params, turn_direction=1, is_reversed=True)
         elif move_type == MoveTypes.LEFT:
@@ -187,13 +202,15 @@ class Robot(Node):
         if self.move_type != MoveTypes.STOP:
             self.moving = True
 
-        return {
-            "moving": self.moving,
-            "move_type": self.move_type
-        }
+        return {"moving": self.moving, "move_type": self.move_type}
 
     def demo(self):
-        positions = [settings.position_ready, settings.position_crouch, settings.position_ready, settings.position_sit]
+        positions = [
+            settings.position_ready,
+            settings.position_crouch,
+            settings.position_ready,
+            settings.position_sit,
+        ]
 
         for p in positions:
             self.set_targets(p)
@@ -204,14 +221,12 @@ class Robot(Node):
     def trot_in_place(self):
         gait = Trot(**settings.trot_in_place_params)
         self.ready(200)
-        for i in range(int(gait.shape[0]*2)):
-            self.logger.info("trotting in place")
+        self.logger.info("Trotting in place...")
+        for i in range(int(gait.shape[0] * 2)):
             position = next(gait)
             self.controller.move_to(position, 10)
-
+        self.logger.info("Done trotting in place...")
         time.sleep(0.1)
-
-
 
     def auto_level(self):
         if settings.auto_level:
@@ -232,7 +247,6 @@ class Robot(Node):
             roll, pitch, yaw = self.imu.euler
 
             for i in range(10):
-
                 if abs(pitch) > settings.pitch_threshold:
                     pitch_offset = pitch_array if pitch >= 0 else -pitch_array
                 else:
@@ -243,17 +257,25 @@ class Robot(Node):
                 else:
                     yaw_offset = zeros
 
-                settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(int)
+                settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(
+                    int
+                )
                 self.logger.info(
-                    f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}")
+                    f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}"
+                )
                 self.ready(10)
 
                 time.sleep(0.3)
 
                 roll, pitch, yaw = self.imu.euler
 
-                if abs(pitch) <= settings.pitch_threshold and abs(yaw) <= settings.yaw_threshold:
-                    self.logger.info(f"leveling succeeded...pitch...{pitch} yaw...{yaw}")
+                if (
+                    abs(pitch) <= settings.pitch_threshold
+                    and abs(yaw) <= settings.yaw_threshold
+                ):
+                    self.logger.info(
+                        f"leveling succeeded...pitch...{pitch} yaw...{yaw}"
+                    )
                     return True
 
         except Exception as ex:
@@ -291,7 +313,7 @@ class Robot(Node):
 
     @property
     def stats(self) -> dict:
-        euler = dict(zip(['heading',"pitch","yaw"], self.imu.euler))
+        euler = dict(zip(["heading", "pitch", "yaw"], self.imu.euler))
         angular_velocity = dict(zip(["x", "y", "z"], self.imu.gyro))
         angular_acceleration = dict(zip(["x", "y", "z"], self.imu.acceleration))
         pose = self.controller.pose
@@ -306,7 +328,7 @@ class Robot(Node):
             "height": pose.height,
             "height_pct": pose.height_pct,
         }
-    
+
     @property
     def data(self) -> RobotData:
         pose = self.controller.pose
@@ -316,11 +338,20 @@ class Robot(Node):
             yaw=self.imu.euler[2],
             angular_vel=self.imu.gyro[2],
             angular_accel=self.imu.acceleration[2],
-            positions={f'Leg {i}': {'x': pos[0], 'y': pos[1], 'z': pos[2]} for i, pos in enumerate(pose.positions)},
-            angles={f'Leg {i}': {'coxa': angle[0], 'femur': angle[1], 'tibia': angle[2]} for i, angle in enumerate(pose.angles_in_degrees)},
-            offsets={f'Leg {i}': {'x': offset[0], 'y': offset[1], 'z': offset[2]} for i, offset in enumerate(settings.position_offsets)},
+            positions={
+                f"Leg {i}": {"x": pos[0], "y": pos[1], "z": pos[2]}
+                for i, pos in enumerate(pose.positions)
+            },
+            angles={
+                f"Leg {i}": {"coxa": angle[0], "femur": angle[1], "tibia": angle[2]}
+                for i, angle in enumerate(pose.angles_in_degrees)
+            },
+            offsets={
+                f"Leg {i}": {"x": offset[0], "y": offset[1], "z": offset[2]}
+                for i, offset in enumerate(settings.position_offsets)
+            },
             moving=self.moving,
-            move_type=self.move_type
+            move_type=self.move_type,
         )
 
     def spinner(self):
