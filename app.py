@@ -5,7 +5,7 @@ Converted from HTML template with mock functions for demonstration
 """
 
 from nicegui import ui, app
-from fastapi import Response
+from fastapi import StreamingResponse
 import asyncio
 from typing import Dict, List
 from src.model.types import MoveTypes
@@ -91,7 +91,7 @@ def create_data_grid(data_dict: Dict, labels: List[str]):
 
 @app.get('/api/stream')
 def video_stream():
-    return Response(
+    return StreamingResponse(
         robot.get_stream(),
         media_type='multipart/x-mixed-replace; boundary=frame'
     )
