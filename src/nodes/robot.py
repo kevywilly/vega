@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 import time
 from typing import Optional
 
@@ -19,6 +20,11 @@ from src.nodes.imu import IMU
 from src.nodes.node import Node
 from src.vision.image import Image, ImageUtils
 
+def _array_to_dict(ar, label:str = 'Leg'):
+    return {
+        f'{label} {i}': {'x': float(x), 'y': float(y), 'z': z}
+        for i, (x, y, z) in enumerate(ar)
+    }
 
 class Measurement(traitlets.HasTraits):
     value = traitlets.Any(allow_none=True)
@@ -41,6 +47,16 @@ class CmdVel(traitlets.HasTraits):
 class DriveCmd(traitlets.HasTraits):
     stride = traitlets.Int(allow_none=True)
 
+@dataclass
+class RobotData:
+    heading: float = 0.0
+    pitch: float = 0.0
+    yaw: float = 0.0
+    angular_vel: float = 0.0
+    angular_accel: float = 0.0
+    positions: dict = field(default_factory=lambda: _array_to_dict(Pose().positions)    )
+    angles: dict = field(default_factory=lambda: _array_to_dict(Pose().angles_in_degrees))
+    offsets: dict = field(default_factory=lambda: _array_to_dict(settings.default_position_offsets))
 
 class Robot(Node):
     image = traitlets.Instance(Image)
@@ -253,6 +269,27 @@ class Robot(Node):
     def ready(self, millis=200):
         self.controller.move_to(settings.position_ready, millis)
 
+    def set_pose(self, pose: str):
+        v = pose.lower()
+
+        p = None
+
+        if v == "ready":
+            p = settings.position_ready
+        elif v == "sit":
+            p = settings.position_sit
+        elif v == "crouch":
+            p = settings.position_crouch
+        else:
+            return {"status": "error, unknown pose"}
+
+        if self.moving:
+            self.stop()
+            time.sleep(0.5)
+
+        self.set_targets(p)
+        self.move_to_targets()
+
     @property
     def stats(self) -> dict:
         euler = dict(zip(['heading',"pitch","yaw"], self.imu.euler))
@@ -270,6 +307,20 @@ class Robot(Node):
             "height": pose.height,
             "height_pct": pose.height_pct,
         }
+    
+    @property
+    def data(self) -> RobotData:
+        pose = self.controller.pose
+        return RobotData(
+            heading=self.imu.euler[0],
+            pitch=self.imu.euler[1],
+            yaw=self.imu.euler[2],
+            angular_vel=self.imu.gyro[2],
+            angular_accel=self.imu.acceleration[2],
+            positions={f'Leg {i}': {'x': pos[0], 'y': pos[1], 'z': pos[2]} for i, pos in enumerate(pose.positions)},
+            angles={f'Leg {i}': {'coxa': angle[0], 'femur': angle[1], 'tibia': angle[2]} for i, angle in enumerate(pose.angles_in_degrees)},
+            offsets={f'Leg {i}': {'x': offset[0], 'y': offset[1], 'z': offset[2]} for i, offset in enumerate(settings.position_offsets)}
+        )
 
     def spinner(self):
         if self.moving and self.gait is not None:

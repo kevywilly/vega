@@ -7,104 +7,60 @@ Converted from HTML template with mock functions for demonstration
 from nicegui import ui, app
 import asyncio
 from typing import Dict, List
-import random
+from src.nodes.robot import Robot
+from settings import settings
 
-# Mock data structures
-class RobotData:
-    def __init__(self):
-        self.heading = 0.0
-        self.pitch = 0.0
-        self.yaw = 0.0
-        self.angular_vel = 0.0
-        self.angular_accel = 0.0
-        self.positions = {
-            'Leg 0': {'x': 0.0, 'y': 0.0, 'z': 140.0},
-            'Leg 1': {'x': 0.0, 'y': 0.0, 'z': 140.0},
-            'Leg 2': {'x': 0.0, 'y': 0.0, 'z': 140.0},
-            'Leg 3': {'x': 0.0, 'y': 0.0, 'z': 140.0},
-        }
-        self.angles = {
-            'Leg 0': {'coxa': 0.0, 'femur': 21.0, 'tibia': 124.0},
-            'Leg 1': {'coxa': 0.0, 'femur': 36.0, 'tibia': 99.0},
-            'Leg 2': {'coxa': 0.0, 'femur': 54.0, 'tibia': 66.0},
-            'Leg 3': {'coxa': 0.0, 'femur': 36.0, 'tibia': 99.0},
-        }
-        self.offsets = {
-            'Leg 0': {'x': 0.0, 'y': 0.0, 'z': -40.0},
-            'Leg 1': {'x': 0.0, 'y': 0.0, 'z': 0.0},
-            'Leg 2': {'x': 0.0, 'y': 0.0, 'z': 40.0},
-            'Leg 3': {'x': 0.0, 'y': 0.0, 'z': 0.0},
-        }
-
-# Global robot data instance
-robot_data = RobotData()
+robot: Robot = Robot()
 
 # Mock functions for robot control
-async def mock_sit_command():
+async def sit_command():
     """Mock function for sit command"""
     ui.notify("Robot sitting down", type='info')
-    print("Executing sit command")
+    robot.set_pose("sit")
 
-async def mock_crouch_command():
+async def crouch_command():
     """Mock function for crouch command"""
     ui.notify("Robot crouching", type='info')
-    print("Executing crouch command")
+    robot.set_pose("crouch")
 
-async def mock_ready_command():
+async def ready_command():
     """Mock function for ready command"""
     ui.notify("Robot ready position", type='info')
-    print("Executing ready command")
+    robot.set_pose("ready")
 
-async def mock_demo_command():
+async def demo_command():
     """Mock function for demo command"""
     ui.notify("Starting demo sequence", type='info')
-    print("Executing demo command")
+    robot.demo()
 
-async def mock_auto_level():
+async def auto_level():
     """Mock function for auto level"""
     ui.notify("Auto leveling robot", type='info')
-    print("Executing auto level")
-
-async def mock_reset_offsets():
-    """Mock function for reset offsets"""
-    ui.notify("Resetting offsets", type='info')
-    print("Resetting all offsets to zero")
-    for leg in robot_data.offsets:
-        for axis in robot_data.offsets[leg]:
-            robot_data.offsets[leg][axis] = 0.0
-
-def mock_height_slider_change(value: float):
-    """Mock function for height slider"""
-    print(f"Height slider changed to: {value}")
-
-def mock_yaw_slider_change(value: float):
-    """Mock function for yaw slider"""
-    robot_data.yaw = value
-    print(f"Yaw slider changed to: {value}")
-
-def mock_pitch_slider_change(value: float):
-    """Mock function for pitch slider"""
-    robot_data.pitch = value
-    print(f"Pitch slider changed to: {value}")
-
-async def mock_get_stats():
-    """Mock function to simulate getting robot stats"""
-    # Simulate changing data
-    robot_data.heading += random.uniform(-1, 1)
-    robot_data.angular_vel = random.uniform(-2, 2)
-    robot_data.angular_accel = random.uniform(-1, 1)
+    robot.level()
     
-    # Simulate some position changes
-    for leg in robot_data.positions:
-        for axis in ['x', 'y', 'z']:
-            robot_data.positions[leg][axis] += random.uniform(-0.1, 0.1)
-            robot_data.angles[leg][list(robot_data.angles[leg].keys())[0]] += random.uniform(-0.5, 0.5)
+async def reset_offsets():
+    ui.notify("Resetting offsets", type='info')
+    settings.reset_offsets()
+    
+def height_slider_change(e):
+    """Mock function for height slider"""
+    print(f"Height slider changed to: {e.value}")
+
+def yaw_slider_change(e):
+    """Mock function for yaw slider"""
+    settings.tilt.yaw = int(e.value)
+    print(f"Yaw slider changed to: {e.value}")
+
+def pitch_slider_change(e):
+    """Mock function for pitch slider"""
+    settings.tilt.pitch = int(e.value)
+    print(f"Pitch slider changed to: {e.value}")
 
 def create_data_grid(data_dict: Dict, labels: List[str]):
     """Helper function to create data grids"""
-    legs = ['Leg 0', 'Leg 1', 'Leg 2', 'Leg 3']
+    legs = data_dict.keys()
     
-    with ui.grid(columns=4).classes('gap-2 w-full text-sm'):
+    with ui.grid(columns=4).classes('gap-8 w-full text-sm'):
         # Headers
         ui.label('')
         for label in labels:
@@ -163,33 +119,33 @@ async def main_page():
                 angular_accel_display = ui.label('0.0')
         
         # Middle panel - Vertical sliders
-        with ui.row().classes('p-4 border rounded gap-6'):
+        with ui.column().classes('p-4 border rounded gap-6'):
             with ui.column().classes('items-center'):
                 ui.label('Height (%)').classes('text-xs mb-2')
                 height_slider = ui.slider(
-                    min=0, max=100, value=65, step=1
-                ).classes('w-32').style('transform: rotate(-90deg); transform-origin: center; height: 32px; margin: 50px 0;').on('update:model-value', mock_height_slider_change)
+                    min=0, max=100, value=65, step=1, on_change=height_slider_change
+                ).classes('w-32').style('transform: rotate(90deg); transform-origin: center; height: 32px; margin: 50px 0;')
             
             with ui.column().classes('items-center'):
                 ui.label('Tilt (yaw)').classes('text-xs mb-2')
                 yaw_slider = ui.slider(
-                    min=-180, max=180, value=0, step=1
-                ).classes('w-32').style('transform: rotate(-90deg); transform-origin: center; height: 32px; margin: 50px 0;').on('update:model-value', mock_yaw_slider_change)
+                    min=-50, max=50, value=0, step=5, on_change=yaw_slider_change
+                ).classes('w-32').style('transform: rotate(90deg); transform-origin: center; height: 32px; margin: 50px 0;')
             
             with ui.column().classes('items-center'):
                 ui.label('Tilt (pitch)').classes('text-xs mb-2')
                 pitch_slider = ui.slider(
-                    min=-90, max=90, value=0, step=1
-                ).classes('w-32').style('transform: rotate(-90deg); transform-origin: center; height: 32px; margin: 50px 0;').on('update:model-value', mock_pitch_slider_change)
+                    min=-50, max=50, value=0, step=5, on_change=pitch_slider_change
+                ).classes('w-32').style('transform: rotate(90deg); transform-origin: center; height: 32px; margin: 50px 0;')
         
         # Right panel - Commands and data
         with ui.column().classes('p-4 border rounded gap-4 flex-grow'):
             # Command buttons
             with ui.grid(columns=4).classes('gap-4'):
-                ui.button('Sit', on_click=mock_sit_command).classes('bg-green-600 text-white text-sm')
-                ui.button('Crouch', on_click=mock_crouch_command).classes('bg-green-600 text-white text-sm')
-                ui.button('Ready', on_click=mock_ready_command).classes('bg-green-600 text-white text-sm')
-                ui.button('Demo', on_click=mock_demo_command).classes('bg-green-600 text-white text-sm')
+                ui.button('Sit', on_click=sit_command).classes('bg-green-600 text-white text-sm')
+                ui.button('Crouch', on_click=crouch_command).classes('bg-green-600 text-white text-sm')
+                ui.button('Ready', on_click=ready_command).classes('bg-green-600 text-white text-sm')
+                ui.button('Demo', on_click=demo_command).classes('bg-green-600 text-white text-sm')
             
             ui.separator()
             
@@ -209,36 +165,44 @@ async def main_page():
             
             # Control buttons
             with ui.row().classes('justify-around w-full'):
-                ui.button('Auto Level', on_click=mock_auto_level).classes('bg-blue-600 text-white text-sm')
-                ui.button('Reset Offsets', on_click=mock_reset_offsets).classes('bg-blue-600 text-white text-sm')
+                ui.button('Auto Level', on_click=auto_level).classes('bg-blue-600 text-white text-sm')
+                ui.button('Reset Offsets', on_click=reset_offsets).classes('bg-blue-600 text-white text-sm')
     
-    # Function to update displays
+    # Flag to control update loop
+    running = True
+
+    def stop_update():
+        nonlocal running
+        running = False
+
+    app.on_disconnect(stop_update)
+
     async def update_displays():
-        while True:
-            await mock_get_stats()
-            
+        while running:
+            #await mock_get_stats()
+
             # Update main display values
-            heading_display.set_text(f"{robot_data.heading:.2f}")
-            pitch_display.set_text(f"{robot_data.pitch:.2f}")
-            yaw_display.set_text(f"{robot_data.yaw:.2f}")
-            angular_vel_display.set_text(f"{robot_data.angular_vel:.2f}")
-            angular_accel_display.set_text(f"{robot_data.angular_accel:.2f}")
-            
+            heading_display.set_text(f"{robot.data.heading:.2f}")
+            pitch_display.set_text(f"{robot.data.pitch:.2f}")
+            yaw_display.set_text(f"{robot.data.yaw:.2f}")
+            angular_vel_display.set_text(f"{robot.data.angular_vel:.2f}")
+            angular_accel_display.set_text(f"{robot.data.angular_accel:.2f}")
+
             # Update data grids
             position_container.clear()
             with position_container:
-                create_data_grid(robot_data.positions, ['X', 'Y', 'Z'])
-            
+                create_data_grid(robot.data.positions, ['X', 'Y', 'Z'])
+
             angles_container.clear()
             with angles_container:
-                create_data_grid(robot_data.angles, ['Coxa', 'Femur', 'Tibia'])
-            
+                create_data_grid(robot.data.angles, ['Coxa', 'Femur', 'Tibia'])
+
             offsets_container.clear()
             with offsets_container:
-                create_data_grid(robot_data.offsets, ['X', 'Y', 'Z'])
-            
+                create_data_grid(robot.data.offsets, ['X', 'Y', 'Z'])
+
             await asyncio.sleep(1.0)  # Update every second
-    
+
     # Start the update loop
     asyncio.create_task(update_displays())
 
