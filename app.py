@@ -207,6 +207,7 @@ async def main_page():
     asyncio.create_task(update_displays())
 
 if __name__ in {"__main__", "__mp_main__"}:
+    robot.spin(frequency=50)
     ui.run(
         title='Vega Robot Control',
         port=8080,
