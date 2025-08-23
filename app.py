@@ -107,7 +107,7 @@ async def main_page():
         with ui.column().classes('w-1/2 p-4 rounded bg-gray-900 text-white'):
             # Mock video stream (placeholder image)
             ui.html("""<div class="w-full aspect-video bg-gray-700 flex items-center justify-center text-white">
-                    <!---img src="api/stream" class="aspect-video"--->
+                    <img src="api/stream" class="aspect-video">
                     </div>
             """)
             

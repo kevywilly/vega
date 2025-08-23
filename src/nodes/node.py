@@ -15,18 +15,18 @@ class Node(Configurable):
     def __init__(self, **kwargs):
         super(Node, self).__init__(**kwargs)
         print("\n")
-        self.logger.info(f"******************************************************************\n")
+        self.logger.info("*" * 50 + "\n")
         self.logger.info(f"*\tStarting {self.__class__.__name__} Node @ {self.frequency}Hz\n")
-        self.logger.info(f"******************************************************************\n")
+        self.logger.info("*" * 50 + "\n")
         self._thread = None
         self._running = False
         atexit.register(self._shutdown)
 
     def loaded(self):
         print("\n")
-        self.logger.info(f"******************************************************************\n")
+        self.logger.info("*" * 50 + "\n")
         self.logger.info(f"*\t{self.__class__.__name__} Node is up\n")
-        self.logger.info(f"******************************************************************\n")
+        self.logger.info("*" * 50 + "\n")
 
     @abstractmethod
     def spinner(self):

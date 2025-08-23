@@ -3,7 +3,7 @@ import atexit
 try:
     import adafruit_bno055
     import board
-except:
+except:  # noqa: E722
     from src.mock import adafruit_bno055
     from src.mock.board import board
 
@@ -69,7 +69,7 @@ class IMU(Node):
             self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
             self.gravity = np.round(np.array(self.sensor.gravity),3)
         except Exception as e:
-            self.logger.error(f"could not read imu {e.__str__()}")
+            self.logger.warning(f"could not read imu {e.__str__()}")
 
     def spinner(self):
         self.read_measurements()
