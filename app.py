@@ -238,6 +238,6 @@ if __name__ in {"__main__", "__mp_main__"}:
         title='Vega Robot Control',
         port=8080,
         host='0.0.0.0',
-        reload=True,
+        reload=False,
         show=True
     )
