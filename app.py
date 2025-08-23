@@ -7,6 +7,7 @@ Converted from HTML template with mock functions for demonstration
 from nicegui import ui, app
 import asyncio
 from typing import Dict, List
+from src.model.types import MoveTypes
 from src.nodes.robot import Robot
 from settings import settings
 
@@ -41,6 +42,16 @@ async def auto_level():
 async def reset_offsets():
     ui.notify("Resetting offsets", type='info')
     settings.reset_offsets()
+
+async def handle_stop():
+    """Mock function for stop command"""
+    ui.notify("Stopping robot", type='warning')
+    robot.stop()
+
+async def handle_move(move_type: MoveTypes):
+    """Mock function for move command"""
+    ui.notify(f"Moving {move_type.value}", type='info')
+    robot.process_move(move_type)
     
 def height_slider_change(e):
     """Mock function for height slider"""
@@ -89,19 +100,19 @@ async def main_page():
             # Control panel - 3x3 movement buttons
             with ui.grid(columns=3).classes('gap-2 my-4'):
                 # Top row
-                ui.button('Forward LT', on_click=lambda: ui.notify('Forward Left Turn')).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Forward', on_click=lambda: ui.notify('Forward')).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Forward RT', on_click=lambda: ui.notify('Forward Right Turn')).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Forward LT', on_click=lambda: handle_move(MoveTypes.FORWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Forward', on_click=lambda: handle_move(MoveTypes.FORWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Forward RT', on_click=lambda: handle_move(MoveTypes.FORWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 
                 # Middle row
-                ui.button('Left', on_click=lambda: ui.notify('Turn Left')).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Stop', on_click=lambda: ui.notify('Stop')).classes('bg-red-600 text-white text-sm px-2 py-1')
-                ui.button('Right', on_click=lambda: ui.notify('Turn Right')).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Left', on_click=lambda: handle_move(MoveTypes.LEFT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Stop', on_click=lambda: handle_move(MoveTypes.STOP)).classes('bg-red-600 text-white text-sm px-2 py-1')
+                ui.button('Right', on_click=lambda: handle_move(MoveTypes.RIGHT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 
                 # Bottom row
-                ui.button('Backward LT', on_click=lambda: ui.notify('Backward Left Turn')).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Backward', on_click=lambda: ui.notify('Backward')).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Backward RT', on_click=lambda: ui.notify('Backward Right Turn')).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Backward LT', on_click=lambda: handle_move(MoveTypes.BACKWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Backward', on_click=lambda: handle_move(MoveTypes.BACKWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button('Backward RT', on_click=lambda: handle_move(MoveTypes.BACKWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
             
             # Display values
             with ui.row().classes('justify-between w-full text-sm'):
