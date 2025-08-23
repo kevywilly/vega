@@ -5,6 +5,7 @@ Converted from HTML template with mock functions for demonstration
 """
 
 from nicegui import ui, app
+from fastapi import Response
 import asyncio
 from typing import Dict, List
 from src.model.types import MoveTypes
@@ -87,6 +88,14 @@ def create_data_grid(data_dict: Dict, labels: List[str]):
                 else:
                     ui.label(str(value)).classes('text-center').style('font-family: monospace')
 
+
+@app.get('/api/stream')
+def video_stream():
+    return Response(
+        robot.get_stream(),
+        media_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
 @ui.page('/')
 async def main_page():
     ui.page_title('Vega Robot Control')
@@ -95,10 +104,13 @@ async def main_page():
         # Left panel - Video stream and controls
         with ui.column().classes('w-1/2 p-4 rounded bg-gray-900 text-white'):
             # Mock video stream (placeholder image)
-            ui.html('<div class="w-full aspect-video bg-gray-700 flex items-center justify-center text-white">Video Stream Placeholder</div>')
+            ui.html("""<div class="w-full aspect-video bg-gray-700 flex items-center justify-center text-white">
+                    <img src="api/stream" class="aspect-video">
+                    </div>
+            """)
             
             # Control panel - 3x3 movement buttons
-            with ui.grid(columns=3).classes('gap-2 my-4'):
+            with ui.grid(columns=3).classes('gap-2 my-4 w-full'):
                 # Top row
                 ui.button('Forward LT', on_click=lambda: handle_move(MoveTypes.FORWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button('Forward', on_click=lambda: handle_move(MoveTypes.FORWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')

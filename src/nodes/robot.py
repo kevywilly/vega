@@ -57,6 +57,8 @@ class RobotData:
     positions: dict = field(default_factory=lambda: _array_to_dict(Pose().positions)    )
     angles: dict = field(default_factory=lambda: _array_to_dict(Pose().angles_in_degrees))
     offsets: dict = field(default_factory=lambda: _array_to_dict(settings.default_position_offsets))
+    moving: bool = False
+    move_type: MoveTypes = MoveTypes.STOP
 
 class Robot(Node):
     image = traitlets.Instance(Image)
@@ -146,9 +148,6 @@ class Robot(Node):
         self.moving = False
         self.move_type = MoveTypes.STOP
         self.ready()
-        # time.sleep(0.2)
-        # self.level()
-        # time.sleep(0.2)
         return {
             "moving": self.moving,
             "move_type": self.move_type
@@ -319,7 +318,9 @@ class Robot(Node):
             angular_accel=self.imu.acceleration[2],
             positions={f'Leg {i}': {'x': pos[0], 'y': pos[1], 'z': pos[2]} for i, pos in enumerate(pose.positions)},
             angles={f'Leg {i}': {'coxa': angle[0], 'femur': angle[1], 'tibia': angle[2]} for i, angle in enumerate(pose.angles_in_degrees)},
-            offsets={f'Leg {i}': {'x': offset[0], 'y': offset[1], 'z': offset[2]} for i, offset in enumerate(settings.position_offsets)}
+            offsets={f'Leg {i}': {'x': offset[0], 'y': offset[1], 'z': offset[2]} for i, offset in enumerate(settings.position_offsets)},
+            moving=self.moving,
+            move_type=self.move_type
         )
 
     def spinner(self):
