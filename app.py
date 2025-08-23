@@ -5,7 +5,7 @@ Converted from HTML template with mock functions for demonstration
 """
 import logging
 from nicegui import ui, app
-from fastapi import StreamingResponse
+from fastapi.responses import StreamingResponse
 import asyncio
 from typing import Dict, List
 from src.model.types import MoveTypes
