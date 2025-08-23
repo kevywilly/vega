@@ -9,13 +9,13 @@ import traitlets
 from settings import settings
 from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
-from src.motion.kinematics import Kinematics
+from src.motion.kinematics import QuadrupedKinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.node import Node
 
 logger = logging.getLogger("VEGA")
 
-_km = Kinematics(
+_km = QuadrupedKinematics(
     settings.coxa_length,
     settings.femur_length,
     settings.tibia_length,

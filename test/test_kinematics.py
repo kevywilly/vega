@@ -1,7 +1,7 @@
 from settings import settings
-from src.motion.kinematics import Kinematics
+from src.motion.kinematics import QuadrupedKinematics
 
-_km = Kinematics(settings.coxa_length, settings.femur_length, settings.tibia_length, settings.robot_width, settings.robot_length)
+_km = QuadrupedKinematics(settings.coxa_length, settings.femur_length, settings.tibia_length, settings.robot_width, settings.robot_length)
 
 def test_tilt_yaw():
     position = settings.position_ready
