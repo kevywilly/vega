@@ -36,6 +36,15 @@ class QuadrupedKinematics:
         self.width = width
         self.length = length
 
+    def inverse_kinematics_all_legs(self, positions: np.ndarray, offsets: np.ndarray, format="radians") -> np.ndarray:
+        angles = np.zeros((4, 3))
+        for i, pos in enumerate(positions + offsets):
+            angles[i] = self.inverse_kinematics(pos)
+
+        if format == "degrees":
+            return np.degrees(angles).astype(int)
+        return angles
+
     def inverse_kinematics(self, pos: np.ndarray) -> np.ndarray:
         """
         Inverse kinematics - ORIGINAL IMPLEMENTATION PRESERVED
