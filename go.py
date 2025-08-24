@@ -5,6 +5,7 @@ from src.motion.gaits.gait import Gait
 from src.motion.gaits.tiger_run import TigerRun
 from src.motion.gaits.jump import Jump
 from src.motion.gaits.trot_with_lateral import TrotWithLateral
+from src.motion.gaits.simplified_gait import SimpleTrotWithLateral
 
 from src.nodes.robot import Robot
 
@@ -45,15 +46,26 @@ run(Jump(
         step_size=20
     ))
 """
-run(TrotWithLateral(
+
+def get_gait():
+    return SimpleTrotWithLateral(
         p0=settings.position_ready,
         lateral_amplitude=6,  # Sideways movement amplitude
         stride=55,          # Forward stride length
         clearance=65,       # Leg lift height
         step_size=15        # Step size for smoothness
-    ))
+    )
+
+    return TrotWithLateral(
+        p0=settings.position_ready,
+        lateral_amplitude=6,  # Sideways movement amplitude
+        stride=55,          # Forward stride length
+        clearance=65,       # Leg lift height
+        step_size=15        # Step size for smoothness
+    )
 
 
+run(get_gait())
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))
 # run(Sidestep(p0=POSITIONS.READY, stride=30, clearance=50, step_size=15))
 
