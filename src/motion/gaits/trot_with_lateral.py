@@ -80,4 +80,4 @@ if __name__ == "__main__":
     print("Lateral movement range for leg 2:", np.min(gait.steps2[:, 1]), "to", np.max(gait.steps2[:, 1]))
 
     # Uncomment to visualize
-    # gait.plotit()
+    gait.plotit()
