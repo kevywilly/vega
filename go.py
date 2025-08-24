@@ -51,7 +51,7 @@ def get_gait():
     return SimpleTrotWithLateral(
         p0=settings.position_ready,
         lateral_amplitude=6,  # Sideways movement amplitude
-        stride=55,          # Forward stride length
+        stride=-55,          # Forward stride length
         clearance=65,       # Leg lift height
         step_size=15        # Step size for smoothness
     )
