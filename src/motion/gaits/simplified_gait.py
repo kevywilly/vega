@@ -247,6 +247,193 @@ class SimpleSidestep(SimplifiedGait):
         }
 
 
+class SimpleTurn(SimplifiedGait):
+    """
+    Simplified in-place turning gait.
+    
+    Much cleaner than the existing Turn implementation:
+    - Uses diagonal leg coordination (like trot)
+    - Left legs step one direction, right legs step opposite
+    - Creates efficient rotation around robot center
+    - Only ~15 lines vs ~100 lines in original
+    """
+    
+    def __init__(self, turn_direction: int = 1, **kwargs):
+        """
+        Initialize turn gait.
+        
+        Args:
+            turn_direction: 1 for right turn, -1 for left turn
+            **kwargs: Standard gait parameters
+        """
+        self.turn_direction = turn_direction
+        super().__init__(**kwargs)
+    
+    def define_leg_movements(self) -> Dict[int, LegMovement]:
+        cycle_steps = self.num_steps * 2
+        half_cycle = self.num_steps
+        
+        # For turning: left legs move one way, right legs move opposite way
+        # This creates rotation around the center of the robot
+        def left_turn_step(steps):
+            """Left legs step outward for right turn"""
+            return MovementPattern.step_cycle(steps, self.stride * self.turn_direction)
+        
+        def right_turn_step(steps):
+            """Right legs step inward for right turn"""
+            return MovementPattern.step_cycle(steps, -self.stride * self.turn_direction)
+        
+        def lift_pattern(steps):
+            """Standard lift pattern during step cycle"""
+            pattern = np.zeros(steps)
+            lift_steps = self.num_steps
+            pattern[:lift_steps] = MovementPattern.lift(lift_steps, -self.clearance)
+            return pattern
+        
+        return {
+            # Left side legs (0=front-left, 2=back-left)
+            0: LegMovement(y=left_turn_step, z=lift_pattern, phase_shift=0),
+            2: LegMovement(y=left_turn_step, z=lift_pattern, phase_shift=half_cycle),
+            
+            # Right side legs (1=front-right, 3=back-right)  
+            1: LegMovement(y=right_turn_step, z=lift_pattern, phase_shift=half_cycle),
+            3: LegMovement(y=right_turn_step, z=lift_pattern, phase_shift=0),
+        }
+
+
+class SimpleWalk(SimplifiedGait):
+    """
+    Natural walking gait with sequential leg movement and hip sway.
+    
+    Mimics natural quadruped walking like tigers/cats:
+    - Sequential leg lifting (one at a time)
+    - Hip sway for balance and natural movement
+    - Longer ground contact phases for stability
+    - Body weight shifts toward supporting legs
+    """
+    
+    def __init__(self, hip_sway_amplitude: float = 12, **kwargs):
+        """
+        Initialize walking gait.
+        
+        Args:
+            hip_sway_amplitude: Amount of lateral hip movement (mm)
+            **kwargs: Standard gait parameters
+        """
+        self.hip_sway_amplitude = hip_sway_amplitude
+        super().__init__(**kwargs)
+    
+    def define_leg_movements(self) -> Dict[int, LegMovement]:
+        # Walking uses 4-phase cycle (one leg lifts per phase)
+        cycle_steps = self.num_steps * 4
+        quarter_cycle = self.num_steps
+        
+        # Walking sequence: LF -> RB -> RF -> LB (classic quadruped pattern)
+        phase_shifts = {
+            0: 0,                    # Left Front (LF) - starts first
+            3: quarter_cycle,        # Right Back (RB) - opposite diagonal  
+            1: quarter_cycle * 2,    # Right Front (RF) - next
+            2: quarter_cycle * 3,    # Left Back (LB) - completes cycle
+        }
+        
+        def forward_stride(steps):
+            """Forward walking stride - longer ground contact than trot"""
+            # Walking has longer stance phase (75% ground, 25% air)
+            swing_steps = int(steps * 0.25)  # 25% swing
+            stance_steps = steps - swing_steps  # 75% stance
+            
+            # Swing phase: lift and move forward
+            swing = MovementPattern.step_cycle(swing_steps * 4, self.stride)[:swing_steps] 
+            # Stance phase: gradual backward movement as body moves forward
+            stance = np.linspace(self.stride * 0.3, -self.stride * 0.3, stance_steps)
+            
+            result = np.concatenate([swing, stance])
+            # Ensure exact length
+            if len(result) != steps:
+                result = np.resize(result, steps)
+            return result
+        
+        def lift_pattern(steps):
+            """Walking lift pattern - only lift during swing phase"""
+            swing_steps = int(steps * 0.25)  # 25% of cycle in air
+            stance_steps = steps - swing_steps
+            
+            # Only lift during swing phase
+            lift = MovementPattern.lift(swing_steps, -self.clearance)
+            ground = np.zeros(stance_steps)
+            
+            result = np.concatenate([lift, ground])
+            # Ensure exact length
+            if len(result) != steps:
+                result = np.resize(result, steps)
+            return result
+        
+        def hip_sway_pattern(steps, leg_side: str):
+            """
+            Hip sway for natural walking balance.
+            
+            Body sways toward the side with more supporting legs:
+            - When left legs lift, body sways right for balance
+            - When right legs lift, body sways left for balance
+            """
+            if leg_side == "left":
+                # Left legs: body sways right when this leg is lifting
+                # Create sway that peaks when leg is in air
+                sway = np.zeros(steps)
+                swing_start = 0
+                swing_end = int(steps * 0.25)
+                
+                # During swing phase, body sways away from lifting leg
+                if swing_end > swing_start:
+                    sway[swing_start:swing_end] = np.sin(np.linspace(0, np.pi, swing_end - swing_start)) * self.hip_sway_amplitude
+                
+                # Add gentle overall sway pattern for natural movement
+                overall_sway = np.sin(np.linspace(0, 2*np.pi, steps)) * (self.hip_sway_amplitude * 0.3)
+                return sway + overall_sway
+                
+            else:  # right side
+                # Right legs: body sways left when this leg is lifting  
+                sway = np.zeros(steps)
+                swing_start = 0
+                swing_end = int(steps * 0.25)
+                
+                if swing_end > swing_start:
+                    sway[swing_start:swing_end] = -np.sin(np.linspace(0, np.pi, swing_end - swing_start)) * self.hip_sway_amplitude
+                
+                overall_sway = -np.sin(np.linspace(0, 2*np.pi, steps)) * (self.hip_sway_amplitude * 0.3)
+                return sway + overall_sway
+        
+        return {
+            # Left side legs
+            0: LegMovement(  # Left Front
+                x=forward_stride, 
+                y=lambda steps: hip_sway_pattern(steps, "left"),
+                z=lift_pattern, 
+                phase_shift=phase_shifts[0]
+            ),
+            2: LegMovement(  # Left Back  
+                x=forward_stride,
+                y=lambda steps: hip_sway_pattern(steps, "left"), 
+                z=lift_pattern,
+                phase_shift=phase_shifts[2]
+            ),
+            
+            # Right side legs
+            1: LegMovement(  # Right Front
+                x=forward_stride,
+                y=lambda steps: hip_sway_pattern(steps, "right"),
+                z=lift_pattern, 
+                phase_shift=phase_shifts[1]
+            ),
+            3: LegMovement(  # Right Back
+                x=forward_stride,
+                y=lambda steps: hip_sway_pattern(steps, "right"),
+                z=lift_pattern,
+                phase_shift=phase_shifts[3]
+            ),
+        }
+
+
 if __name__ == "__main__":
     # Test the simplified system
     print("Testing Simplified Gait System")
@@ -262,6 +449,20 @@ if __name__ == "__main__":
     
     # Create trot with lateral
     lateral_trot = SimpleTrotWithLateral(stride=40, clearance=50, lateral_amplitude=6)
-    print(f"✓ SimpleTrotWithLateral created")
+    print("✓ SimpleTrotWithLateral created")
     print(f"  Y-axis range: {lateral_trot.steps[0][:, 1].min():.1f} to {lateral_trot.steps[0][:, 1].max():.1f}")
+    
+    # Create turn gait
+    turn_gait = SimpleTurn(stride=30, clearance=40, turn_direction=1)
+    print("✓ SimpleTurn created")
+    print(f"  Left legs Y-range: {turn_gait.steps[0][:, 1].min():.1f} to {turn_gait.steps[0][:, 1].max():.1f}")
+    print(f"  Right legs Y-range: {turn_gait.steps[1][:, 1].min():.1f} to {turn_gait.steps[1][:, 1].max():.1f}")
+    print("  (Opposite directions = efficient turning)")
+    
+    # Create walking gait
+    walk_gait = SimpleWalk(stride=40, clearance=30, step_size=20, hip_sway_amplitude=10)
+    print("✓ SimpleWalk created") 
+    print(f"  Cycle length: {len(walk_gait.steps[0])} steps")
+    print(f"  Hip sway range: {walk_gait.steps[0][:, 1].min():.1f} to {walk_gait.steps[0][:, 1].max():.1f} mm")
+    print("  (Sequential leg movement with natural hip sway)")
 
