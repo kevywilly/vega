@@ -186,12 +186,34 @@ class SimpleTrotWithLateral(SimplifiedGait):
         half_cycle = self.num_steps * 2
         
         def forward_stride(steps):
-            return MovementPattern.step_cycle(steps, self.stride)
+            # Match the original TrotWithLateral pattern exactly
+            # stride_forward + stride_home + stride_back(num_steps * 2)
+            part1 = MovementPattern.stride_forward(self.num_steps, self.stride)
+            part2 = MovementPattern.stride_back(self.num_steps, self.stride) 
+            part3 = MovementPattern.stride_back(self.num_steps * 2, self.stride)
+            
+            pattern = np.concatenate([part1, part2, part3])
+            # Ensure correct length
+            if len(pattern) != steps:
+                pattern = np.resize(pattern, steps)
+            return pattern
         
         def lift_pattern(steps):
-            pattern = np.zeros(steps)
-            lift_steps = self.num_steps
-            pattern[:lift_steps] = MovementPattern.lift(lift_steps, -self.clearance)
+            # Match original trot lift pattern with downupdown + zeros
+            lift_part = MovementPattern.lift(self.num_steps, -self.clearance)
+            # Add downupdown-style ground prep
+            prep_steps = self.num_steps // 5
+            main_steps = self.num_steps - prep_steps
+            prep = np.sin(np.radians(np.linspace(-10, 0, prep_steps))) * (-self.clearance * 0.1)
+            main = MovementPattern.lift(main_steps, -self.clearance)
+            lift_combined = np.concatenate([prep, main])[:self.num_steps]
+            
+            ground_part = np.zeros(steps - self.num_steps)
+            
+            pattern = np.concatenate([lift_combined, ground_part])
+            # Ensure correct length
+            if len(pattern) != steps:
+                pattern = np.resize(pattern, steps)
             return pattern
         
         def lateral_left(steps):
