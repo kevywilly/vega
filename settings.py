@@ -191,6 +191,7 @@ class Settings:
         ar = self.position_ready * 1
         ar[:, 2] *= [0.8, 0.8, 1, 1]
         #ar[:, 0] += [10, 10, -10, -10]
+        return ar.astype(int)
 
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):
         if group is None:
