@@ -1,5 +1,7 @@
 import time
 
+import numpy as np
+
 from settings import settings
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.tiger_run import TigerRun
@@ -71,7 +73,7 @@ def get_gait(simple=False):
 
 run(
     SimpleWalk(
-        p0=settings.position_ready + settings.position_forward_offsets,
+        p0=settings.position_ready + np.array([10,0,0]),
         clearance=70,
         step_size=10,
         stride=50,
