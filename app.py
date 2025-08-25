@@ -17,20 +17,11 @@ logging.basicConfig(level=logging.INFO)
 robot: Robot = Robot()
 
 # Mock functions for robot control
-async def sit_command():
-    """Mock function for sit command"""
-    ui.notify("Robot sitting down", type='info')
-    robot.set_pose("sit")
 
-async def crouch_command():
-    """Mock function for crouch command"""
-    ui.notify("Robot crouching", type='info')
-    robot.set_pose("crouch")
-
-async def ready_command():
-    """Mock function for ready command"""
-    ui.notify("Robot ready position", type='info')
-    robot.set_pose("ready")
+async def set_pose_command(pose: str):
+    """Mock function for setting robot pose"""
+    ui.notify(f"Setting pose to {pose}", type='info')
+    robot.set_pose(pose)
 
 async def demo_command():
     """Mock function for demo command"""
@@ -166,10 +157,11 @@ async def main_page():
         # Right panel - Commands and data
         with ui.column().classes('p-4 border rounded gap-4 flex-grow'):
             # Command buttons
-            with ui.grid(columns=4).classes('gap-4'):
-                ui.button('Sit', on_click=sit_command).classes('bg-green-600 text-white text-sm')
-                ui.button('Crouch', on_click=crouch_command).classes('bg-green-600 text-white text-sm')
-                ui.button('Ready', on_click=ready_command).classes('bg-green-600 text-white text-sm')
+            with ui.grid(columns=4).classes('gap-2'):
+                ui.button('Sit', on_click=lambda: set_pose_command('sit')).classes('bg-green-600 text-white text-sm')
+                ui.button('Crouch', on_click=lambda: set_pose_command('crouch')).classes('bg-green-600 text-white text-sm')
+                ui.button('Ready', on_click=lambda: set_pose_command('readh')).classes('bg-green-600 text-white text-sm')
+                ui.button('Walking', on_click=lambda: set_pose_command('walking')).classes('bg-green-600 text-white text-sm')
                 ui.button('Demo', on_click=demo_command).classes('bg-green-600 text-white text-sm')
             
             ui.separator()

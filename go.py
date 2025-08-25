@@ -73,7 +73,7 @@ def get_gait(simple=False):
 
 run(
     SimpleWalk(
-        p0=settings.position_ready + np.array([10,0,0]),
+        p0=settings.position_walk,
         clearance=70,
         step_size=10,
         stride=50,
