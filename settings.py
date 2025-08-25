@@ -178,7 +178,7 @@ class Settings:
     @cached_property
     def position_trot(self) -> np.ndarray:
         ar = self.position_ready.copy()
-        ar[:, 2] *= [0.9, 0.9, 1, 1]
+        ar[:, 2] *= [0.94, 0.94, 1, 1]
         return ar.astype(int)
 
     @cached_property
