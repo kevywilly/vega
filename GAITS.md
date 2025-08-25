@@ -151,7 +151,7 @@ class MySimpleGait(SimplifiedGait):
 | Gait | File | Description | Parameters |
 |------|------|-------------|------------|
 | Trot | `trot.py` | Basic diagonal trot | stride, clearance, step_size |
-| TrotWithLateral | `trot_with_lateral.py` | Trot + hip sway | + lateral_amplitude |
+| TrotWithLateral | `trot_with_lateral.py` | Trot + hip sway | + hip_sway |
 | Sidestep | `sidestep.py` | Lateral movement | stride, clearance, step_size |
 | Turn | `turn.py` | In-place turning | stride, clearance, turn_direction |
 | Jump | `jump.py` | Vertical jumping | clearance, step_size |

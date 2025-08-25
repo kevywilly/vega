@@ -52,7 +52,7 @@ def get_gait(simple=False):
     if not simple:
         return TrotWithLateral(
             p0=settings.position_ready,
-            lateral_amplitude=6,  # Sideways movement amplitude
+            hip_sway=6,  # Sideways movement amplitude
             stride=55,          # Forward stride length
             clearance=65,       # Leg lift height
             step_size=15        # Step size for smoothness
@@ -60,7 +60,7 @@ def get_gait(simple=False):
 
     return SimpleTrotWithLateral(
         p0=settings.position_ready,
-        lateral_amplitude=6,  # Sideways movement amplitude
+        hip_sway=6,  # Sideways movement amplitude
         stride=55,          # Forward stride length
         clearance=65,       # Leg lift height
         step_size=15        # Step size for smoothness
@@ -72,9 +72,10 @@ def get_gait(simple=False):
 run(
     SimpleProwl(
         p0=settings.position_ready + settings.position_forward_offsets,
-        clearance=60,
-        step_size=30,
-        stride=50,
+        clearance=50,
+        step_size=20,
+        stride=70,
+        hip_sway=12
     )
 )
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))

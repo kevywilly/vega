@@ -27,7 +27,7 @@ def compare_gaits():
         stride=50,
         clearance=50, 
         step_size=15,
-        lateral_amplitude=6
+        hip_sway=6
     )
     
     print(f"Regular Trot - Y movement range: {regular_trot.steps1[:, 1].min():.1f} to {regular_trot.steps1[:, 1].max():.1f}")
@@ -49,7 +49,7 @@ def test_with_robot():
         stride=30,  # Smaller stride for testing
         clearance=40,
         step_size=20,
-        lateral_amplitude=5  # Small lateral movement
+        hip_sway=5  # Small lateral movement
     )
     
     print("Executing 5 steps of lateral trot...")

@@ -12,15 +12,15 @@ class TrotWithLateral(Gait):
     helping to shift weight and improve the gait dynamics while maintaining the basic trot pattern.
     """
 
-    def __init__(self, lateral_amplitude=8, **kwargs):
+    def __init__(self, hip_sway=8, **kwargs):
         """
         Initialize trot with lateral movement.
         
         Args:
-            lateral_amplitude: Maximum lateral movement in mm (default: 8mm)
+            hip_sway: Maximum lateral movement in mm (default: 8mm)
             **kwargs: Standard gait parameters (stride, clearance, step_size, etc.)
         """
-        self.lateral_amplitude = lateral_amplitude
+        self.hip_sway = hip_sway
         super().__init__(**kwargs)
 
     def build_steps(self):
@@ -42,7 +42,7 @@ class TrotWithLateral(Gait):
             np.sin(np.linspace(0, np.pi, self.num_steps * 2)) * 0.2,  # Very minimal movement during ground phase
         ])
         
-        y = lateral_pattern * self.lateral_amplitude
+        y = lateral_pattern * self.hip_sway
 
         # Vertical movement (same as regular trot)
         z = np.hstack([
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         stride=50,
         clearance=50,
         step_size=15,
-        lateral_amplitude=6  # 6mm lateral movement
+        hip_sway=6  # 6mm lateral movement
     )
 
     print(f"Gait size: {gait.size}")

@@ -4,7 +4,7 @@ Command-line interface for running simplified gaits on the Vega robot.
 
 Usage examples:
     python run_gaits.py trot --stride 50 --clearance 60
-    python run_gaits.py trot-with-lateral --lateral-amplitude 8
+    python run_gaits.py trot-with-lateral --hip-sway 8
     python run_gaits.py walk --stride 30 --hip-sway 10
     python run_gaits.py prowl --stride 20 --clearance 15
     python run_gaits.py turn --direction left --stride 25
@@ -117,19 +117,19 @@ def trot(stride, clearance, step_size, steps, dry_run):
 @click.option('--stride', '-s', default=50, help='Forward stride length (mm)', type=int)
 @click.option('--clearance', '-c', default=50, help='Leg lift height (mm)', type=int)
 @click.option('--step-size', default=15, help='Step size in degrees (controls speed)', type=int)
-@click.option('--lateral-amplitude', '-a', default=6, help='Hip sway amplitude (mm)', type=int)
+@click.option('--hip-sway', '-a', default=6, help='Hip sway amplitude (mm)', type=int)
 @click.option('--steps', default=40, help='Number of steps to execute', type=int)
 @click.option('--dry-run', is_flag=True, help='Test gait without robot (simulation)')
-def trot_with_lateral(stride, clearance, step_size, lateral_amplitude, steps, dry_run):
+def trot_with_lateral(stride, clearance, step_size, hip_sway, steps, dry_run):
     """Run trot gait with lateral hip movement"""
-    print(f"🏃 Running SimpleTrotWithLateral (stride={stride}, clearance={clearance}, lateral={lateral_amplitude})")
+    print(f"🏃 Running SimpleTrotWithLateral (stride={stride}, clearance={clearance}, lateral={hip_sway})")
     
     gait = SimpleTrotWithLateralFixed(
         p0=settings.position_ready,
         stride=stride,
         clearance=clearance,
         step_size=step_size,
-        lateral_amplitude=lateral_amplitude
+        hip_sway=hip_sway
     )
     
     if dry_run:
@@ -159,7 +159,7 @@ def walk(stride, clearance, step_size, hip_sway, steps, dry_run):
         stride=stride,
         clearance=clearance,
         step_size=step_size,
-        hip_sway_amplitude=hip_sway
+        hip_sway=hip_sway
     )
     
     if dry_run:
@@ -189,7 +189,7 @@ def prowl(stride, clearance, step_size, hip_sway, steps, dry_run):
         stride=stride,
         clearance=clearance,
         step_size=step_size,
-        hip_sway_amplitude=hip_sway
+        hip_sway=hip_sway
     )
     
     if dry_run:

@@ -25,13 +25,13 @@ def analyze_walking_pattern():
         stride=40,              # 40mm forward steps
         clearance=25,           # 25mm lift height (lower than trot)
         step_size=20,           # Slower steps for walking
-        hip_sway_amplitude=8    # 8mm hip sway
+        hip_sway=8    # 8mm hip sway
     )
     
     print(f"✓ SimpleWalk created")
     print(f"  📏 Cycle length: {len(walk.steps[0])} steps")
     print(f"  🚶 Walking sequence: LF → RB → RF → LB")
-    print(f"  ⚖️ Hip sway amplitude: {walk.hip_sway_amplitude}mm")
+    print(f"  ⚖️ Hip sway amplitude: {walk.hip_sway}mm")
     
     return walk
 
@@ -118,7 +118,7 @@ def test_walking_execution():
     print("\n🚶‍♂️ Walking Execution Test:")
     print("=" * 30)
     
-    walk = SimpleWalk(stride=30, clearance=20, step_size=25, hip_sway_amplitude=6)
+    walk = SimpleWalk(stride=30, clearance=20, step_size=25, hip_sway=6)
     
     print("Testing natural walking pattern...")
     print("Time | Forward | Sway  | Lifting | Description")
@@ -182,4 +182,4 @@ if __name__ == "__main__":
     show_walking_advantages()
     
     print("\n🎉 SimpleWalk is ready for natural quadruped movement!")
-    print("   Usage: SimpleWalk(stride=40, clearance=25, hip_sway_amplitude=8)")
+    print("   Usage: SimpleWalk(stride=40, clearance=25, hip_sway=8)")
