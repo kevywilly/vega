@@ -157,10 +157,12 @@ async def main_page():
         # Right panel - Commands and data
         with ui.column().classes('p-4 border rounded gap-4 flex-grow'):
             # Command buttons
+            ui.label('Poses').classes('text-lg font-bold')
             with ui.grid(columns=4).classes('gap-2'):
                 ui.button('Sit', on_click=lambda: set_pose_command('sit')).classes('bg-green-600 text-white text-sm')
                 ui.button('Crouch', on_click=lambda: set_pose_command('crouch')).classes('bg-green-600 text-white text-sm')
-                ui.button('Ready', on_click=lambda: set_pose_command('readh')).classes('bg-green-600 text-white text-sm')
+                ui.button('Ready', on_click=lambda: set_pose_command('ready')).classes('bg-green-600 text-white text-sm')
+                ui.button('Trotting', on_click=lambda: set_pose_command('trotting')).classes('bg-green-600 text-white text-sm')
                 ui.button('Walking', on_click=lambda: set_pose_command('walking')).classes('bg-green-600 text-white text-sm')
                 ui.button('Demo', on_click=demo_command).classes('bg-green-600 text-white text-sm')
             

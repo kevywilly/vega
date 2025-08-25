@@ -309,6 +309,8 @@ class Robot(Node):
             p = settings.position_crouch
         elif v == "walking":
             p = settings.position_walk
+        elif v == "trotting":
+            p = settings.position_trot
         else:
             return {"status": "error, unknown pose"}
 
