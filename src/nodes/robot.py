@@ -11,7 +11,7 @@ from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
-from src.motion.gaits.simplified_gait import SimpleTrotWithLateral
+from src.motion.gaits.simplified_gait import SimpleTrotWithLateral, SimpleSidestep
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
 
@@ -196,7 +196,7 @@ class Robot(Node):
         elif move_type == MoveTypes.LEFT:
             self.gait = Sidestep(**settings.sidestep_params, is_reversed=True)
         elif move_type == MoveTypes.RIGHT:
-            self.gait = Sidestep(**settings.sidestep_params)
+            self.gait = SimpleSidestep(**settings.sidestep_params)
         elif move_type == MoveTypes.TROT_IN_PLACE:
             self.gait = Trot(**settings.trot_in_place_params)
         elif move_type == MoveTypes.STOP:

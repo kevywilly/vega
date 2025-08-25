@@ -9,11 +9,10 @@ Key improvements:
 """
 
 import numpy as np
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from enum import Enum
 from dataclasses import dataclass
-from typing import List, Optional, Callable, Dict
-from settings import settings
+from typing import Callable, Dict
 from src.motion.gaits.gait import Gait
 
 
