@@ -54,32 +54,37 @@ def height_slider_change(e):
 def yaw_slider_change(e):
     """Mock function for yaw slider"""
     settings.tilt.yaw = int(e.value)
+    robot.set_pose("ready")
     print(f"Yaw slider changed to: {e.value}")
 
 def pitch_slider_change(e):
     """Mock function for pitch slider"""
     settings.tilt.pitch = int(e.value)
+    robot.set_pose("ready")
     print(f"Pitch slider changed to: {e.value}")
 
 def create_data_grid(data_dict: Dict, labels: List[str]):
     """Helper function to create data grids"""
     legs = data_dict.keys()
     
-    with ui.grid(columns=4).classes('gap-8 w-full text-sm'):
+    with ui.grid(columns=4).classes('gap-2 w-full text-sm'):
         # Headers
-        ui.label('')
+        ui.label('').classes('compact w-1/4').style('min-height:0.5em; line-height:1; padding:0;')
         for label in labels:
-            ui.label(label).classes('font-bold text-center')
-        
+            ui.label(label).classes('font-bold text-center compact w-1/4').style('min-height:0.5em; line-height:1; padding:0;')
         # Data rows
         for leg in legs:
-            ui.label(leg).classes('font-bold')
+            ui.label(leg).classes('font-bold compact w-1/4').style('min-height:0.5em; line-height:1; padding:0;')
             for key in data_dict[leg]:
                 value = data_dict[leg][key]
                 if isinstance(value, float):
-                    ui.label(f"{value:.0f}" if value == int(value) else f"{value:.2f}").classes('text-center').style('font-family: monospace')
+                    ui.label(f"{value:.0f}" if value == int(value) else f"{value:.2f}") \
+                        .classes('text-center compact w-1/4') \
+                        .style('font-family: monospace; min-height:0.5em; line-height:1; padding:0;')
                 else:
-                    ui.label(str(value)).classes('text-center').style('font-family: monospace')
+                    ui.label(str(value)) \
+                        .classes('text-center compact w-1/4') \
+                        .style('font-family: monospace; min-height:0.5em; line-height:1; padding:0;')
 
 
 @app.get('/api/stream')
@@ -93,14 +98,34 @@ def video_stream():
 async def main_page():
     ui.page_title('Vega Robot Control')
     
-    with ui.row().classes('gap-4 p-4 w-full'):
-        # Left panel - Video stream and controls
-        with ui.column().classes('w-1/2 p-4 rounded bg-gray-900 text-white'):
-            # Mock video stream (placeholder image)
+    with ui.row().classes('gap-4 p-4 w-full flex-col md:flex-row'):
+        # Left panel - Video stream, sliders, and controls
+        with ui.column().classes('w-full md:w-1/2 p-4 rounded bg-gray-900 text-white'):
+            # Video stream - full width on mobile
             ui.html("""<div class="w-full aspect-video bg-gray-700 flex items-center justify-center text-white">
-                    <img src="api/stream" class="aspect-video">
+                    <img src="api/stream" class="w-full h-full object-cover">
                     </div>
             """)
+            
+            # Sliders - horizontal layout under video
+            with ui.row().classes('gap-4 my-4 w-full justify-center'):
+                with ui.column().classes('items-center'):
+                    ui.label('Height (%)').classes('text-xs mb-2')
+                    height_slider = ui.slider(
+                        min=0, max=100, value=65, step=1, on_change=height_slider_change
+                    ).classes('w-24')
+                
+                with ui.column().classes('items-center'):
+                    ui.label('Tilt (yaw)').classes('text-xs mb-2')
+                    yaw_slider = ui.slider(
+                        min=-50, max=50, value=0, step=5, on_change=yaw_slider_change
+                    ).classes('w-24')
+                
+                with ui.column().classes('items-center'):
+                    ui.label('Tilt (pitch)').classes('text-xs mb-2')
+                    pitch_slider = ui.slider(
+                        min=-50, max=50, value=0, step=5, on_change=pitch_slider_change
+                    ).classes('w-24')
             
             # Control panel - 3x3 movement buttons
             with ui.grid(columns=3).classes('gap-2 my-4 w-full'):
@@ -134,34 +159,15 @@ async def main_page():
                 ui.label('Angular Accel:')
                 angular_accel_display = ui.label('0.0')
         
-        # Middle panel - Vertical sliders
-        with ui.column().classes('p-4 border rounded gap-6'):
-            with ui.column().classes('items-center'):
-                ui.label('Height (%)').classes('text-xs mb-2')
-                height_slider = ui.slider(
-                    min=0, max=100, value=65, step=1, on_change=height_slider_change
-                ).classes('w-32').style('transform: rotate(90deg); transform-origin: center; height: 32px; margin: 50px 0;')
-            
-            with ui.column().classes('items-center'):
-                ui.label('Tilt (yaw)').classes('text-xs mb-2')
-                yaw_slider = ui.slider(
-                    min=-50, max=50, value=0, step=5, on_change=yaw_slider_change
-                ).classes('w-32').style('transform: rotate(90deg); transform-origin: center; height: 32px; margin: 50px 0;')
-            
-            with ui.column().classes('items-center'):
-                ui.label('Tilt (pitch)').classes('text-xs mb-2')
-                pitch_slider = ui.slider(
-                    min=-50, max=50, value=0, step=5, on_change=pitch_slider_change
-                ).classes('w-32').style('transform: rotate(90deg); transform-origin: center; height: 32px; margin: 50px 0;')
-        
         # Right panel - Commands and data
-        with ui.column().classes('p-4 border rounded gap-4 flex-grow'):
+        with ui.column().classes('w-full md:flex-grow p-4 border rounded gap-4'):
             # Command buttons
-            ui.label('Poses').classes('text-lg font-bold')
-            with ui.grid(columns=4).classes('gap-2'):
+            ui.label('Poses').classes('text-lg font-bold w-full')
+            with ui.grid(columns=3).classes('gap-2 w-full'):
                 ui.button('Sit', on_click=lambda: set_pose_command('sit')).classes('bg-green-600 text-white text-sm')
                 ui.button('Crouch', on_click=lambda: set_pose_command('crouch')).classes('bg-green-600 text-white text-sm')
                 ui.button('Ready', on_click=lambda: set_pose_command('ready')).classes('bg-green-600 text-white text-sm')
+            with ui.grid(columns=3).classes('gap-2 w-full'):
                 ui.button('Trotting', on_click=lambda: set_pose_command('trotting')).classes('bg-green-600 text-white text-sm')
                 ui.button('Walking', on_click=lambda: set_pose_command('walking')).classes('bg-green-600 text-white text-sm')
                 ui.button('Demo', on_click=demo_command).classes('bg-green-600 text-white text-sm')
@@ -170,15 +176,15 @@ async def main_page():
             
             # Position section
             ui.label('Position').classes('text-lg font-bold')
-            position_container = ui.column()
+            position_container = ui.column().classes('w-full')
             
             # Angles section
             ui.label('Angles').classes('text-lg font-bold')
-            angles_container = ui.column()
+            angles_container = ui.column().classes('w-full')
             
             # Offsets section
             ui.label('Offsets').classes('text-lg font-bold')
-            offsets_container = ui.column()
+            offsets_container = ui.column().classes('w-full')
             
             ui.separator()
             
