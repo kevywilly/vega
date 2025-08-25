@@ -75,7 +75,7 @@ run(
         clearance=50,
         step_size=20,
         stride=70,
-        hip_sway=12
+
     )
 )
 # run(Turn(degrees=-20, p0=POSITIONS.READY, clearance=80, step_size=10))

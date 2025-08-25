@@ -56,8 +56,9 @@ class Gait(ABC):
 
     def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
                  turn_direction=1,
-                 is_reversed=False):
+                 is_reversed=False, hip_sway=8):
 
+        self.hip_sway = hip_sway
         self.p0 = p0
         self.stride = -stride if is_reversed else stride
         self.clearance = clearance

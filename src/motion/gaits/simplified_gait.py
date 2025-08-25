@@ -140,13 +140,6 @@ class SimplifiedGait(Gait):
     - Proven, stable base class behavior
     """
     
-    def __init__(self, **kwargs):
-        # Extract our custom parameters
-        self.hip_sway = kwargs.pop('hip_sway', 8)
-        
-        # Call parent constructor with remaining parameters
-        super().__init__(**kwargs)
-    
     def build_steps(self):
         """Build steps using simplified movement definitions"""
         # Get movement definitions from subclass
