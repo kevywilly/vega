@@ -12,7 +12,7 @@ positioning:
   angle_flip: [[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]]
   angle_zero: [[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]
   offsets: [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
-  forward_offsets: [-10,0,0]
+  forward_offsets: [-0,0,0]
   backward_offsets: [5,0,0]
   ready_height_pct: 0.65
 leveling:
