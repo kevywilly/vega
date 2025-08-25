@@ -173,7 +173,9 @@ class Settings:
 
     @cached_property
     def position_ready(self) -> np.ndarray:
-        return self.position_home * self.position_ready_height_pct
+        ar = self.position_home * self.position_ready_height_pct
+        ar[:, 2] *= [0.9, 0.9, 1, 1]
+        return ar.astype(int)
 
     @cached_property
     def position_crouch(self) -> np.ndarray:
@@ -188,9 +190,8 @@ class Settings:
     
     @cached_property
     def position_walk(self) -> np.ndarray:
-        ar = self.position_ready * 1
+        ar = self.position_home * self.position_ready_height_pct
         ar[:, 2] *= [0.8, 0.8, 1, 1]
-        #ar[:, 0] += [10, 10, -10, -10]
         return ar.astype(int)
 
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):
