@@ -557,15 +557,15 @@ class SimpleProwl(SimplifiedGait):
         }
         
         def prowl_stride(steps):
-            """Prowling forward stride - even longer ground contact than walk"""
-            # Prowling has very long stance phase (85% ground, 15% air)
-            swing_steps = int(steps * 0.15)  # Only 15% in air for stealth
-            stance_steps = steps - swing_steps  # 85% stance
+            """Prowling forward stride - similar to walk but more deliberate"""
+            # Use a more balanced swing/stance ratio for proper forward movement
+            swing_steps = int(steps * 0.3)  # 30% swing phase
+            stance_steps = steps - swing_steps  # 70% stance
             
-            # Swing phase: careful, controlled forward movement
-            swing = MovementPattern.stride_forward(swing_steps * 6, self.stride)[:swing_steps]
-            # Stance phase: very gradual backward movement for stability
-            stance = np.linspace(-self.stride * 0.4, self.stride * 0.2, stance_steps)
+            # Swing phase: forward movement when leg is lifted
+            swing = np.linspace(0, self.stride, swing_steps)
+            # Stance phase: backward movement while on ground (propulsion)
+            stance = np.linspace(self.stride, 0, stance_steps)
             
             result = np.concatenate([swing, stance])
             if len(result) != steps:
@@ -573,12 +573,12 @@ class SimpleProwl(SimplifiedGait):
             return result
         
         def prowl_lift(steps):
-            """Prowling lift pattern - minimal lift for stealth"""
-            swing_steps = int(steps * 0.15)  # Very short lift phase
+            """Prowling lift pattern - matches swing phase timing"""
+            swing_steps = int(steps * 0.3)  # Match swing phase timing
             stance_steps = steps - swing_steps
             
-            # Minimal lift for quiet movement
-            lift = MovementPattern.lift(swing_steps, -self.clearance * 0.7)  # 70% of normal clearance
+            # Lift during swing phase for prowling
+            lift = MovementPattern.lift(swing_steps, -self.clearance)
             ground = np.zeros(stance_steps)
             
             result = np.concatenate([lift, ground])
