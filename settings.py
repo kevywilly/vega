@@ -177,7 +177,7 @@ class Settings:
 
     @cached_property
     def position_crouch(self) -> np.ndarray:
-        return self.position_ready * 0.6
+        return self.position_ready * 0.7
 
     @cached_property
     def position_sit(self) -> np.ndarray:
