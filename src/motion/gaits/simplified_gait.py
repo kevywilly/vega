@@ -14,6 +14,7 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import List, Optional, Callable, Dict
 from settings import settings
+from src.motion.gaits.gait import Gait
 
 
 class LegPhase(Enum):
@@ -34,27 +35,86 @@ class MovementPattern:
     
     @staticmethod
     def stride_forward(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Forward stride pattern"""
-        return np.sin(np.linspace(0, np.pi/2, steps)) * distance
+        """Forward stride pattern - matches Gait.stride_forward()"""
+        return np.sin(np.radians(np.linspace(0, 90, steps))) * distance
+    
+    @staticmethod
+    def stride_home(steps: int, distance: float = 1.0) -> np.ndarray:
+        """Home stride pattern - matches Gait.stride_home()"""
+        return np.cos(np.radians(np.linspace(0, 90, steps))) * distance
     
     @staticmethod
     def stride_back(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Backward return pattern"""
-        return np.cos(np.linspace(0, np.pi/2, steps)) * distance
+        """Backward return pattern - matches Gait.stride_back()"""
+        return np.cos(np.radians(np.linspace(90, 180, steps))) * distance
+    
+    @staticmethod
+    def downupdown(steps: int, clearance: float = 1.0) -> np.ndarray:
+        """Downupdown pattern - matches Gait.downupdown()"""
+        ns1 = int(steps/5)
+        ns2 = steps-ns1
+        return np.hstack([
+            np.sin(np.radians(np.linspace(-10, 0, ns1))),
+            np.sin(np.radians(np.linspace(45, 180, ns2)))
+        ]) * clearance
     
     @staticmethod
     def step_cycle(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Complete forward-back cycle"""
-        half_steps = steps // 2
+        """Complete forward-back cycle using original gait patterns"""
+        # This should match the trot pattern: stride_forward + stride_home + stride_back
+        steps_per_part = steps // 4
         return np.concatenate([
-            MovementPattern.stride_forward(half_steps, distance),
-            MovementPattern.stride_back(half_steps, distance)
+            MovementPattern.stride_forward(steps_per_part, distance),
+            MovementPattern.stride_home(steps_per_part, distance),
+            MovementPattern.stride_back(steps_per_part * 2, distance)
         ])
     
     @staticmethod
     def lateral_sway(steps: int, amplitude: float = 1.0) -> np.ndarray:
         """Lateral swaying motion"""
         return np.sin(np.linspace(0, 2*np.pi, steps)) * amplitude
+    
+    @staticmethod
+    def hip_sway_pattern(num_steps: int, amplitude: float = 1.0, 
+                        lift_intensity: float = 0.7, 
+                        stance_intensity: float = 0.3, 
+                        ground_intensity: float = 0.2) -> np.ndarray:
+        """
+        Generic hip sway pattern for natural quadruped movement
+        
+        Creates weight shifting with configurable intensities:
+        - lift_intensity: Movement during leg lift phase (default 0.7 for trot)
+        - stance_intensity: Movement during stance phase (default 0.3 for trot)  
+        - ground_intensity: Movement during ground contact (default 0.2 for trot)
+        
+        Different gaits can use different intensities:
+        - Trot: (0.7, 0.3, 0.2) - moderate sway
+        - Walk: (0.9, 0.1, 0.0) - more pronounced sway during lift
+        - Prowl: (0.5, 0.8, 0.1) - subtle lift, strong stance sway
+        """
+        return np.hstack([
+            # During lift phase: lateral movement to help with weight shift
+            np.sin(np.linspace(0, np.pi, num_steps)) * lift_intensity,
+            # During stance phase: counter movement for balance
+            np.sin(np.linspace(np.pi, 2*np.pi, num_steps)) * stance_intensity,
+            # Ground contact phase: return to neutral
+            np.sin(np.linspace(0, np.pi, num_steps * 2)) * ground_intensity,
+        ]) * amplitude
+    
+    @staticmethod  
+    def trot_lateral_pattern(num_steps: int, amplitude: float = 1.0) -> np.ndarray:
+        """Trot-specific hip sway pattern - wrapper for backward compatibility"""
+        return MovementPattern.hip_sway_pattern(num_steps, amplitude, 0.7, 0.3, 0.2)
+    
+    @staticmethod
+    def walk_lateral_pattern(num_steps: int, amplitude: float = 1.0) -> np.ndarray:
+        """Walk-specific hip sway pattern - more pronounced during lift"""
+        return MovementPattern.hip_sway_pattern(num_steps, amplitude, 0.9, 0.1, 0.0)
+    
+    @staticmethod
+    def prowl_lateral_pattern(num_steps: int, amplitude: float = 1.0) -> np.ndarray:
+        """Prowling/stalking hip sway pattern - subtle lift, strong stance movement"""
+        return MovementPattern.hip_sway_pattern(num_steps, amplitude, 0.5, 0.8, 0.1)
     
     @staticmethod
     def zero(steps: int) -> np.ndarray:
@@ -71,78 +131,69 @@ class LegMovement:
     phase_shift: int = 0  # Phase shift in steps
 
 
-class SimplifiedGait(ABC):
+class SimplifiedGait(Gait):
     """
-    Much simpler gait definition system.
+    Simplified gait that uses the proven Gait base class but allows
+    declarative movement pattern definitions.
     
-    Instead of manually building arrays, define:
-    1. Movement patterns for each axis
-    2. Which legs use which patterns
-    3. Phase relationships
+    Best of both worlds:
+    - Simple, readable movement definitions
+    - Proven, stable base class behavior
     """
     
-    def __init__(self, p0: np.ndarray = None, stride: float = 50, 
-                 clearance: float = 50, step_size: float = 15, **kwargs):
-        self.p0 = p0 if p0 is not None else settings.position_ready
-        self.stride = stride
-        self.clearance = clearance
-        self.step_size = step_size
-        self.num_steps = int(90 / step_size)
+    def __init__(self, **kwargs):
+        # Extract our custom parameters
+        self.lateral_amplitude = kwargs.pop('lateral_amplitude', 8)
         
-        # Build the gait
-        self.leg_movements = self.define_leg_movements()
-        self.steps = self._build_steps()
+        # Call parent constructor with remaining parameters
+        super().__init__(**kwargs)
+    
+    def build_steps(self):
+        """Build steps using simplified movement definitions"""
+        # Get movement definitions from subclass
+        movements = self.define_leg_movements()
         
-        # Iterator state
-        self.index = 0
-        self.positions = self.p0
+        # Build the x, y, z arrays like original gaits
+        total_steps = self.num_steps * 4
+        
+        # Get movements for "step group 1" (legs 0,2) and "step group 2" (legs 1,3)
+        # This matches the base Gait class leg assignment pattern
+        
+        leg0_movement = movements.get(0, LegMovement())
+        leg1_movement = movements.get(1, LegMovement())
+        
+        # Build arrays for step group 1 (like steps1 in base class)
+        x1 = leg0_movement.x(total_steps) if leg0_movement.x else MovementPattern.zero(total_steps)
+        y1 = leg0_movement.y(total_steps) if leg0_movement.y else MovementPattern.zero(total_steps)
+        z1 = leg0_movement.z(total_steps) if leg0_movement.z else MovementPattern.zero(total_steps)
+        
+        # Build arrays for step group 2 (like steps2 in base class) 
+        x2 = leg1_movement.x(total_steps) if leg1_movement.x else x1.copy()
+        y2 = leg1_movement.y(total_steps) if leg1_movement.y else y1.copy()
+        z2 = leg1_movement.z(total_steps) if leg1_movement.z else z1.copy()
+        
+        # Apply phase shifts (like np.roll in original gaits)
+        if leg1_movement.phase_shift > 0:
+            x2 = np.roll(x2, leg1_movement.phase_shift)
+            y2 = np.roll(y2, leg1_movement.phase_shift)  
+            z2 = np.roll(z2, leg1_movement.phase_shift)
+        
+        # Use the base Gait reshape_steps method for proper formatting
+        self.steps1 = Gait.reshape_steps(np.array([x1, y1, z1]), total_steps)
+        self.steps2 = Gait.reshape_steps(np.array([x2, y2, z2]), total_steps)
     
     @abstractmethod
     def define_leg_movements(self) -> Dict[int, LegMovement]:
         """
-        Define movement for each leg (0-3).
-        Return dict mapping leg number to LegMovement.
+        Define movement for leg groups.
+        
+        Return dict with:
+        - 0: Movement for legs 0,2 (front-left, back-left) 
+        - 1: Movement for legs 1,3 (front-right, back-right)
+        
+        This matches the base Gait class leg assignment pattern.
         """
         pass
-    
-    def _build_steps(self) -> Dict[int, np.ndarray]:
-        """Build step arrays from leg movement definitions"""
-        steps = {}
-        total_steps = self.num_steps * 4  # Assume 4-phase cycle
-        
-        for leg_num, movement in self.leg_movements.items():
-            # Generate movement for each axis
-            x = movement.x(total_steps) if movement.x else MovementPattern.zero(total_steps)
-            y = movement.y(total_steps) if movement.y else MovementPattern.zero(total_steps)
-            z = movement.z(total_steps) if movement.z else MovementPattern.zero(total_steps)
-            
-            # Apply phase shift
-            if movement.phase_shift > 0:
-                x = np.roll(x, movement.phase_shift)
-                y = np.roll(y, movement.phase_shift)
-                z = np.roll(z, movement.phase_shift)
-            
-            # Stack into (steps, 3) array
-            steps[leg_num] = np.column_stack([x, y, z])
-        
-        return steps
-    
-    def get_positions(self, index: int) -> np.ndarray:
-        """Get positions for all legs at given step index"""
-        positions = self.p0.copy()
-        for leg_num in range(4):
-            if leg_num in self.steps:
-                step_idx = index % len(self.steps[leg_num])
-                positions[leg_num] += self.steps[leg_num][step_idx]
-        return positions
-    
-    def __iter__(self):
-        return self
-    
-    def __next__(self):
-        positions = self.get_positions(self.index)
-        self.index = (self.index + 1) % len(next(iter(self.steps.values())))
-        return positions
 
 
 # Example implementations using the simplified system
@@ -151,83 +202,125 @@ class SimpleTrot(SimplifiedGait):
     """Trot gait using simplified system"""
     
     def define_leg_movements(self) -> Dict[int, LegMovement]:
-        cycle_steps = self.num_steps * 4
         half_cycle = self.num_steps * 2
         
-        # Forward stride pattern
-        def forward_stride(steps):
-            return MovementPattern.step_cycle(steps, self.stride)
+        # Trot movement patterns matching the original exactly
+        def trot_x_movement(steps):
+            """Forward/back movement like original trot"""
+            return np.hstack([
+                MovementPattern.stride_forward(self.num_steps, self.stride),
+                MovementPattern.stride_home(self.num_steps, self.stride),
+                MovementPattern.stride_back(self.num_steps * 2, self.stride)
+            ])
         
-        # Lift pattern during stance
-        def lift_pattern(steps):
-            pattern = np.zeros(steps)
-            # Lift during first quarter of cycle
-            lift_steps = self.num_steps
-            pattern[:lift_steps] = MovementPattern.lift(lift_steps, -self.clearance)
-            return pattern
+        def trot_z_movement(steps):
+            """Up/down movement like original trot"""
+            return np.hstack([
+                MovementPattern.downupdown(self.num_steps, -self.clearance),
+                MovementPattern.zero(self.num_steps * 3)
+            ])
         
         return {
-            0: LegMovement(x=forward_stride, z=lift_pattern, phase_shift=0),      # Front left
-            1: LegMovement(x=forward_stride, z=lift_pattern, phase_shift=half_cycle),  # Front right  
-            2: LegMovement(x=forward_stride, z=lift_pattern, phase_shift=half_cycle),  # Back left
-            3: LegMovement(x=forward_stride, z=lift_pattern, phase_shift=0),      # Back right
+            # Group 1: legs 0,2 (front-left, back-left)
+            0: LegMovement(x=trot_x_movement, z=trot_z_movement, phase_shift=0),
+            # Group 2: legs 1,3 (front-right, back-right) - phase shifted for diagonal trot
+            1: LegMovement(x=trot_x_movement, z=trot_z_movement, phase_shift=half_cycle),
         }
 
 
-class SimpleTrotWithLateral(SimplifiedGait):
-    """Trot with lateral movement using simplified system"""
+class SimpleTrotWithLateralFixed(SimplifiedGait):
+    """
+    Trot with lateral movement using the FIXED simplified system
+    
+    This version uses the proper SimplifiedGait base class with
+    declarative movement patterns while maintaining all the stability
+    and correctness of the original Gait class.
+    """
+    
+    def define_leg_movements(self) -> Dict[int, LegMovement]:
+        half_cycle = self.num_steps * 2
+        
+        # X-axis: same as trot
+        def trot_x_movement(steps):
+            return np.hstack([
+                MovementPattern.stride_forward(self.num_steps, self.stride),
+                MovementPattern.stride_home(self.num_steps, self.stride),
+                MovementPattern.stride_back(self.num_steps * 2, self.stride)
+            ])
+        
+        # Z-axis: same as trot
+        def trot_z_movement(steps):
+            return np.hstack([
+                MovementPattern.downupdown(self.num_steps, -self.clearance),
+                MovementPattern.zero(self.num_steps * 3)
+            ])
+        
+        # Y-axis: lateral movement for hip sway using abstracted pattern
+        def lateral_movement_left(steps):
+            """Left legs lateral movement using the abstracted trot lateral pattern"""
+            return MovementPattern.trot_lateral_pattern(self.num_steps, self.lateral_amplitude)
+        
+        def lateral_movement_right(steps):
+            """Right legs lateral movement (opposite of left)"""
+            return MovementPattern.trot_lateral_pattern(self.num_steps, -self.lateral_amplitude)
+        
+        return {
+            # Group 1: legs 0,2 (left side) 
+            0: LegMovement(
+                x=trot_x_movement,
+                y=lateral_movement_left, 
+                z=trot_z_movement,
+                phase_shift=0
+            ),
+            # Group 2: legs 1,3 (right side) - phase shifted and opposite lateral
+            1: LegMovement(
+                x=trot_x_movement,
+                y=lateral_movement_right,
+                z=trot_z_movement, 
+                phase_shift=half_cycle
+            ),
+        }
+
+
+class SimpleTrotWithLateral(Gait):
+    """
+    Trot with lateral movement - FIXED to match base Gait system exactly
+    
+    This version properly inherits from the base Gait class and follows
+    the same patterns as the working TrotWithLateral.
+    """
     
     def __init__(self, lateral_amplitude: float = 8, **kwargs):
         self.lateral_amplitude = lateral_amplitude
         super().__init__(**kwargs)
-    
-    def define_leg_movements(self) -> Dict[int, LegMovement]:
-        cycle_steps = self.num_steps * 4
-        half_cycle = self.num_steps * 2
+
+    def build_steps(self):
+        # Forward/backward movement (EXACTLY like original TrotWithLateral)
+        x = np.hstack([
+            self.stride_forward(),
+            self.stride_home(),
+            self.stride_back(self.num_steps * 2),
+        ]) * int(self.stride)
+
+        # Lateral movement using abstracted pattern
+        y = MovementPattern.trot_lateral_pattern(self.num_steps, self.lateral_amplitude)
+
+        # Vertical movement (EXACTLY like original TrotWithLateral)
+        z = np.hstack([
+            self.downupdown(),
+            np.repeat(self.zeros, 3),
+        ]) * (-self.clearance)
+
+        # Build step sequences (EXACTLY like original TrotWithLateral)
+        self.steps1 = Gait.reshape_steps(np.array([x, y, z]), self.num_steps * 4)
         
-        def forward_stride(steps):
-            # Match the original TrotWithLateral pattern exactly
-            # stride_forward + stride_home + stride_back(num_steps * 2)
-            part1 = MovementPattern.stride_forward(self.num_steps, self.stride)
-            part2 = MovementPattern.stride_back(self.num_steps, self.stride) 
-            part3 = MovementPattern.stride_back(self.num_steps * 2, self.stride)
-            
-            pattern = np.concatenate([part1, part2, part3])
-            # Ensure correct length
-            if len(pattern) != steps:
-                pattern = np.resize(pattern, steps)
-            return pattern
+        # Phase shift for diagonal gait pattern, but with opposite lateral movement
+        # This creates the natural hip sway where diagonal legs move in opposite lateral directions
+        steps2_x = np.roll(x, self.num_steps * 2)
+        steps2_y = -np.roll(y, self.num_steps * 2)  # Opposite lateral movement for diagonal legs
+        steps2_z = np.roll(z, self.num_steps * 2)
         
-        def lift_pattern(steps):
-            # Match original trot lift pattern with downupdown + zeros
-            lift_part = MovementPattern.lift(self.num_steps, -self.clearance)
-            # Add downupdown-style ground prep
-            prep_steps = self.num_steps // 5
-            main_steps = self.num_steps - prep_steps
-            prep = np.sin(np.radians(np.linspace(-10, 0, prep_steps))) * (-self.clearance * 0.1)
-            main = MovementPattern.lift(main_steps, -self.clearance)
-            lift_combined = np.concatenate([prep, main])[:self.num_steps]
-            
-            ground_part = np.zeros(steps - self.num_steps)
-            
-            pattern = np.concatenate([lift_combined, ground_part])
-            # Ensure correct length
-            if len(pattern) != steps:
-                pattern = np.resize(pattern, steps)
-            return pattern
-        
-        def lateral_left(steps):
-            return MovementPattern.lateral_sway(steps, self.lateral_amplitude)
-        
-        def lateral_right(steps):
-            return MovementPattern.lateral_sway(steps, -self.lateral_amplitude)
-        
-        return {
-            0: LegMovement(x=forward_stride, y=lateral_left, z=lift_pattern, phase_shift=0),
-            1: LegMovement(x=forward_stride, y=lateral_right, z=lift_pattern, phase_shift=half_cycle),
-            2: LegMovement(x=forward_stride, y=lateral_left, z=lift_pattern, phase_shift=half_cycle),
-            3: LegMovement(x=forward_stride, y=lateral_right, z=lift_pattern, phase_shift=0),
-        }
+        self.steps2 = Gait.reshape_steps(np.array([steps2_x, steps2_y, steps2_z]), self.num_steps * 4)
 
 
 class SimpleJump(SimplifiedGait):
@@ -390,52 +483,25 @@ class SimpleWalk(SimplifiedGait):
                 result = np.resize(result, steps)
             return result
         
-        def hip_sway_pattern(steps, leg_side: str):
-            """
-            Hip sway for natural walking balance.
-            
-            Body sways toward the side with more supporting legs:
-            - When left legs lift, body sways right for balance
-            - When right legs lift, body sways left for balance
-            """
-            if leg_side == "left":
-                # Left legs: body sways right when this leg is lifting
-                # Create sway that peaks when leg is in air
-                sway = np.zeros(steps)
-                swing_start = 0
-                swing_end = int(steps * 0.25)
-                
-                # During swing phase, body sways away from lifting leg
-                if swing_end > swing_start:
-                    sway[swing_start:swing_end] = np.sin(np.linspace(0, np.pi, swing_end - swing_start)) * self.hip_sway_amplitude
-                
-                # Add gentle overall sway pattern for natural movement
-                overall_sway = np.sin(np.linspace(0, 2*np.pi, steps)) * (self.hip_sway_amplitude * 0.3)
-                return sway + overall_sway
-                
-            else:  # right side
-                # Right legs: body sways left when this leg is lifting  
-                sway = np.zeros(steps)
-                swing_start = 0
-                swing_end = int(steps * 0.25)
-                
-                if swing_end > swing_start:
-                    sway[swing_start:swing_end] = -np.sin(np.linspace(0, np.pi, swing_end - swing_start)) * self.hip_sway_amplitude
-                
-                overall_sway = -np.sin(np.linspace(0, 2*np.pi, steps)) * (self.hip_sway_amplitude * 0.3)
-                return sway + overall_sway
+        def hip_sway_pattern_left(steps):
+            """Left legs hip sway using generic walk pattern"""
+            return MovementPattern.walk_lateral_pattern(self.num_steps, self.hip_sway_amplitude)
+        
+        def hip_sway_pattern_right(steps):
+            """Right legs hip sway (opposite of left)"""
+            return MovementPattern.walk_lateral_pattern(self.num_steps, -self.hip_sway_amplitude)
         
         return {
             # Left side legs
             0: LegMovement(  # Left Front
                 x=forward_stride, 
-                y=lambda steps: hip_sway_pattern(steps, "left"),
+                y=hip_sway_pattern_left,
                 z=lift_pattern, 
                 phase_shift=phase_shifts[0]
             ),
             2: LegMovement(  # Left Back  
                 x=forward_stride,
-                y=lambda steps: hip_sway_pattern(steps, "left"), 
+                y=hip_sway_pattern_left, 
                 z=lift_pattern,
                 phase_shift=phase_shifts[2]
             ),
@@ -443,14 +509,118 @@ class SimpleWalk(SimplifiedGait):
             # Right side legs
             1: LegMovement(  # Right Front
                 x=forward_stride,
-                y=lambda steps: hip_sway_pattern(steps, "right"),
+                y=hip_sway_pattern_right,
                 z=lift_pattern, 
                 phase_shift=phase_shifts[1]
             ),
             3: LegMovement(  # Right Back
                 x=forward_stride,
-                y=lambda steps: hip_sway_pattern(steps, "right"),
+                y=hip_sway_pattern_right,
                 z=lift_pattern,
+                phase_shift=phase_shifts[3]
+            ),
+        }
+
+
+class SimpleProwl(SimplifiedGait):
+    """
+    Stealthy prowling gait for careful, deliberate movement.
+    
+    Characteristics vs SimpleWalk:
+    - Lower, more crouched movement (less clearance)
+    - Slower, more deliberate steps (larger step_size)
+    - Strong hip sway during stance for weight shifting
+    - Longer ground contact phases for stability
+    - More cautious, predatory movement style
+    """
+    
+    def __init__(self, hip_sway_amplitude: float = 15, **kwargs):
+        """
+        Initialize prowling gait.
+        
+        Args:
+            hip_sway_amplitude: Amount of lateral hip movement (default 15mm, more than walk)
+            **kwargs: Standard gait parameters
+        """
+        self.hip_sway_amplitude = hip_sway_amplitude
+        super().__init__(**kwargs)
+    
+    def define_leg_movements(self) -> Dict[int, LegMovement]:
+        # Prowling uses 4-phase cycle like walk but with different timing
+        quarter_cycle = self.num_steps
+        
+        # Prowling sequence: same as walk but slower and more deliberate
+        phase_shifts = {
+            0: 0,                    # Left Front (LF) - starts first
+            3: quarter_cycle,        # Right Back (RB) - opposite diagonal  
+            1: quarter_cycle * 2,    # Right Front (RF) - next
+            2: quarter_cycle * 3,    # Left Back (LB) - completes cycle
+        }
+        
+        def prowl_stride(steps):
+            """Prowling forward stride - even longer ground contact than walk"""
+            # Prowling has very long stance phase (85% ground, 15% air)
+            swing_steps = int(steps * 0.15)  # Only 15% in air for stealth
+            stance_steps = steps - swing_steps  # 85% stance
+            
+            # Swing phase: careful, controlled forward movement
+            swing = MovementPattern.stride_forward(swing_steps * 6, self.stride)[:swing_steps]
+            # Stance phase: very gradual backward movement for stability
+            stance = np.linspace(self.stride * 0.2, -self.stride * 0.4, stance_steps)
+            
+            result = np.concatenate([swing, stance])
+            if len(result) != steps:
+                result = np.resize(result, steps)
+            return result
+        
+        def prowl_lift(steps):
+            """Prowling lift pattern - minimal lift for stealth"""
+            swing_steps = int(steps * 0.15)  # Very short lift phase
+            stance_steps = steps - swing_steps
+            
+            # Minimal lift for quiet movement
+            lift = MovementPattern.lift(swing_steps, -self.clearance * 0.7)  # 70% of normal clearance
+            ground = np.zeros(stance_steps)
+            
+            result = np.concatenate([lift, ground])
+            if len(result) != steps:
+                result = np.resize(result, steps)
+            return result
+        
+        def prowl_hip_sway_left(steps):
+            """Left legs prowl hip sway - uses strong stance sway pattern"""
+            return MovementPattern.prowl_lateral_pattern(self.num_steps, self.hip_sway_amplitude)
+        
+        def prowl_hip_sway_right(steps):
+            """Right legs prowl hip sway (opposite of left)"""
+            return MovementPattern.prowl_lateral_pattern(self.num_steps, -self.hip_sway_amplitude)
+        
+        return {
+            # Left side legs
+            0: LegMovement(  # Left Front
+                x=prowl_stride, 
+                y=prowl_hip_sway_left,
+                z=prowl_lift, 
+                phase_shift=phase_shifts[0]
+            ),
+            2: LegMovement(  # Left Back  
+                x=prowl_stride,
+                y=prowl_hip_sway_left, 
+                z=prowl_lift,
+                phase_shift=phase_shifts[2]
+            ),
+            
+            # Right side legs
+            1: LegMovement(  # Right Front
+                x=prowl_stride,
+                y=prowl_hip_sway_right,
+                z=prowl_lift, 
+                phase_shift=phase_shifts[1]
+            ),
+            3: LegMovement(  # Right Back
+                x=prowl_stride,
+                y=prowl_hip_sway_right,
+                z=prowl_lift,
                 phase_shift=phase_shifts[3]
             ),
         }
