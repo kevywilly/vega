@@ -15,10 +15,6 @@ class Turn(Gait):
         zero = np.zeros(self.num_steps)
         zeros = np.repeat(zero, 5)
 
-        print(step.size)
-        print(back.size)
-        print(up_down.size)
-
         self.steps1 = np.array([
             zeros,
             np.hstack([step, stepped, stepped, stepped, back]),
@@ -59,10 +55,6 @@ class Turn2(Gait):
         up_down = self.downupdown(mode=self.UpdownMode.normal) * clearance
         zeros = self.zeros
         all_zeros = np.repeat(self.zeros, 5)
-
-        print(step.size)
-        print(back.size)
-        print(up_down.size)
 
         self.steps1 = np.array([
             all_zeros,

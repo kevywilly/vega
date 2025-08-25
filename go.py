@@ -5,7 +5,7 @@ from src.motion.gaits.gait import Gait
 from src.motion.gaits.tiger_run import TigerRun
 from src.motion.gaits.jump import Jump
 from src.motion.gaits.trot_with_lateral import TrotWithLateral
-from src.motion.gaits.simplified_gait import SimpleTrotWithLateral, SimpleProwl
+from src.motion.gaits.simplified_gait import SimpleTrotWithLateral, SimpleProwl, SimpleWalk
 
 from src.nodes.robot import Robot
 
@@ -70,11 +70,12 @@ def get_gait(simple=False):
 
 
 run(
-    SimpleProwl(
+    SimpleWalk(
         p0=settings.position_ready + settings.position_forward_offsets,
-        clearance=50,
-        step_size=20,
-        stride=70,
+        clearance=70,
+        step_size=15,
+        stride=60,
+        hip_sway=16
 
     )
 )

@@ -415,46 +415,62 @@ class SimpleWalk(SimplifiedGait):
     """
     
     def define_leg_movements(self) -> Dict[int, LegMovement]:
-        # Walking uses 4-phase cycle (one leg lifts per phase)
+        # Cat walking: sequential leg movement (one at a time)
         cycle_steps = self.num_steps * 4
         quarter_cycle = self.num_steps
         
-        # Walking sequence: LF -> RB -> RF -> LB (classic quadruped pattern)
+        # True cat walking sequence: LF -> RF -> LB -> RB (around the body)
         phase_shifts = {
             0: 0,                    # Left Front (LF) - starts first
-            3: quarter_cycle,        # Right Back (RB) - opposite diagonal  
-            1: quarter_cycle * 2,    # Right Front (RF) - next
-            2: quarter_cycle * 3,    # Left Back (LB) - completes cycle
+            1: quarter_cycle,        # Right Front (RF) - next
+            2: quarter_cycle * 2,    # Left Back (LB) - then back left
+            3: quarter_cycle * 3,    # Right Back (RB) - completes cycle
         }
         
-        def forward_stride(steps):
-            """Forward walking stride - longer ground contact than trot"""
-            # Walking has longer stance phase (75% ground, 25% air)
+        def front_leg_stride(steps):
+            """Front leg walking stride"""
             swing_steps = int(steps * 0.25)  # 25% swing
             stance_steps = steps - swing_steps  # 75% stance
             
-            # Swing phase: lift and move forward
-            swing = MovementPattern.step_cycle(swing_steps * 4, self.stride)[:swing_steps] 
-            # Stance phase: gradual backward movement as body moves forward
-            stance = np.linspace(self.stride * 0.3, -self.stride * 0.3, stance_steps)
+            # Swing phase: forward movement
+            swing = np.linspace(0, self.stride, swing_steps)
+            # Stance phase: backward movement (propulsion)
+            stance = np.linspace(self.stride, 0, stance_steps)
             
             result = np.concatenate([swing, stance])
-            # Ensure exact length
             if len(result) != steps:
                 result = np.resize(result, steps)
             return result
         
-        def lift_pattern(steps):
-            """Walking lift pattern - only lift during swing phase"""
+        def hind_leg_stride(steps):
+            """Hind leg stride - tracks where front leg was (direct register)"""
+            swing_steps = int(steps * 0.25)  # Match front leg timing
+            stance_steps = steps - swing_steps
+            
+            # Slightly shorter stride for hind legs (90% of front stride)
+            # This ensures hind paw lands where front paw was
+            hind_stride = self.stride * 0.9
+            
+            # Swing phase: forward to where front leg was
+            swing = np.linspace(0, hind_stride, swing_steps)
+            # Stance phase: backward propulsion
+            stance = np.linspace(hind_stride, 0, stance_steps)
+            
+            result = np.concatenate([swing, stance])
+            if len(result) != steps:
+                result = np.resize(result, steps)
+            return result
+        
+        def cat_lift_pattern(steps):
+            """Cat walking lift - high lift for careful placement"""
             swing_steps = int(steps * 0.25)  # 25% of cycle in air
             stance_steps = steps - swing_steps
             
-            # Only lift during swing phase
-            lift = MovementPattern.lift(swing_steps, -self.clearance)
+            # Cats lift paws quite high for careful placement
+            high_lift = MovementPattern.lift(swing_steps, -self.clearance * 1.3)  # 30% higher than normal
             ground = np.zeros(stance_steps)
             
-            result = np.concatenate([lift, ground])
-            # Ensure exact length
+            result = np.concatenate([high_lift, ground])
             if len(result) != steps:
                 result = np.resize(result, steps)
             return result
@@ -468,31 +484,31 @@ class SimpleWalk(SimplifiedGait):
             return MovementPattern.walk_lateral_pattern(self.num_steps, -self.hip_sway)
         
         return {
-            # Left side legs
+            # Front legs (longer stride, higher lift)
             0: LegMovement(  # Left Front
-                x=forward_stride, 
+                x=front_leg_stride, 
                 y=hip_sway_pattern_left,
-                z=lift_pattern, 
+                z=cat_lift_pattern, 
                 phase_shift=phase_shifts[0]
             ),
-            2: LegMovement(  # Left Back  
-                x=forward_stride,
-                y=hip_sway_pattern_left, 
-                z=lift_pattern,
-                phase_shift=phase_shifts[2]
-            ),
-            
-            # Right side legs
             1: LegMovement(  # Right Front
-                x=forward_stride,
+                x=front_leg_stride,
                 y=hip_sway_pattern_right,
-                z=lift_pattern, 
+                z=cat_lift_pattern, 
                 phase_shift=phase_shifts[1]
             ),
+            
+            # Hind legs (track where front legs were)
+            2: LegMovement(  # Left Back  
+                x=hind_leg_stride,
+                y=hip_sway_pattern_left, 
+                z=cat_lift_pattern,
+                phase_shift=phase_shifts[2]
+            ),
             3: LegMovement(  # Right Back
-                x=forward_stride,
+                x=hind_leg_stride,
                 y=hip_sway_pattern_right,
-                z=lift_pattern,
+                z=cat_lift_pattern,
                 phase_shift=phase_shifts[3]
             ),
         }
