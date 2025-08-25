@@ -173,7 +173,11 @@ class Settings:
 
     @cached_property
     def position_ready(self) -> np.ndarray:
-        ar = self.position_home * self.position_ready_height_pct
+        return self.position_home * self.position_ready_height_pct
+    
+    @cached_property
+    def position_trot(self) -> np.ndarray:
+        ar = self.position_ready.copy()
         ar[:, 2] *= [0.9, 0.9, 1, 1]
         return ar.astype(int)
 
@@ -190,7 +194,7 @@ class Settings:
     
     @cached_property
     def position_walk(self) -> np.ndarray:
-        ar = self.position_home * self.position_ready_height_pct
+        ar = self.position_ready.copy()
         ar[:, 2] *= [0.8, 0.8, 1, 1]
         return ar.astype(int)
 

@@ -173,7 +173,7 @@ class Robot(Node):
     def process_move(self, move_type: MoveTypes):
         if move_type == MoveTypes.FORWARD:
             self.gait = SimpleTrotWithLateral(
-                p0=settings.position_ready + settings.position_forward_offsets,
+                p0=settings.position_trot + settings.position_forward_offsets,
                 **settings.trot_params      # Step size for smoothness
             )
             # self.gait = Trot(
@@ -186,7 +186,7 @@ class Robot(Node):
             self.gait = Turn(**settings.turn_params, turn_direction=-1)
         elif move_type == MoveTypes.BACKWARD:
             self.gait = SimpleTrotWithLateral(
-                p0=settings.position_ready + settings.position_backward_offsets,
+                p0=settings.position_trot + settings.position_backward_offsets,
                 **settings.trot_reverse_params,
             )
         elif move_type == MoveTypes.BACKWARD_LT:
