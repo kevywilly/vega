@@ -11,6 +11,7 @@ from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.sidestep import Sidestep
+from src.motion.gaits.simplified_gait import SimpleTrotWithLateral
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
 
@@ -169,16 +170,20 @@ class Robot(Node):
 
     def process_move(self, move_type: MoveTypes):
         if move_type == MoveTypes.FORWARD:
-            self.gait = Trot(
+            self.gait = SimpleTrotWithLateral(
                 p0=settings.position_ready + settings.position_forward_offsets,
-                **settings.trot_params,
+                **settings.trot_params      # Step size for smoothness
             )
+            # self.gait = Trot(
+            #    p0=settings.position_ready + settings.position_forward_offsets,
+            #    **settings.trot_params,
+            #)
         elif move_type == MoveTypes.FORWARD_LT:
             self.gait = Turn(**settings.turn_params, turn_direction=1)
         elif move_type == MoveTypes.FORWARD_RT:
             self.gait = Turn(**settings.turn_params, turn_direction=-1)
         elif move_type == MoveTypes.BACKWARD:
-            self.gait = Trot(
+            self.gait = SimpleTrotWithLateral(
                 p0=settings.position_ready + settings.position_backward_offsets,
                 **settings.trot_reverse_params,
             )

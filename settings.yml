@@ -33,10 +33,12 @@ gait_params:
     stride: 55
     clearance: 65
     step_size: 15
+    lateral_amplitude: 6
   trot_reverse:
     stride: -30
     clearance: 40
     step_size: 12
+    lateral_amplitude: 6
   sidestep:
     stride: 30
     clearance: 30
@@ -45,14 +47,17 @@ gait_params:
     stride: 20
     clearance: 40
     step_size: 12
+    lateral_amplitude: 6
   walk:
     stride: 50
     clearance: 60
     step_size: 10
+    lateral_amplitude: 6
   trot_in_place:
     stride: 0
     clearance: 40
     step_size: 25
+    lateral_amplitude: 0
 sensors:
   camera:
     matrix: [

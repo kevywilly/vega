@@ -33,10 +33,10 @@ from src.nodes.robot import Robot
 
 def run_gait_on_robot(gait, duration_steps=50):
     """Run a gait on the robot for specified number of steps"""
-    print(f"🤖 Initializing robot...")
+    print("🤖 Initializing robot...")
     robot = Robot()
     
-    print(f"📍 Moving to ready position...")
+    print("📍 Moving to ready position...")
     robot.ready()
     time.sleep(1)
     
