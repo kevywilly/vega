@@ -71,7 +71,7 @@ def get_gait(simple=False):
 
 run(
     SimpleProwl(
-        p0=settings.position_crouch,
+        p0=settings.position_ready + settings.position_forward_offsets,
         clearance=60,
         step_size=30,
         stride=50,
