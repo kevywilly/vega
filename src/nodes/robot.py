@@ -181,9 +181,9 @@ class Robot(Node):
             #    **settings.trot_params,
             #)
         elif move_type == MoveTypes.FORWARD_LT:
-            self.gait = SimpleTurn(**settings.turn_params, turn_direction=1)
+            self.gait = Turn(**settings.turn_params, turn_direction=1)
         elif move_type == MoveTypes.FORWARD_RT:
-            self.gait = SimpleTurn(**settings.turn_params, turn_direction=-1)
+            self.gait = Turn(**settings.turn_params, turn_direction=-1)
         elif move_type == MoveTypes.BACKWARD:
             self.gait = SimpleTrotWithLateral(
                 p0=settings.position_ready + settings.position_backward_offsets,
