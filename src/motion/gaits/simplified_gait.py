@@ -428,14 +428,14 @@ class SimpleWalk(SimplifiedGait):
         }
         
         def front_leg_stride(steps):
-            """Front leg walking stride"""
-            swing_steps = int(steps * 0.25)  # 25% swing
-            stance_steps = steps - swing_steps  # 75% stance
+            """Front leg walking stride - reaches forward to pull body"""
+            swing_steps = int(steps * 0.3)  # 30% swing for smoother movement
+            stance_steps = steps - swing_steps  # 70% stance
             
-            # Swing phase: forward movement
-            swing = np.linspace(0, self.stride, swing_steps)
-            # Stance phase: backward movement (propulsion)
-            stance = np.linspace(self.stride, 0, stance_steps)
+            # Swing phase: reach forward (front legs pull the body forward)
+            swing = np.linspace(0, self.stride * 1.1, swing_steps)  # 10% extra reach
+            # Stance phase: gradual backward movement as body moves over leg
+            stance = np.linspace(self.stride * 1.1, -self.stride * 0.1, stance_steps)
             
             result = np.concatenate([swing, stance])
             if len(result) != steps:
@@ -443,18 +443,15 @@ class SimpleWalk(SimplifiedGait):
             return result
         
         def hind_leg_stride(steps):
-            """Hind leg stride - tracks where front leg was (direct register)"""
-            swing_steps = int(steps * 0.25)  # Match front leg timing
+            """Hind leg stride - provides main propulsion"""
+            swing_steps = int(steps * 0.3)  # Match front leg timing
             stance_steps = steps - swing_steps
             
-            # Slightly shorter stride for hind legs (90% of front stride)
-            # This ensures hind paw lands where front paw was
-            hind_stride = self.stride * 0.9
-            
-            # Swing phase: forward to where front leg was
-            swing = np.linspace(0, hind_stride, swing_steps)
-            # Stance phase: backward propulsion
-            stance = np.linspace(hind_stride, 0, stance_steps)
+            # Hind legs provide the main propulsion force
+            # Swing phase: move to position for push-off
+            swing = np.linspace(0, self.stride * 0.8, swing_steps)  # Shorter reach
+            # Stance phase: strong backward push for propulsion
+            stance = np.linspace(self.stride * 0.8, -self.stride * 0.4, stance_steps)
             
             result = np.concatenate([swing, stance])
             if len(result) != steps:
@@ -462,12 +459,12 @@ class SimpleWalk(SimplifiedGait):
             return result
         
         def cat_lift_pattern(steps):
-            """Cat walking lift - high lift for careful placement"""
-            swing_steps = int(steps * 0.25)  # 25% of cycle in air
+            """Cat walking lift - matches stride timing"""
+            swing_steps = int(steps * 0.3)  # 30% of cycle in air (match stride)
             stance_steps = steps - swing_steps
             
-            # Cats lift paws quite high for careful placement
-            high_lift = MovementPattern.lift(swing_steps, -self.clearance * 1.3)  # 30% higher than normal
+            # High lift for careful placement but not excessive
+            high_lift = MovementPattern.lift(swing_steps, -self.clearance * 1.1)  # 10% higher
             ground = np.zeros(stance_steps)
             
             result = np.concatenate([high_lift, ground])
@@ -476,12 +473,25 @@ class SimpleWalk(SimplifiedGait):
             return result
         
         def hip_sway_pattern_left(steps):
-            """Left legs hip sway using generic walk pattern"""
-            return MovementPattern.walk_lateral_pattern(self.num_steps, self.hip_sway)
+            """Left legs hip sway - moderate for stability"""
+            # Use a more controlled sway pattern for walking stability
+            return MovementPattern.hip_sway_pattern(
+                self.num_steps, 
+                amplitude=self.hip_sway * 0.6,  # Reduce excessive sway
+                lift_intensity=0.3,    # Gentle outward during swing
+                stance_intensity=0.7,  # Moderate inward during stance  
+                ground_intensity=0.1   # Minimal during ground phase
+            )
         
         def hip_sway_pattern_right(steps):
             """Right legs hip sway (opposite of left)"""
-            return MovementPattern.walk_lateral_pattern(self.num_steps, -self.hip_sway)
+            return MovementPattern.hip_sway_pattern(
+                self.num_steps, 
+                amplitude=-self.hip_sway * 0.6,  # Opposite direction, reduced
+                lift_intensity=0.3,    
+                stance_intensity=0.7,  
+                ground_intensity=0.1   
+            )
         
         return {
             # Front legs (longer stride, higher lift)

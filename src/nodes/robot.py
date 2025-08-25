@@ -222,7 +222,6 @@ class Robot(Node):
         for p in positions:
             self.set_targets(p)
             self.move_to_targets()
-            print(p)
             time.sleep(2)
 
     def trot_in_place(self):

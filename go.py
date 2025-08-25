@@ -73,9 +73,9 @@ run(
     SimpleWalk(
         p0=settings.position_ready + settings.position_forward_offsets,
         clearance=70,
-        step_size=15,
-        stride=60,
-        hip_sway=16
+        step_size=10,
+        stride=50,
+        hip_sway=8
 
     )
 )
