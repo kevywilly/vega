@@ -565,7 +565,7 @@ class SimpleProwl(SimplifiedGait):
             # Swing phase: careful, controlled forward movement
             swing = MovementPattern.stride_forward(swing_steps * 6, self.stride)[:swing_steps]
             # Stance phase: very gradual backward movement for stability
-            stance = np.linspace(self.stride * 0.2, -self.stride * 0.4, stance_steps)
+            stance = np.linspace(-self.stride * 0.4, self.stride * 0.2, stance_steps)
             
             result = np.concatenate([swing, stance])
             if len(result) != steps:
