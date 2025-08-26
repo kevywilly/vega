@@ -46,22 +46,6 @@ async def handle_move(move_type: MoveTypes):
     """Mock function for move command"""
     ui.notify(f"Moving {move_type.value}", type='info')
     robot.process_move(move_type)
-    
-def height_slider_change(e):
-    """Mock function for height slider"""
-    print(f"Height slider changed to: {e.value}")
-
-def yaw_slider_change(e):
-    """Mock function for yaw slider"""
-    settings.tilt.yaw = int(e.value)
-    robot.set_pose("ready")
-    print(f"Yaw slider changed to: {e.value}")
-
-def pitch_slider_change(e):
-    """Mock function for pitch slider"""
-    settings.tilt.pitch = int(e.value)
-    robot.set_pose("ready")
-    print(f"Pitch slider changed to: {e.value}")
 
 def create_data_grid(data_dict: Dict, labels: List[str]):
     """Helper function to create data grids"""
@@ -107,43 +91,56 @@ async def main_page():
                     </div>
             """)
             
+            # Control panel - 3x3 movement buttons
+            with ui.grid(columns=3).classes('gap-2 my-4 w-full'):
+                # Top row
+                ui.button(icon="turn_slight_left", on_click=lambda: handle_move(MoveTypes.FORWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button(icon="arrow_upward", on_click=lambda: handle_move(MoveTypes.FORWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button(icon="turn_slight_right", on_click=lambda: handle_move(MoveTypes.FORWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                
+                # Middle row
+                ui.button(icon="arrow_back", on_click=lambda: handle_move(MoveTypes.LEFT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button(icon="stop", on_click=lambda: handle_move(MoveTypes.STOP)).classes('bg-red-600 text-white text-sm px-2 py-1')
+                ui.button(icon="arrow_forward", on_click=lambda: handle_move(MoveTypes.RIGHT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                
+                # Bottom row
+                ui.button(icon="turn_slight_left", on_click=lambda: handle_move(MoveTypes.BACKWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1').style('transform: scaleY(-1);')
+                ui.button(icon="arrow_downward", on_click=lambda: handle_move(MoveTypes.BACKWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
+                ui.button(icon="turn_slight_right", on_click=lambda: handle_move(MoveTypes.BACKWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1').style('transform: scaleY(-1);')
+            
             # Sliders - horizontal layout under video
             with ui.row().classes('gap-4 my-4 w-full justify-center'):
-                with ui.column().classes('items-center'):
+                with ui.row().classes('items-center'):
                     ui.label('Height (%)').classes('text-xs mb-2')
+                    height_value_label = ui.label('65').classes('mb-1')
+                    def height_slider_change(e):
+                        height_value_label.set_text(str(e.value))
                     height_slider = ui.slider(
                         min=0, max=100, value=65, step=1, on_change=height_slider_change
                     ).classes('w-24')
                 
-                with ui.column().classes('items-center'):
+                with ui.row().classes('items-center'):
                     ui.label('Tilt (yaw)').classes('text-xs mb-2')
+                    yaw_value_label = ui.label('0').classes('mb-1')
+                    def yaw_slider_change(e):
+                        yaw_value_label.set_text(str(e.value))
+                        settings.tilt.yaw = int(e.value)
+                        robot.set_pose("ready")
                     yaw_slider = ui.slider(
                         min=-50, max=50, value=0, step=5, on_change=yaw_slider_change
                     ).classes('w-24')
                 
-                with ui.column().classes('items-center'):
+                with ui.row().classes('items-center'):
                     ui.label('Tilt (pitch)').classes('text-xs mb-2')
+                    pitch_value_label = ui.label('0').classes('mb-1')
+                    def pitch_slider_change(e):
+                        pitch_value_label.set_text(str(e.value))
+                        settings.tilt.pitch = int(e.value)
+                        robot.set_pose("ready")
                     pitch_slider = ui.slider(
                         min=-50, max=50, value=0, step=5, on_change=pitch_slider_change
                     ).classes('w-24')
-            
-            # Control panel - 3x3 movement buttons
-            with ui.grid(columns=3).classes('gap-2 my-4 w-full'):
-                # Top row
-                ui.button('Forward LT', on_click=lambda: handle_move(MoveTypes.FORWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Forward', on_click=lambda: handle_move(MoveTypes.FORWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Forward RT', on_click=lambda: handle_move(MoveTypes.FORWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                
-                # Middle row
-                ui.button('Left', on_click=lambda: handle_move(MoveTypes.LEFT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Stop', on_click=lambda: handle_move(MoveTypes.STOP)).classes('bg-red-600 text-white text-sm px-2 py-1')
-                ui.button('Right', on_click=lambda: handle_move(MoveTypes.RIGHT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                
-                # Bottom row
-                ui.button('Backward LT', on_click=lambda: handle_move(MoveTypes.BACKWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Backward', on_click=lambda: handle_move(MoveTypes.BACKWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                ui.button('Backward RT', on_click=lambda: handle_move(MoveTypes.BACKWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-            
+                    
             # Display values
             with ui.row().classes('justify-between w-full text-sm'):
                 ui.label('Heading:')
@@ -238,6 +235,6 @@ if __name__ in {"__main__", "__mp_main__"}:
         title='Vega Robot Control',
         port=8080,
         host='0.0.0.0',
-        reload=False,
+        reload=True,
         show=True
     )
