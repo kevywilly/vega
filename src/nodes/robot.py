@@ -98,6 +98,8 @@ class Robot(Node):
 
         # initialize nodes
         try:
+            print("skipping camera")
+            self.camera = None
             self.camera: Optional[Camera] = Camera()
         except Exception as ex:
             self.logger.error(ex.__str__())
