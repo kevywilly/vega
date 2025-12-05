@@ -320,8 +320,22 @@ class Robot(Node):
 
     def spinner(self):
         if self.moving and self.gait is not None:
+            import time
+            t0 = time.perf_counter()
             position = next(self.gait)
-            self.controller.move_to(position, 10)
+            t1 = time.perf_counter()
+            self.controller.move_to(position, 100)
+            t2 = time.perf_counter()
+
+            # Print timing every 10 iterations
+            if not hasattr(self, '_spin_count'):
+                self._spin_count = 0
+                self._last_spin_time = t0
+            self._spin_count += 1
+            if self._spin_count % 10 == 0:
+                loop_time = (t0 - self._last_spin_time) * 100  # Time for 10 iterations in ms
+                print(f"Gait calc: {(t1-t0)*1000:.2f}ms, Move cmd: {(t2-t1)*1000:.2f}ms, Loop interval: {loop_time:.1f}ms (should be ~200ms)")
+                self._last_spin_time = t0
 
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
