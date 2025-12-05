@@ -319,8 +319,23 @@ class Robot(Node):
         )
 
     def spinner(self):
+        import time
+
+        # Track all spinner calls
+        if not hasattr(self, '_all_spinner_calls'):
+            self._all_spinner_calls = 0
+            self._last_any_call_time = time.perf_counter()
+
+        self._all_spinner_calls += 1
+        current_time = time.perf_counter()
+
+        # Print every 50 calls to show actual call rate
+        if self._all_spinner_calls % 50 == 0:
+            interval = (current_time - self._last_any_call_time) / 50 * 1000
+            print(f"Spinner called {self._all_spinner_calls} times, avg interval: {interval:.1f}ms, moving={self.moving}, has_gait={self.gait is not None}")
+            self._last_any_call_time = current_time
+
         if self.moving and self.gait is not None:
-            import time
             t0 = time.perf_counter()
             position = next(self.gait)
             t1 = time.perf_counter()
@@ -334,7 +349,7 @@ class Robot(Node):
             self._spin_count += 1
             if self._spin_count % 10 == 0:
                 loop_time = (t0 - self._last_spin_time) * 100  # Time for 10 iterations in ms
-                print(f"Gait calc: {(t1-t0)*1000:.2f}ms, Move cmd: {(t2-t1)*1000:.2f}ms, Loop interval: {loop_time:.1f}ms (should be ~200ms)")
+                print(f"  -> Gait calc: {(t1-t0)*1000:.2f}ms, Move cmd: {(t2-t1)*1000:.2f}ms, Loop interval: {loop_time:.1f}ms")
                 self._last_spin_time = t0
 
     def level(self) -> bool:
