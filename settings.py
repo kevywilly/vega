@@ -51,21 +51,22 @@ class LegGroup(List, Enum):
 
 class Settings:
     def __init__(self, config: Optional[Dict] = {}):
-        self.debug: str = config.get("debug", False)
+        self.config: dict = config or {}
+        self.debug: str = self.config.get("debug", False)
         self.environment: str = os.environ.get(
-            "VEGA_ENVIRONMENT", config.get("environment", "development")
+            "VEGA_ENVIRONMENT", self.config.get("environment", "development")
         )
         self.api_url: str = os.environ.get(
-            "VEGA_API_URL", config.get("api_url", "http://localhost:5000/api")
+            "VEGA_API_URL", self.config.get("api_url", "http://localhost:5000/api")
         )
         self.serial_port: str = os.environ.get(
-            "SERIAL_PORT", config.get("serial_port", "/dev/serial0")
+            "SERIAL_PORT", self.config.get("serial_port", "/dev/serial0")
         )
 
-        self.servos: np.ndarray = np.array(config.get("servos", []))
+        self.servos: np.ndarray = np.array(self.config.get("servos", []))
 
         # sensors
-        _sensors = config.get("sensors", {})
+        _sensors = self.config.get("sensors", {})
         _camera = _sensors.get("camera", {})
 
         self.default_sensor_mode: CameraSensorMode = CameraSensorMode[
@@ -79,12 +80,18 @@ class Settings:
         ).reshape(1, 5)
         # imu
 
-        _imu = config.get("imu", {})
+        _imu = self.config.get("imu", {})
         _imu_offsets = _imu.get("offsets", {})
 
-        self.bno_axis_remap: Optional[Tuple] = _imu.get(
-            "bno_axis_remap", None
-        )  # (0, 1, 2, 1, 0, 1)
+        #self.bno_axis_remap: Optional[Tuple] = _imu.get(
+        #    "bno_axis_remap", None
+        #)  
+        # (0, 1, 2, 1, 0, 1)
+        #self.bno_axis_remap = (0, 1, 2, 0, 1, 0)
+        self.bno_axis_remap = (0, 1, 2, 1, 1, 0) #(rotate 180 around Z)
+
+        
+        # (x_axis, y_axis, z_axis, x_sign, y_sign, z_sign)
         self.imu_magnetic_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get(
             "magnetic"
         )
@@ -95,7 +102,7 @@ class Settings:
 
         # Dimensions (mm)
 
-        _dimensions = config.get("dims", {})
+        _dimensions = self.config.get("dims", {})
 
         self.robot_width: int = _dimensions.get("robot_width", 142)
         self.robot_length: int = _dimensions.get("robot_length", 223)
@@ -105,16 +112,16 @@ class Settings:
 
         # Leveling
 
-        _leveling = config.get("leveling", {})
+        _leveling = self.config.get("leveling", {})
 
-        self.yaw_threshold: float = _leveling.get("yaw_threshold", 0.5)
+        self.roll_threshold: float = _leveling.get("roll_threshold", 0.5)
         self.pitch_threshold: float = _leveling.get("pitch_threshold", 0.5)
         self.auto_level: bool = _leveling.get("auto_level", False)
         self.tilt: Tilt = Tilt(**_leveling.get("tilt", {}))
 
         # Positioning
 
-        _positioning = config.get("positioning", {})
+        _positioning = self.config.get("positioning", {})
 
         self.angle_flip: np.ndarray = np.array(
             _positioning.get("angle_flip", np.ones((4, 3)))
@@ -144,7 +151,7 @@ class Settings:
 
         # Gait Parameters
 
-        _gait_params = config.get("gait_params", {})
+        _gait_params = self.config.get("gait_params", {})
 
         self.trot_params: Dict[str, int] = _gait_params.get("trot", {})
         self.trot_reverse_params: Dict[str, int] = _gait_params.get("trot_reverse", {})

@@ -18,12 +18,14 @@ from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
 
 # from src.motion.gaits.turning_gait import TurningGait as Turn
-from src.nodes.camera import Camera
+# from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
 from src.nodes.node import Node
-from src.vision.image import Image, ImageUtils
+#from src.vision.image import Image, ImageUtils
 
+class Image:
+    value = None
 
 def _array_to_dict(ar, label: str = "Leg"):
     return {
@@ -60,7 +62,7 @@ class DriveCmd(traitlets.HasTraits):
 class RobotData:
     heading: float = 0.0
     pitch: float = 0.0
-    yaw: float = 0.0
+    roll: float = 0.0
     angular_vel: float = 0.0
     angular_accel: float = 0.0
     positions: dict = field(default_factory=lambda: _array_to_dict(Pose().positions))
@@ -82,7 +84,7 @@ class Robot(Node):
     move_type = traitlets.Unicode(allow_none=True, default=MoveTypes.STOP)
     joy_id = traitlets.Int(allow_none=True)
     gait = traitlets.Any(Gait, allow_none=True)
-    yaw_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
+    roll_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
     pitch_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
 
     def __init__(self, **kwargs):
@@ -100,7 +102,7 @@ class Robot(Node):
         try:
             print("skipping camera")
             self.camera = None
-            self.camera: Optional[Camera] = Camera()
+            #self.camera: Optional[Camera] = Camera()
         except Exception as ex:
             self.logger.error(ex.__str__())
             self.camera = None
@@ -120,15 +122,15 @@ class Robot(Node):
     def _start_nodes(self):
         self.imu.spin()
         self.controller.spin()
-        if self.camera:
-            self.camera.spin()
+        # if self.camera:
+        #    self.camera.spin()
 
     def _setup_subscriptions(self):
         if self.camera:
             traitlets.dlink(
                 (self.camera, "value"),
                 (self.image, "value"),
-                transform=ImageUtils.bgr8_to_jpeg,
+                #transform=ImageUtils.bgr8_to_jpeg,
             )
             if self.controller:
                 traitlets.dlink(
@@ -243,57 +245,7 @@ class Robot(Node):
                 if self.level():
                     return
 
-    def level(self) -> bool:
-        self.logger.info("**** Performing Level Calibration ***")
-        try:
-            self.trot_in_place()
-            self.ready(100)
-            time.sleep(0.2)
-            pitch_array = np.array([1, -1, -1, 1]).astype(int)
-            yaw_array = np.array([-1, -1, 1, 1]).astype(int)
-            zeros = np.zeros(4)
-            roll, pitch, yaw = self.imu.euler
 
-            for i in range(10):
-                if abs(pitch) > settings.pitch_threshold:
-                    pitch_offset = pitch_array if pitch >= 0 else -pitch_array
-                else:
-                    pitch_offset = zeros
-
-                if abs(yaw) > settings.yaw_threshold:
-                    yaw_offset = yaw_array if (yaw >= 0) else -yaw_array
-                else:
-                    yaw_offset = zeros
-
-                settings.position_offsets[:, 2] += (pitch_offset + yaw_offset).astype(
-                    int
-                )
-                self.logger.info(
-                    f"pitch: {pitch} yaw: {yaw} setting offset => {settings.position_offsets.flatten().tolist()}"
-                )
-                self.ready(10)
-
-                time.sleep(0.3)
-
-                roll, pitch, yaw = self.imu.euler
-
-                if (
-                    abs(pitch) <= settings.pitch_threshold
-                    and abs(yaw) <= settings.yaw_threshold
-                ):
-                    self.logger.info(
-                        f"leveling succeeded...pitch...{pitch} yaw...{yaw}"
-                    )
-                    return True
-
-        except Exception as ex:
-            self.ready(200)
-            self.logger.error(ex)
-
-        self.logger.info(f"leveling failed...pitch...{pitch} yaw...{yaw}")
-        settings.reset_offsets()
-        self.ready(200)
-        return False
 
     def ready(self, millis=200):
         self.controller.move_to(settings.position_ready, millis)
@@ -346,8 +298,8 @@ class Robot(Node):
         pose = self.controller.pose
         return RobotData(
             heading=self.imu.euler[0],
-            pitch=self.imu.euler[1],
-            yaw=self.imu.euler[2],
+            roll=self.imu.euler[1],
+            pitch=self.imu.euler[2],
             angular_vel=self.imu.gyro[2],
             angular_accel=self.imu.acceleration[2],
             positions={
@@ -370,3 +322,48 @@ class Robot(Node):
         if self.moving and self.gait is not None:
             position = next(self.gait)
             self.controller.move_to(position, 10)
+
+    def level(self) -> bool:
+        self.logger.info("**** Performing Level Calibration ***")
+        try:
+            self.trot_in_place()
+            self.ready(100)
+            time.sleep(0.2)
+            
+            pitch_array = np.array([-1, -1, 1, 1])
+            roll_array = np.array([1, -1, 1, -1])
+            zeros = np.zeros(4)
+            
+            heading, roll, pitch = self.imu.euler
+            
+            for i in range(10):
+                self.logger.info(f"roll: {roll:.2f}, pitch: {pitch:.2f}")
+                
+                # Fix one axis at a time, prioritize the larger error
+                if abs(pitch) > abs(roll) and abs(pitch) > settings.pitch_threshold:
+                    offset = pitch_array if pitch >= 0 else -pitch_array
+                elif abs(roll) > settings.roll_threshold:
+                    offset = roll_array if roll >= 0 else -roll_array
+                else:
+                    offset = zeros
+
+                settings.position_offsets[:, 2] += offset.astype(int)
+                
+                self.logger.info(f"offset => {settings.position_offsets[:, 2].tolist()}")
+                self.ready(10)
+                time.sleep(0.3)
+
+                heading, roll, pitch = self.imu.euler
+
+                if abs(pitch) <= settings.pitch_threshold and abs(roll) <= settings.roll_threshold:
+                    self.logger.info(f"leveling succeeded! roll: {roll:.2f}, pitch: {pitch:.2f}")
+                    return True
+
+        except Exception as ex:
+            self.ready(200)
+            self.logger.error(ex)
+
+        self.logger.info(f"leveling failed... roll: {roll:.2f}, pitch: {pitch:.2f}")
+        settings.reset_offsets()
+        self.ready(200)
+        return False

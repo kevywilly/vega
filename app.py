@@ -89,7 +89,7 @@ async def main_page():
             ui.html("""<div class="w-full aspect-video bg-gray-700 flex items-center justify-center text-white">
                     <img src="api/stream" class="w-full h-full object-cover">
                     </div>
-            """)
+            """, sanitize=False)
             
             # Control panel - 3x3 movement buttons
             with ui.grid(columns=3).classes('gap-2 my-4 w-full'):
@@ -145,10 +145,10 @@ async def main_page():
             with ui.row().classes('justify-between w-full text-sm'):
                 ui.label('Heading:')
                 heading_display = ui.label('0.0')
+                ui.label('Yaw:')
+                roll_display = ui.label('0.0')
                 ui.label('Pitch:')
                 pitch_display = ui.label('0.0')
-                ui.label('Yaw:')
-                yaw_display = ui.label('0.0')
             
             with ui.row().classes('justify-between w-full text-sm'):
                 ui.label('Angular Vel:')
@@ -205,8 +205,8 @@ async def main_page():
 
             # Update main display values
             heading_display.set_text(f"{robot.data.heading:.2f}")
+            roll_display.set_text(f"{robot.data.roll:.2f}")
             pitch_display.set_text(f"{robot.data.pitch:.2f}")
-            yaw_display.set_text(f"{robot.data.yaw:.2f}")
             angular_vel_display.set_text(f"{robot.data.angular_vel:.2f}")
             angular_accel_display.set_text(f"{robot.data.angular_accel:.2f}")
 
@@ -235,6 +235,6 @@ if __name__ in {"__main__", "__mp_main__"}:
         title='Vega Robot Control',
         port=8080,
         host='0.0.0.0',
-        reload=True,
+        reload=False,
         show=True
     )

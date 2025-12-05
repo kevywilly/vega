@@ -8,9 +8,9 @@ class Calibrator:
     @classmethod
     def get_pitch_offsets(cls, euler: Tuple[float, float, float], offsets: np.ndarray) -> np.ndarray:
 
-        heading, pitch, yaw = euler
-        if abs(yaw) < 170:
-            if yaw < 0:  # raise front
+        heading, roll, pitch = euler
+        if abs(roll) < 170:
+            if roll < 0:  # raise front
                 cls.adjust_front(1, offsets)
             else:
                 cls.adjust_rear(1, offsets)
@@ -20,9 +20,9 @@ class Calibrator:
         return offsets
 
     @classmethod
-    def get_yaw_offsets(cls, euler: Tuple[float, float, float], offsets: np.ndarray) -> np.ndarray:
+    def get_roll_offsets(cls, euler: Tuple[float, float, float], offsets: np.ndarray) -> np.ndarray:
 
-        heading, pitch, yaw = euler
+        heading, roll, pitch = euler
 
         if abs(pitch) > 2:
             if pitch < 0:

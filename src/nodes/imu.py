@@ -42,7 +42,7 @@ class IMU(Node):
         super(IMU, self).__init__(**kwargs)
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
-
+        
         if settings.bno_axis_remap:
             self.sensor.axis_remap = settings.bno_axis_remap
 

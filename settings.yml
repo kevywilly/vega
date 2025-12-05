@@ -1,6 +1,6 @@
 debug: False
 environment: development
-serial_port: "/dev/serial0"
+serial_port: "/dev/ttyTHS1"
 servos: [[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]]
 dimensions:
   robot_width: 142
@@ -18,12 +18,12 @@ positioning:
 leveling:
   yaw_threshold: 0.5
   pitch_threshold: 0.5
-  auto_level: True
+  auto_level: False
   tilt:
     pitch: 0
     yaw: 0
 imu:
-  bno_axis_remap: #(0, 1, 2, 1, 0, 1)
+  bno_axis_remap: #
   offsets:
     magnetic: [32418, 32685, -32271]
     gyro: [0,-1,0]
