@@ -66,12 +66,12 @@ class IMU(Node):
             self.euler = np.round(np.array(self.sensor.euler),3)
 
             # Uncomment these only if actively needed (slows down gaits)
-            # self.acceleration = np.round(np.array(self.sensor.acceleration),3)
-            # self.magnetic = np.round(np.array(self.sensor.magnetic),3)
-            # self.gyro = np.round(np.array(self.sensor.gyro),3)
-            # self.quaternion = np.round(np.array(self.sensor.quaternion),3)
-            # self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
-            # self.gravity = np.round(np.array(self.sensor.gravity),3)
+            self.acceleration = np.round(np.array(self.sensor.acceleration),3)
+            self.magnetic = np.round(np.array(self.sensor.magnetic),3)
+            self.gyro = np.round(np.array(self.sensor.gyro),3)
+            self.quaternion = np.round(np.array(self.sensor.quaternion),3)
+            self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
+            self.gravity = np.round(np.array(self.sensor.gravity),3)
         except Exception as e:
             self.logger.warning(f"could not read imu {e.__str__()}")
 
