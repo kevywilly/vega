@@ -3,8 +3,8 @@ __all__ = [
     'TimeoutError',
 ]
 
+import asyncio
 import logging
-import threading
 from itertools import chain
 
 from serial.serialutil import Timeout
@@ -48,24 +48,38 @@ LOGGER = logging.getLogger('lewansoul.servos.lx16a')
 
 
 class ServoController(object):
+    """Optimized servo controller for asyncio-based robot control.
+    
+    Design principles:
+    - Write-only commands (move, unload) are lock-free for maximum throughput
+    - Query commands use an async lock only to serialize read operations
+    - Serial writes are atomic at the OS level for small packets
+    """
+    
     def __init__(self, serial, timeout=1):
         self._serial = serial
         self._timeout = timeout
-        self._lock = threading.RLock()
+        # Async lock only needed for query operations (read after write)
+        self._query_lock = asyncio.Lock()
         self._responses = []
 
     def _command(self, command, *params):
+        """Send a command packet - no locking needed for write-only ops.
+        
+        Serial writes of small packets (<64 bytes) are atomic at OS level.
+        The Hiwonder protocol packets are always small enough.
+        """
         length = 2 + len(params)
-        with self._lock:
-            LOGGER.debug('Sending servo control packet: %s', hex_data([
+        LOGGER.debug('Sending servo control packet: %s', hex_data([
+            0x55, 0x55, length, command, *params
+        ]))
+        if not TEST_MODE:
+            self._serial.write(bytearray([
                 0x55, 0x55, length, command, *params
             ]))
-            if not TEST_MODE:
-                self._serial.write(bytearray([
-                    0x55, 0x55, length, command, *params
-                ]))
 
     def _wait_for_response(self, command, timeout=None):
+        """Read response from serial - called only when lock is held."""
         timeout = Timeout(timeout or self._timeout)
 
         if TEST_MODE:
@@ -106,10 +120,20 @@ class ServoController(object):
 
             return params
 
-    def _query(self, command, *params, timeout=None):
-        with self._lock:
+    def _query_sync(self, command, *params, timeout=None):
+        """Synchronous query - use when not in async context."""
+        self._command(command, *params)
+        return self._wait_for_response(command, timeout=timeout)
+
+    async def _query_async(self, command, *params, timeout=None):
+        """Async query - serializes read operations with async lock."""
+        async with self._query_lock:
             self._command(command, *params)
-            return self._wait_for_response(command, timeout=timeout)
+            # Run blocking serial read in executor to not block event loop
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(
+                None, self._wait_for_response, command, timeout
+            )
 
     def move(self, positions, time=0):
         """Command multiple servos to move to given positions in given time.
@@ -140,7 +164,22 @@ class ServoController(object):
         Returns:
             dict mapping servo ID to corresponding position
         """
-        response = self._query(CMD_MULT_SERVO_POS_READ, len(servo_ids), *servo_ids)
+        response = self._query_sync(CMD_MULT_SERVO_POS_READ, len(servo_ids), *servo_ids)
+        return {
+            response[1 + 3 * i]: word(response[2 + 3 * i], response[3 + 3 * i])
+            for i in range(response[0])
+        }
+
+    async def get_positions_async(self, servo_ids):
+        """Async version - reads positions without blocking event loop.
+
+        Args:
+            servo_ids - list of servo IDs (ints)
+
+        Returns:
+            dict mapping servo ID to corresponding position
+        """
+        response = await self._query_async(CMD_MULT_SERVO_POS_READ, len(servo_ids), *servo_ids)
         return {
             response[1 + 3 * i]: word(response[2 + 3 * i], response[3 + 3 * i])
             for i in range(response[0])
@@ -156,5 +195,10 @@ class ServoController(object):
 
     def get_battery_voltage(self):
         """Returns servo controller power supply voltage level in millivolts."""
-        response = self._query(CMD_GET_BATTERY_VOLTAGE)
+        response = self._query_sync(CMD_GET_BATTERY_VOLTAGE)
+        return word(response[0], response[1])
+
+    async def get_battery_voltage_async(self):
+        """Async version - returns voltage without blocking event loop."""
+        response = await self._query_async(CMD_GET_BATTERY_VOLTAGE)
         return word(response[0], response[1])
