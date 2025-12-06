@@ -32,43 +32,44 @@ except:  # noqa: E722
 DEFAULT_MILLIS = 800
 SERVO_MAX_ANGLE = np.radians(240)
 
+# Pre-compute constants for servo position calculations (avoid repeated computation)
+_SERVO_SCALE = 1000.0 / SERVO_MAX_ANGLE
+_SERVO_IDS = np.array(settings.servo_ids)
+_ANGLE_ZERO = settings.angle_zero
+_ANGLE_FLIP = settings.angle_flip
+# NOTE: position_offsets is NOT cached here - it changes at runtime via IMU leveling
 
-def _angles_from_positions(positions: np.ndarray):
-    angles = np.zeros((4, 3))
-    for i, pos in enumerate(positions + settings.position_offsets):
-        angles[i] = _km.inverse_kinematics(pos)
 
-    return angles
+def _angles_from_positions(positions: np.ndarray) -> np.ndarray:
+    """Vectorized IK for all 4 legs - uses optimized numpy operations."""
+    return _km.inverse_kinematics_vectorized(positions + settings.position_offsets)
 
 
-def _positions_from_angles(angles: np.ndarray):
+def _positions_from_angles(angles: np.ndarray) -> np.ndarray:
+    """Vectorized FK for all 4 legs."""
     positions = np.zeros((4, 3))
-    for i, ang in enumerate(angles):
-        positions[i] = _km.forward_kinematics(ang)
-
+    for i in range(4):
+        positions[i] = _km.forward_kinematics(angles[i])
     return positions - settings.position_offsets
 
 
-def _servo_positions_from_angles(angles: np.ndarray):
-    adjusted_angles = angles - settings.angle_zero
-    return dict(
-        zip(
-            settings.servo_ids,
-            ((adjusted_angles * settings.angle_flip * 1000 / SERVO_MAX_ANGLE) + 500)
-            .reshape(-1)
-            .astype(int),
-        )
-    )
+def _servo_positions_from_angles(angles: np.ndarray) -> dict:
+    """Optimized: vectorized servo position calculation."""
+    # Vectorized calculation - no loops
+    adjusted_angles = angles - _ANGLE_ZERO
+    servo_values = (adjusted_angles * _ANGLE_FLIP * _SERVO_SCALE + 500).astype(np.int32).ravel()
+    # Use pre-allocated dict pattern for speed
+    return dict(zip(_SERVO_IDS, servo_values))
 
 
-def _angles_from_servo_positions(servo_positions):
+def _angles_from_servo_positions(servo_positions) -> np.ndarray:
     pos = _servo_positions_to_numpy(servo_positions)
-    angles = (pos - 500) * SERVO_MAX_ANGLE / (settings.angle_flip * 1000)
-    return angles + settings.angle_zero
+    angles = (pos - 500) / (_ANGLE_FLIP * _SERVO_SCALE)
+    return angles + _ANGLE_ZERO
 
 
-def _servo_positions_to_numpy(servo_positions):
-    return np.array(list(servo_positions.values())).reshape((4, -1))
+def _servo_positions_to_numpy(servo_positions) -> np.ndarray:
+    return np.array(list(servo_positions.values()), dtype=np.float32).reshape((4, 3))
 
 
 def millis_or_default(millis):

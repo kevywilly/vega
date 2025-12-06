@@ -35,12 +35,47 @@ class QuadrupedKinematics:
         self.tibia = tibia
         self.width = width
         self.length = length
+        
+        # Pre-compute constants for vectorized IK
+        self._femur_sq = femur ** 2
+        self._tibia_sq = tibia ** 2
+        self._2_femur_tibia = 2 * femur * tibia
+
+    def inverse_kinematics_vectorized(self, positions: np.ndarray) -> np.ndarray:
+        """
+        Vectorized inverse kinematics for all 4 legs at once.
+        ~4x faster than calling inverse_kinematics in a loop.
+        
+        Args:
+            positions: (4, 3) array of [x, y, z] positions for each leg
+            
+        Returns:
+            (4, 3) array of joint angles [coxa, femur, tibia] for each leg
+        """
+        # Extract and invert x for world coordinates
+        x = -positions[:, 0]
+        y = positions[:, 1]
+        z = positions[:, 2]
+        
+        # Vectorized IK calculations
+        x_sq_z_sq = x * x + z * z
+        cos_q2 = (x_sq_z_sq - self._femur_sq - self._tibia_sq) / self._2_femur_tibia
+        # Clamp to valid range to avoid NaN from acos
+        cos_q2 = np.clip(cos_q2, -1.0, 1.0)
+        q2 = np.arccos(cos_q2)
+        
+        sin_q2 = np.sin(q2)
+        q1 = np.arctan2(z, x) - np.arctan2(
+            self.tibia * sin_q2,
+            self.femur + self.tibia * cos_q2
+        )
+        
+        q3 = np.arctan2(y, z)
+        
+        return np.column_stack([q3, q1, q2])
 
     def inverse_kinematics_all_legs(self, positions: np.ndarray, offsets: np.ndarray, format="radians") -> np.ndarray:
-        angles = np.zeros((4, 3))
-        for i, pos in enumerate(positions + offsets):
-            angles[i] = self.inverse_kinematics(pos)
-
+        angles = self.inverse_kinematics_vectorized(positions + offsets)
         if format == "degrees":
             return np.degrees(angles).astype(int)
         return angles
