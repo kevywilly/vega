@@ -120,7 +120,7 @@ class Robot(Node):
         self.loaded()
 
     def _start_nodes(self):
-        self.imu.spin_once()
+        self.imu.spin(frequency=5)
         self.controller.spin()
         # if self.camera:
         #    self.camera.spin()
@@ -339,7 +339,7 @@ class Robot(Node):
             t0 = time.perf_counter()
             position = next(self.gait)
             t1 = time.perf_counter()
-            self.controller.move_to(position, 100)
+            self.controller.move_to(position, 0)
             t2 = time.perf_counter()
 
             # Print timing every 10 iterations
