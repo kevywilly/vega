@@ -111,7 +111,7 @@ class Robot(Node):
 
         self.imu = IMU()
 
-        self._start_nodes()
+        #self._start_nodes()
         self._setup_subscriptions()
         time.sleep(0.2)
 
@@ -120,8 +120,9 @@ class Robot(Node):
         self.loaded()
 
     def _start_nodes(self):
-        self.imu.spin(frequency=5)
-        self.controller.spin()
+        pass
+        #self.imu.spin(frequency=5)
+        #self.controller.spin()
         # if self.camera:
         #    self.camera.spin()
 

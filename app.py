@@ -228,9 +228,14 @@ async def main_page():
     # Start the update loop
     asyncio.create_task(update_displays())
 
-if __name__ in {"__main__", "__mp_main__"}:
-    print("🤖 Starting Vega Robot Control Interface...")
-    robot.spin(frequency=50)
+async def main():
+    await asyncio.gather(
+        robot.imu.spin(frequency=5),
+        robot.controller.spin(30),
+        robot.spin(),
+    )
+
+def start_app():
     ui.run(
         title='Vega Robot Control',
         port=8080,
@@ -238,3 +243,18 @@ if __name__ in {"__main__", "__mp_main__"}:
         reload=False,
         show=True
     )
+
+
+if __name__ == "__main__":
+    print("🤖 Starting Vega Robot Control Interface...")
+    try:
+        import threading
+        app_thread = threading.Thread(target=start_app)
+        app_thread.daemon = True
+        app_thread.start()    
+
+        asyncio.run(main())
+    finally:
+        app_thread.join()
+
+    
