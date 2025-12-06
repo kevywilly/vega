@@ -7,6 +7,7 @@ import numpy as np
 import yaml
 
 from src.model.tilt import Tilt
+from src.motion.gaits.gait_params import GaitParams
 from src.vision.sensors import CameraSensorMode
 
 """
@@ -153,14 +154,14 @@ class Settings:
 
         _gait_params = self.config.get("gait_params", {})
 
-        self.trot_params: Dict[str, int] = _gait_params.get("trot", {})
-        self.trot_reverse_params: Dict[str, int] = _gait_params.get("trot_reverse", {})
-        self.sidestep_params: Dict[str, int] = _gait_params.get("sidestep", {})
-        self.turn_params: Dict[str, int] = _gait_params.get("turn", {})
-        self.walk_params: Dict[str, int] = _gait_params.get("walk", {})
-        self.trot_in_place_params: Dict[str, int] = _gait_params.get(
+        self.trot_params: GaitParams = GaitParams(**_gait_params.get("trot", {}))
+        self.trot_reverse_params: GaitParams = GaitParams(**_gait_params.get("trot_reverse", {}))
+        self.sidestep_params: GaitParams = GaitParams(**_gait_params.get("sidestep", {}))
+        self.turn_params: GaitParams = GaitParams(**_gait_params.get("turn", {}))
+        self.walk_params: GaitParams = GaitParams(**_gait_params.get("walk", {}))
+        self.trot_in_place_params: GaitParams = GaitParams(**_gait_params.get(
             "trot_in_place", {"stride": 0, "clearance": 40, "step_size": 25}
-        )
+        ))
 
         nodes: dict = self.config.get("nodes", {})
         self.robot_frequency = nodes.get("robot", {}).get("frequency", 50)

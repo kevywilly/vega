@@ -11,7 +11,7 @@ from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.simplified_gait import (
-    SimpleTrotWithLateral, SimpleSidestep, SimpleTurn
+    SimpleTrotWithLateral, SimpleSidestep
 )
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
@@ -21,6 +21,7 @@ from src.nodes.controller import Controller
 from src.nodes.imu import IMU
 from src.nodes.node import Node
 #from src.vision.image import Image, ImageUtils
+from dataclasses import replace
 
 class Image:
     value = None
@@ -177,33 +178,30 @@ class Robot(Node):
         if move_type == MoveTypes.FORWARD:
             self.gait = SimpleTrotWithLateral(
                 p0=settings.position_trot + settings.position_forward_offsets,
-                **settings.trot_params      # Step size for smoothness
+                params=settings.trot_params
             )
-            # self.gait = Trot(
-            #    p0=settings.position_ready + settings.position_forward_offsets,
-            #    **settings.trot_params,
-            #)
         elif move_type == MoveTypes.FORWARD_LT:
-            self.gait = Turn(**settings.turn_params, turn_direction=1)
+            p = settings.turn_params
+            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1))
         elif move_type == MoveTypes.FORWARD_RT:
-            self.gait = Turn(**settings.turn_params, turn_direction=-1)
+            self.gait = Turn(params=replace(settings.turn_params, turn_direction=-1))
         elif move_type == MoveTypes.BACKWARD:
             self.gait = SimpleTrotWithLateral(
                 p0=settings.position_trot + settings.position_backward_offsets,
-                **settings.trot_reverse_params,
+                params=settings.trot_reverse_params,
             )
         elif move_type == MoveTypes.BACKWARD_LT:
             self.gait = Turn(
-                **settings.turn_params, turn_direction=-1, is_reversed=True
+                params=replace(settings.turn_params, turn_direction=-1, is_reversed=True)
             )
         elif move_type == MoveTypes.BACKWARD_RT:
-            self.gait = Turn(**settings.turn_params, turn_direction=1, is_reversed=True)
+            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1, is_reversed=True))
         elif move_type == MoveTypes.LEFT:
-            self.gait = SimpleSidestep(**settings.sidestep_params, is_reversed=True)
+            self.gait = SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True))
         elif move_type == MoveTypes.RIGHT:
-            self.gait = SimpleSidestep(**settings.sidestep_params)
+            self.gait = SimpleSidestep(params=settings.sidestep_params)
         elif move_type == MoveTypes.TROT_IN_PLACE:
-            self.gait = Trot(**settings.trot_in_place_params)
+            self.gait = Trot(params=settings.trot_in_place_params)
         elif move_type == MoveTypes.STOP:
             return self.stop()
 

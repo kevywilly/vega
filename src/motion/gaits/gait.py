@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from settings import settings
+from src.motion.gaits.gait_params import GaitParams
 
 
 """
@@ -14,14 +15,7 @@ from settings import settings
                  turn_direction=1,
                  is_reversed=False, hip_sway=8):
 """
-@dataclass
-class GaitParams:
-    stride: int = 55
-    clearance: int = 65
-    step_size: int = 15
-    turn_direction: int = 1
-    is_reversed: bool = False
-    hip_sway: int = 6
+
     
 class Gait(ABC):
     """
@@ -40,6 +34,29 @@ class Gait(ABC):
     class UpdownMode(Enum):
         normal = 0
         fast = 1
+
+    def __init__(self, p0: np.ndarray = settings.position_ready, params: GaitParams | None = None):
+
+        _params = params or GaitParams()
+        self.p0 = p0
+        self.pivot_ratio = _params.pivot_ratio
+        self.turn_direction = _params.turn_direction
+        self.is_reversed = _params.is_reversed
+        self.stride = -_params.stride if _params.is_reversed else _params.stride
+        self.clearance = _params.clearance
+        self.step_size = _params.step_size
+        self.hip_sway = _params.hip_sway
+        self.num_steps = int(90 / self.step_size)
+        self.steps1 = np.zeros(self.num_steps * 2)
+        self.steps2 = np.zeros(self.num_steps * 2)
+        self.steps3 = None
+        self.steps4 = None
+
+        self.build_steps()
+        self.positions = self.p0
+        self.index = 0
+        self.phase = 0
+        self.max_index = self.steps1.shape[0]
 
     def updown(self, num_steps=None, mode: UpdownMode = UpdownMode.fast):
         if mode == self.UpdownMode.fast:
@@ -69,28 +86,7 @@ class Gait(ABC):
     def zeros(self):
         return np.zeros(self.num_steps)
 
-    def __init__(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
-                 turn_direction=1,
-                 is_reversed=False, hip_sway=8):
-
-        self.hip_sway = hip_sway
-        self.p0 = p0
-        self.stride = -stride if is_reversed else stride
-        self.clearance = clearance
-        self.step_size = step_size
-        self.num_steps = int(90 / self.step_size)
-        self.steps1 = np.zeros(self.num_steps * 2)
-        self.steps2 = np.zeros(self.num_steps * 2)
-        self.steps3 = None
-        self.steps4 = None
-        self.turn_direction = turn_direction
-        self.is_reversed = is_reversed
-
-        self.build_steps()
-        self.positions = self.p0
-        self.index = 0
-        self.phase = 0
-        self.max_index = self.steps1.shape[0]
+    
 
     @property
     def size(self):

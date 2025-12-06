@@ -3,12 +3,11 @@ import time
 import numpy as np
 
 from settings import settings
-from src.motion.gaits.gait import Gait
+from src.motion.gaits.gait import Gait, GaitParams
 from src.motion.gaits.tiger_run import TigerRun
 from src.motion.gaits.jump import Jump
 from src.motion.gaits.trot_with_lateral import TrotWithLateral
-from src.motion.gaits.simplified_gait import SimpleTrotWithLateral, SimpleProwl, SimpleWalk
-
+from src.motion.gaits.simplified_gait import SimpleTrotWithLateral, SimpleWalk
 from src.nodes.robot import Robot
 
 robot = Robot()
@@ -53,19 +52,15 @@ def get_gait(simple=False):
 
     if not simple:
         return TrotWithLateral(
-            p0=settings.position_ready,
-            hip_sway=6,  # Sideways movement amplitude
-            stride=55,          # Forward stride length
-            clearance=65,       # Leg lift height
-            step_size=15        # Step size for smoothness
+            p0=settings.position_ready, params=GaitParams(hip_sway=6,stride=55,clearance=65,step_size=15)
         )
 
     return SimpleTrotWithLateral(
         p0=settings.position_ready,
-        hip_sway=6,  # Sideways movement amplitude
-        stride=55,          # Forward stride length
-        clearance=65,       # Leg lift height
-        step_size=15        # Step size for smoothness
+        params=GaitParams(hip_sway=6, 
+        stride=55,       
+        clearance=65,     
+        step_size=15)
     )
 
 
@@ -73,11 +68,7 @@ def get_gait(simple=False):
 
 run(
     SimpleWalk(
-        p0=settings.position_walk,
-        clearance=70,
-        step_size=10,
-        stride=50,
-        hip_sway=8
+        p0=settings.position_walk, params=GaitParams(clearance=70, step_size=10, stride=50,hip_sway=8)
 
     )
 )

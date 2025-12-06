@@ -14,6 +14,7 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import Callable, Dict
 from src.motion.gaits.gait import Gait
+from src.motion.gaits.gait_params import GaitParams
 
 
 class LegPhase(Enum):
@@ -124,9 +125,9 @@ class MovementPattern:
 @dataclass
 class LegMovement:
     """Define movement for a single axis of a leg"""
-    x: Callable[[int], np.ndarray] = None  # Forward/back movement function
-    y: Callable[[int], np.ndarray] = None  # Lateral movement function  
-    z: Callable[[int], np.ndarray] = None  # Up/down movement function
+    x: Callable[[int], np.ndarray] | None = None  # Forward/back movement function
+    y: Callable[[int], np.ndarray] | None = None  # Lateral movement function  
+    z: Callable[[int], np.ndarray] | None = None  # Up/down movement function
     phase_shift: int = 0  # Phase shift in steps
 
 
@@ -619,36 +620,4 @@ class SimpleProwl(SimplifiedGait):
             ),
         }
 
-
-if __name__ == "__main__":
-    # Test the simplified system
-    print("Testing Simplified Gait System")
-    
-    # Create a simple trot
-    trot = SimpleTrot(stride=40, clearance=50, step_size=15)
-    print(f"✓ SimpleTrot created - {len(trot.steps[0])} steps per leg")
-    
-    # Test iteration
-    for i in range(5):
-        pos = next(trot)
-        print(f"Step {i}: Z-axis range: {pos[:, 2].min():.1f} to {pos[:, 2].max():.1f}")
-    
-    # Create trot with lateral
-    lateral_trot = SimpleTrotWithLateral(stride=40, clearance=50, hip_sway=6)
-    print("✓ SimpleTrotWithLateral created")
-    print(f"  Y-axis range: {lateral_trot.steps[0][:, 1].min():.1f} to {lateral_trot.steps[0][:, 1].max():.1f}")
-    
-    # Create turn gait
-    turn_gait = SimpleTurn(stride=30, clearance=40, turn_direction=1)
-    print("✓ SimpleTurn created")
-    print(f"  Left legs Y-range: {turn_gait.steps[0][:, 1].min():.1f} to {turn_gait.steps[0][:, 1].max():.1f}")
-    print(f"  Right legs Y-range: {turn_gait.steps[1][:, 1].min():.1f} to {turn_gait.steps[1][:, 1].max():.1f}")
-    print("  (Opposite directions = efficient turning)")
-    
-    # Create walking gait
-    walk_gait = SimpleWalk(stride=40, clearance=30, step_size=20, hip_sway=10)
-    print("✓ SimpleWalk created") 
-    print(f"  Cycle length: {len(walk_gait.steps[0])} steps")
-    print(f"  Hip sway range: {walk_gait.steps[0][:, 1].min():.1f} to {walk_gait.steps[0][:, 1].max():.1f} mm")
-    print("  (Sequential leg movement with natural hip sway)")
 
