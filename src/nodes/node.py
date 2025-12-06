@@ -41,6 +41,7 @@ class Node(Configurable):
             time.sleep(1.0 / self.frequency)
 
     def spin(self, frequency: int = 10):
+        self.logger.info(f'Spinning {self.__class__.__name__} at {frequency}Hz')
         self.frequency = frequency
         self._running = True
         self._thread = threading.Thread(target=self._spin)
