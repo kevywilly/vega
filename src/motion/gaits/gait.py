@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
 
@@ -8,6 +9,20 @@ import numpy as np
 from settings import settings
 
 
+"""
+(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
+                 turn_direction=1,
+                 is_reversed=False, hip_sway=8):
+"""
+@dataclass
+class GaitParams:
+    stride: int = 55
+    clearance: int = 65
+    step_size: int = 15
+    turn_direction: int = 1
+    is_reversed: bool = False
+    hip_sway: int = 6
+    
 class Gait(ABC):
     """
     Abstract base class for defining different gaits for a quadruped robot.

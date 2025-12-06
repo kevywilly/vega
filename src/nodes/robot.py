@@ -10,14 +10,12 @@ from src.interfaces.msgs import Twist
 from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
-from src.motion.gaits.sidestep import Sidestep
 from src.motion.gaits.simplified_gait import (
     SimpleTrotWithLateral, SimpleSidestep, SimpleTurn
 )
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
 
-# from src.motion.gaits.turning_gait import TurningGait as Turn
 # from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
