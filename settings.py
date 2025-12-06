@@ -162,6 +162,11 @@ class Settings:
             "trot_in_place", {"stride": 0, "clearance": 40, "step_size": 25}
         )
 
+        nodes: dict = self.config.get("nodes", {})
+        self.robot_frequency = nodes.get("robot", {}).get("frequency", 50)
+        self.imu_frequency = nodes.get("imu", {}).get("frequency", 5)
+        self.controller_frequency = nodes.get("controller", {}).get("frequency", 10)
+
     @cached_property
     def servo_ids(self) -> np.ndarray:
         return self.servos.reshape(-1)

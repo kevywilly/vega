@@ -2,6 +2,13 @@ debug: False
 environment: development
 serial_port: "/dev/ttyTHS1"
 servos: [[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43]]
+nodes:
+  robot:
+    frequency: 50
+  imu: 
+    frequency: 5
+  controller:
+    frequency: 10
 dimensions:
   robot_width: 142
   robot_length: 223

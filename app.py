@@ -230,9 +230,9 @@ async def main_page():
 
 async def main():
     await asyncio.gather(
-        robot.imu.spin(frequency=5),
-        robot.controller.spin(30),
-        robot.spin(),
+        robot.imu.spin(frequency=settings.imu_frequency),
+        robot.controller.spin(frequency=settings.controller_frequency),
+        robot.spin(frequency=settings.robot_frequency),
     )
 
 def start_app():
