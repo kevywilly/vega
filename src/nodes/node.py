@@ -2,13 +2,11 @@ import atexit
 import logging
 from abc import abstractmethod, ABC
 import asyncio
-from traitlets.config.configurable import Configurable
 
-class Node(Configurable):
+class Node(ABC):
     logger = logging.getLogger('VEGA')
 
     def __init__(self, **kwargs):
-        super(Node, self).__init__(**kwargs)
         self.frequency = kwargs.get('frequency', 10)
         self.logger.info("*" * 50 + "\n")
         self.logger.info(f"*\tStarting {self.__class__.__name__} Node @ {self.frequency}Hz\n")

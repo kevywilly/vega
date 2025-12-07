@@ -19,7 +19,7 @@ A gait defines the coordinated movement pattern of the robot's four legs. Each g
 - **X-axis**: Forward/backward (positive = forward)
 - **Y-axis**: Left/right lateral movement (positive = right)
 - **Z-axis**: Up/down (positive = up from ground)
-- **Leg numbering**: 0=front-left, 1=front-right, 2=back-left, 3=back-right
+- **Leg numbering**: 0=front-left, 1=front-right, 2=back-right, 3=back-left
 
 ## Running Gaits
 

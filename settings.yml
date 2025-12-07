@@ -17,11 +17,11 @@ dimensions:
   tibia_length: 114
 positioning:
   angle_flip: [[-1, 1, 1], [-1, -1, -1], [-1, -1, -1], [-1, 1, 1]]
-  angle_zero: [[0, 90, 30], [0, 90, 30], [0, 90, 30], [0, 90, 30]]
-  offsets: [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
-  forward_offsets: [-10,0,0]
-  backward_offsets: [5,0,0]
-  ready_height_pct: 0.65
+  angle_zero: [[0, 90, 33], [0, 90, 33], [0, 90, 33], [0, 90, 33]]
+  offsets: [[10,0,0],[10,0,0],[0,-10,16],[0,10,16]]
+  forward_offsets: [0,0,0]
+  backward_offsets: [0,0,0]
+  ready_height_pct: 0.70
 leveling:
   yaw_threshold: 0.5
   pitch_threshold: 0.5
@@ -32,15 +32,15 @@ leveling:
 imu:
   bno_axis_remap: #
   offsets:
-    magnetic: [32418, 32685, -32271]
-    gyro: [0,-1,0]
-    acceleration: [-40,42,-10]
+    magnetic: [-255, -185, 728]
+    gyro: [1,2,1]
+    acceleration: [29, -10, -20]
 gait_params:
   trot:
     stride: 55
     clearance: 65
     step_size: 15
-    hip_sway: 6
+    hip_sway: 4
   trot_reverse:
     stride: -30
     clearance: 40

@@ -4,10 +4,8 @@ import time
 
 import numpy as np
 import serial
-import traitlets
 
 from settings import settings
-from src.interfaces.msgs import Twist, Odometry
 from src.interfaces.pose import Pose
 from src.motion.kinematics import QuadrupedKinematics
 from src.motion.servo_controller import ServoController
@@ -77,36 +75,15 @@ def millis_or_default(millis):
 
 
 class Controller(Node):
-    cmd_vel = traitlets.Instance(Twist, allow_none=True)
-    nav_target = traitlets.Instance(Odometry, allow_none=True)
-    publish_frequency_hz = traitlets.Int(default_value=10, config=True)
-    camera_image = traitlets.Any(allow_none=True)
-    euler = traitlets.Any(allow_none=True)
-    pose = traitlets.Instance(Pose, allow_none=True)
-    attitude_data = traitlets.Any()
-    magnometer_data = traitlets.Any()
-    gyroscope_data = traitlets.Any()
-    accelerometer_data = traitlets.Any()
-    motion_data = traitlets.Any()
 
     def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
-        self.positions = None
-        self.offsets = None
         self.pose = Pose()
-        self.cmd = None
         self._read_positions()
         self.set_targets(settings.position_ready)
         self.move_to(settings.position_ready, 400)
 
         atexit.register(self.shutdown)
-
-    def _apply_cmd_vel(self, cmd: Twist):
-        pass
-
-    @traitlets.observe("cmd_vel")
-    def _cmd_val_change(self, change):
-        self._apply_cmd_vel(change.new)
 
     def shutdown(self):
         self.move_to(settings.position_sit, 500)
@@ -128,7 +105,7 @@ class Controller(Node):
 
     def move_to(self, positions: np.ndarray, millis=500):
         angles = _angles_from_positions(positions)
-        cmd = _servo_positions_from_angles(angles)
+        cmd: dict = _servo_positions_from_angles(angles)
 
         if _sc is not None:
             _sc.move(cmd, millis_or_default(millis))
@@ -141,8 +118,9 @@ class Controller(Node):
 
     def _read_positions(self):
         try:
-            self.logger.debug(_sc.get_positions(settings.servo_ids))
-            self.logger.debug(f"battery: {_sc.get_battery_voltage()}")
+            if _sc is not None:
+                self.logger.debug(_sc.get_positions(settings.servo_ids))
+                self.logger.debug(f"battery: {_sc.get_battery_voltage()}")
             # self.pose.servo_positions = _servo_positions_to_numpy(_sc.get_positions(SERVO_IDS))
             # self.pose.angles = _angles_from_servo_positions(self.pose.servo_positions)
             # self.pose.positions = _positions_from_angles(self.pose.angles)

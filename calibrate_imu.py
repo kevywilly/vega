@@ -48,3 +48,9 @@ Offsets_Magnetometer:  (-288, 32420, 674)
   Offsets_Accelerometer: (-12, -3, -7)
 
 """
+
+"""
+	magnetic = (-255, -185, 728)
+	gyro = (1, 2, 1)
+	accel = (29, -10, -20)
+"""

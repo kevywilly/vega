@@ -8,7 +8,6 @@ except:  # noqa: E722
     from src.mock.board import board
 
 import numpy as np
-import traitlets
 from settings import settings
 from src.nodes.node import Node
 
@@ -30,18 +29,18 @@ class IMUMode:
 
 
 class IMU(Node):
-    acceleration = traitlets.Any()
-    magnetic = traitlets.Any()
-    gyro = traitlets.Any()
-    euler = traitlets.Any()
-    quaternion = traitlets.Any()
-    linear_acceleration = traitlets.Any()
-    gravity = traitlets.Any()
 
     def __init__(self, **kwargs):
         super(IMU, self).__init__(**kwargs)
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
+        self.acceleration = np.zeros(3)
+        self.magnetic = np.zeros(3)
+        self.gyro = np.zeros(3)
+        self.euler = np.zeros(3)
+        self.quaternion = np.zeros(4)
+        self.linear_acceleration = np.zeros(3)
+        self.gravity = np.zeros(3)  
         
         if settings.bno_axis_remap:
             self.sensor.axis_remap = settings.bno_axis_remap
@@ -69,7 +68,7 @@ class IMU(Node):
             self.acceleration = np.round(np.array(self.sensor.acceleration),3)
             self.magnetic = np.round(np.array(self.sensor.magnetic),3)
             self.gyro = np.round(np.array(self.sensor.gyro),3)
-            self.quaternion = np.round(np.array(self.sensor.quaternion),3)
+            self.quaternion = np.round(np.array(self.sensor.quaternion),4)
             self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
             self.gravity = np.round(np.array(self.sensor.gravity),3)
         except Exception as e:

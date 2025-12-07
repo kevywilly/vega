@@ -1,12 +1,9 @@
 from dataclasses import dataclass, field
 import time
-from typing import Optional
 
 import numpy as np
-import traitlets
 
 from settings import settings
-from src.interfaces.msgs import Twist
 from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
@@ -33,30 +30,6 @@ def _array_to_dict(ar, label: str = "Leg"):
     }
 
 
-class Measurement(traitlets.HasTraits):
-    value = traitlets.Any(allow_none=True)
-
-
-class PoseStatus(traitlets.HasTraits):
-    pose = traitlets.Instance(Pose, allow_none=True)
-
-
-class CmdVel(traitlets.HasTraits):
-    value = traitlets.Instance(Twist, allow_none=True)
-
-    def numpy(self):
-        if self.value is None:
-            return np.zeros(3)
-        else:
-            return np.array(
-                [self.value.linear.x, self.value.linear.y, self.value.angular.z]
-            )
-
-
-class DriveCmd(traitlets.HasTraits):
-    stride = traitlets.Int(allow_none=True)
-
-
 @dataclass
 class RobotData:
     heading: float = 0.0
@@ -76,26 +49,19 @@ class RobotData:
 
 
 class Robot(Node):
-    image = traitlets.Instance(Image)
-    measurement = traitlets.Instance(Measurement)
-    cmd_vel = traitlets.Instance(CmdVel)
-    moving = traitlets.Bool(allow_none=True, default=False)
-    move_type = traitlets.Unicode(allow_none=True, default=MoveTypes.STOP)
-    joy_id = traitlets.Int(allow_none=True)
-    gait = traitlets.Any(Gait, allow_none=True)
-    roll_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
-    pitch_offsets = traitlets.Any(default_value=np.zeros((4, 3)))
 
     def __init__(self, **kwargs):
         super(Robot, self).__init__(**kwargs)
 
         # initialize objects
         self.session_id = str(int(time.time()))
-
-        self.image = Image()
-        self.measurement = Measurement()
-        self.cmd_vel = CmdVel()
+        self.gait: Gait | None = None
+        self.image: Image = Image()
         self.cmd_zero = True
+        self.moving: bool = False
+        self.move_type: MoveTypes = MoveTypes.STOP
+        self.roll_offsets: np.ndarray = np.zeros((4, 3))
+        self.pitch_offsets: np.ndarray = np.zeros((4, 3))
 
         # initialize nodes
         try:
@@ -110,8 +76,6 @@ class Robot(Node):
 
         self.imu = IMU()
 
-        #self._start_nodes()
-        self._setup_subscriptions()
         time.sleep(0.2)
 
         self.auto_level()
@@ -125,22 +89,6 @@ class Robot(Node):
         # if self.camera:
         #    self.camera.spin()
 
-    def _setup_subscriptions(self):
-        if self.camera:
-            traitlets.dlink(
-                (self.camera, "value"),
-                (self.image, "value"),
-                #transform=ImageUtils.bgr8_to_jpeg,
-            )
-            if self.controller:
-                traitlets.dlink(
-                    (self.camera, "value"), (self.controller, "camera_image")
-                )
-        if self.controller:
-            traitlets.dlink((self.controller, "cmd_vel"), (self.cmd_vel, "value"))
-            traitlets.dlink((self.imu, "euler"), (self.controller, "euler"))
-
-        # traitlets.dlink((self.camera, 'value'), (self._video_viewer, 'camera_image'))
 
     def get_image(self):
         return self.image.value
@@ -148,13 +96,10 @@ class Robot(Node):
     def get_imu(self):
         return self.imu.euler
 
-    def set_cmd_vel(self, msg: Twist):
-        self.controller.cmd_vel = msg
-
     def set_targets(self, positions: np.ndarray):
         return self.controller.set_targets(positions)
 
-    def move_to_targets(self, millis=None):
+    def move_to_targets(self, millis:int = 0):
         return self.controller.move_to_targets(millis)
 
     def get_stream(self):
@@ -181,7 +126,6 @@ class Robot(Node):
                 params=settings.trot_params
             )
         elif move_type == MoveTypes.FORWARD_LT:
-            p = settings.turn_params
             self.gait = Turn(params=replace(settings.turn_params, turn_direction=1))
         elif move_type == MoveTypes.FORWARD_RT:
             self.gait = Turn(params=replace(settings.turn_params, turn_direction=-1))
@@ -226,7 +170,7 @@ class Robot(Node):
             time.sleep(2)
 
     def trot_in_place(self):
-        gait = Trot(**settings.trot_in_place_params)
+        gait = Trot(params=settings.trot_in_place_params)
         self.ready(200)
         self.logger.info("Trotting in place...")
         for i in range(int(gait.shape[0] * 2)):
@@ -273,24 +217,6 @@ class Robot(Node):
         self.move_to_targets()
 
     @property
-    def stats(self) -> dict:
-        euler = dict(zip(["heading", "pitch", "yaw"], self.imu.euler))
-        angular_velocity = dict(zip(["x", "y", "z"], self.imu.gyro))
-        angular_acceleration = dict(zip(["x", "y", "z"], self.imu.acceleration))
-        pose = self.controller.pose
-        return {
-            "euler": euler,
-            "angular_velocity": angular_velocity,
-            "angular_acceleration": angular_acceleration,
-            "angles": pose.angles_in_degrees.tolist(),
-            "positions": pose.positions.astype(int).tolist(),
-            "offsets": settings.position_offsets.astype(int).tolist(),
-            "tilt": settings.tilt.json(),
-            "height": pose.height,
-            "height_pct": pose.height_pct,
-        }
-
-    @property
     def data(self) -> RobotData:
         pose = self.controller.pose
         return RobotData(
@@ -330,35 +256,34 @@ class Robot(Node):
             self.trot_in_place()
             self.ready(100)
             time.sleep(0.2)
+
             
             pitch_array = np.array([-1, -1, 1, 1])
-            roll_array = np.array([1, -1, 1, -1])
+            roll_array = np.array([1, -1, -1, 1])
             zeros = np.zeros(4)
             
-            heading, roll, pitch = self.imu.euler
+            
             
             for i in range(10):
-                self.logger.info(f"roll: {roll:.2f}, pitch: {pitch:.2f}")
-                
-                # Fix one axis at a time, prioritize the larger error
-                if abs(pitch) > abs(roll) and abs(pitch) > settings.pitch_threshold:
-                    offset = pitch_array if pitch >= 0 else -pitch_array
-                elif abs(roll) > settings.roll_threshold:
-                    offset = roll_array if roll >= 0 else -roll_array
-                else:
-                    offset = zeros
+                heading, roll, pitch = self.imu.sensor.euler
 
-                settings.position_offsets[:, 2] += offset.astype(int)
+                print(f"roll: {roll:.2f}, pitch: {pitch:.2f}")
+
+
+                # Fix one axis at a time, prioritize the larger error
+                #if abs(pitch) > abs(roll) and abs(pitch) > settings.pitch_threshold:
+                #    offset = pitch_array if pitch >= 0 else -pitch_array
+                if roll is not None and abs(roll) > settings.roll_threshold:
+                    offset = roll_array if roll >= 0 else -roll_array
+                    settings.position_offsets[:, 2] += offset.astype(int)
+                    print(f"offset => {settings.position_offsets[:, 2].tolist()}")
+                else:
+                    print(f"leveling succeeded! roll: {roll:.2f}, pitch: {pitch:.2f}")
+                    return True
                 
-                self.logger.info(f"offset => {settings.position_offsets[:, 2].tolist()}")
                 self.ready(10)
                 time.sleep(0.3)
 
-                heading, roll, pitch = self.imu.euler
-
-                if abs(pitch) <= settings.pitch_threshold and abs(roll) <= settings.roll_threshold:
-                    self.logger.info(f"leveling succeeded! roll: {roll:.2f}, pitch: {pitch:.2f}")
-                    return True
 
         except Exception as ex:
             self.ready(200)

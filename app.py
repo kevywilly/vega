@@ -120,7 +120,7 @@ async def main_page():
                     ).classes('w-24')
                 
                 with ui.row().classes('items-center'):
-                    ui.label('Tilt (yaw)').classes('text-xs mb-2')
+                    ui.label('Tilt (roll)').classes('text-xs mb-2')
                     yaw_value_label = ui.label('0').classes('mb-1')
                     def yaw_slider_change(e):
                         yaw_value_label.set_text(str(e.value))
@@ -145,7 +145,7 @@ async def main_page():
             with ui.row().classes('justify-between w-full text-sm'):
                 ui.label('Heading:')
                 heading_display = ui.label('0.0')
-                ui.label('Yaw:')
+                ui.label('Roll:')
                 roll_display = ui.label('0.0')
                 ui.label('Pitch:')
                 pitch_display = ui.label('0.0')

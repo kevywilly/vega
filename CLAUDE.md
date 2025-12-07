@@ -98,6 +98,6 @@ python3 calibrate_imu.py
 
 - Use numpy arrays for positions/angles (shape: (4,3) for 4 legs, 3 joints)
 - Positions in millimeters, angles in radians (unless specified as degrees)
-- Leg numbering: 0=front-left, 1=front-right, 2=back-left, 3=back-right
+- Leg numbering: 0=front-left, 1=front-right, 2=back-right, 3=back-left
 - Error handling with logging via self.logger
 - Async/await for non-blocking operations in nodes
