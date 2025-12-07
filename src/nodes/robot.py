@@ -15,7 +15,7 @@ from src.motion.gaits.turn import Turn
 
 # from src.nodes.camera import Camera
 from src.nodes.controller import Controller
-from src.nodes.imu import IMU
+from src.nodes.imu import IMU, IMUData
 from src.nodes.node import Node
 #from src.vision.image import Image, ImageUtils
 from dataclasses import replace
@@ -32,11 +32,7 @@ def _array_to_dict(ar, label: str = "Leg"):
 
 @dataclass
 class RobotData:
-    heading: float = 0.0
-    pitch: float = 0.0
-    roll: float = 0.0
-    angular_vel: float = 0.0
-    angular_accel: float = 0.0
+    imu: IMUData = IMUData()
     positions: dict = field(default_factory=lambda: _array_to_dict(Pose().positions))
     angles: dict = field(
         default_factory=lambda: _array_to_dict(Pose().angles_in_degrees)
@@ -92,9 +88,6 @@ class Robot(Node):
 
     def get_image(self):
         return self.image.value
-
-    def get_imu(self):
-        return self.imu.euler
 
     def set_targets(self, positions: np.ndarray):
         return self.controller.set_targets(positions)
@@ -220,11 +213,7 @@ class Robot(Node):
     def data(self) -> RobotData:
         pose = self.controller.pose
         return RobotData(
-            heading=self.imu.euler[0],
-            roll=self.imu.euler[1],
-            pitch=self.imu.euler[2],
-            angular_vel=self.imu.gyro[2],
-            angular_accel=self.imu.acceleration[2],
+            imu=self.imu.imu_data,
             positions={
                 f"Leg {i}": {"x": pos[0], "y": pos[1], "z": pos[2]}
                 for i, pos in enumerate(pose.positions)

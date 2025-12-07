@@ -204,11 +204,11 @@ async def main_page():
             #await mock_get_stats()
 
             # Update main display values
-            heading_display.set_text(f"{robot.data.heading:.2f}")
-            roll_display.set_text(f"{robot.data.roll:.2f}")
-            pitch_display.set_text(f"{robot.data.pitch:.2f}")
-            angular_vel_display.set_text(f"{robot.data.angular_vel:.2f}")
-            angular_accel_display.set_text(f"{robot.data.angular_accel:.2f}")
+            heading_display.set_text(f"{robot.data.imu.heading:.2f}")
+            roll_display.set_text(f"{robot.data.imu.roll:.2f}")
+            pitch_display.set_text(f"{robot.data.imu.pitch:.2f}")
+            angular_vel_display.set_text(f"{robot.data.imu.angular_vel:.2f}")
+            angular_accel_display.set_text(f"{robot.data.imu.angular_accel:.2f}")
 
             # Update data grids
             position_container.clear()

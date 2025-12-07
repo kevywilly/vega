@@ -1,5 +1,6 @@
 from blinker import signal
 
 class Topics:
-    cmd_pose = signal('cmd_pose')
+    imu_raw = signal('imu_raw')
+    pose_raw = signal('pose_raw')
     

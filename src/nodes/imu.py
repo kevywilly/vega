@@ -1,4 +1,9 @@
 import atexit
+import numpy as np
+from settings import settings
+from src.nodes.node import Node
+from src.signals import Topics
+from dataclasses import dataclass, field
 
 try:
     import adafruit_bno055
@@ -7,10 +12,32 @@ except:  # noqa: E722
     from src.mock import adafruit_bno055
     from src.mock.board import board
 
-import numpy as np
-from settings import settings
-from src.nodes.node import Node
 
+@dataclass
+class IMUData:
+    euler: np.ndarray = field(default_factory=lambda: np.zeros(3))
+    acceleration: np.ndarray = field(default_factory=lambda: np.zeros(3))
+    gyro: np.ndarray = field(default_factory=lambda: np.zeros(3))
+
+    @property
+    def heading(self) -> float:
+        return self.euler[0]
+    
+    @property
+    def roll(self) -> float:
+        return self.euler[1]
+    
+    @property
+    def pitch(self) -> float:
+        return self.euler[2]
+    
+    @property
+    def angular_vel(self) -> float:
+        return self.gyro[2]
+    
+    @property
+    def angular_accel(self) -> float:
+        return self.acceleration[2]
 
 class IMUMode:
     CONFIG_MODE = 0x00
@@ -34,13 +61,7 @@ class IMU(Node):
         super(IMU, self).__init__(**kwargs)
         self.sensor = adafruit_bno055.BNO055_I2C(board.I2C())
         self.sensor.mode = IMUMode.NDOF_MODE
-        self.acceleration = np.zeros(3)
-        self.magnetic = np.zeros(3)
-        self.gyro = np.zeros(3)
-        self.euler = np.zeros(3)
-        self.quaternion = np.zeros(4)
-        self.linear_acceleration = np.zeros(3)
-        self.gravity = np.zeros(3)  
+        self.imu_data = IMUData()
         
         if settings.bno_axis_remap:
             self.sensor.axis_remap = settings.bno_axis_remap
@@ -58,19 +79,30 @@ class IMU(Node):
 
         atexit.register(self.shutdown)
 
+    
     def read_measurements(self):
         try:
             # Only read euler (orientation) - most important for balance
             # Reading all 7 sensors takes 70-350ms and blocks GIL during gaits
-            self.euler = np.round(np.array(self.sensor.euler),3)
+            euler = np.round(np.array(self.sensor.euler),3)
+            acceleration = np.round(np.array(self.sensor.acceleration),3)
+            gyro = np.round(np.array(self.sensor.gyro),3)
+
+            self.imu_data = IMUData(
+                euler=euler,
+                acceleration=acceleration,
+                gyro=gyro
+            )
+
+            Topics.imu_raw.send(self.imu_data)
 
             # Uncomment these only if actively needed (slows down gaits)
-            self.acceleration = np.round(np.array(self.sensor.acceleration),3)
-            self.magnetic = np.round(np.array(self.sensor.magnetic),3)
-            self.gyro = np.round(np.array(self.sensor.gyro),3)
-            self.quaternion = np.round(np.array(self.sensor.quaternion),4)
-            self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
-            self.gravity = np.round(np.array(self.sensor.gravity),3)
+            #
+            #self.magnetic = np.round(np.array(self.sensor.magnetic),3)
+            #self.quaternion = np.round(np.array(self.sensor.quaternion),4)
+            #self.linear_acceleration = np.round(np.array(self.sensor.linear_acceleration),3)
+            #self.gravity = np.round(np.array(self.sensor.gravity),3)
+
         except Exception as e:
             self.logger.warning(f"could not read imu {e.__str__()}")
 

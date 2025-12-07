@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import Optional, Dict
 
 import numpy as np
@@ -42,22 +43,19 @@ class Position:
         p = Position.from_world(_3d_rotate(self.world, degrees))
         return p
 
-
+@dataclass
 class Pose:
     num_links = 12
-
-    def __init__(self):
-        self.positions = np.zeros((4, 3))
-        self.target_positions = np.zeros((4, 3))
-        self.angles = np.zeros((4, 3))
-        self.target_angles = np.zeros((4, 3))
-
-        self.cmd = None
+    positions: np.ndarray = field(default_factory=lambda: np.zeros((4,3)))
+    target_positions: np.ndarray = field(default_factory=lambda: np.zeros((4,3)))
+    angles: np.ndarray = field(default_factory=lambda: np.zeros((4,3)))
+    target_angles: np.ndarray = field(default_factory=lambda: np.zeros((4,3)))
+    cmd: dict[int,int] | None = field(default=None)
 
     @property
     def servos(self) -> np.ndarray:
         if self.cmd:
-            return np.ndarray(self.cmd.values()).reshape(4, 3)
+            return np.ndarray(list(self.cmd.values())).reshape(4, 3)
         else:
             return np.zeros((4, 3))
 
