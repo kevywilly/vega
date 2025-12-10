@@ -53,7 +53,7 @@ gait_params:
   turn:
     stride: 35
     clearance: 50
-    step_size: 20
+    step_size: 15
     hip_sway: 6
   walk:
     stride: 50

@@ -8,20 +8,29 @@ from nicegui import ui, app
 from fastapi.responses import StreamingResponse
 import asyncio
 from typing import Dict, List
+from src.agents.yolo_agent import YoloAgent
 from src.model.types import MoveTypes
+from src.nodes.controller import Controller
+from src.nodes.imu import IMU
 from src.nodes.robot import Robot
 from settings import settings
 
 logging.basicConfig(level=logging.INFO)
 
-robot: Robot = Robot()
+controller = Controller()
+imu = IMU()
+yolo_agent = YoloAgent()
+
+robot: Robot = Robot(controller=controller, imu=imu)
 
 # Mock functions for robot control
+
+
 
 async def set_pose_command(pose: str):
     """Mock function for setting robot pose"""
     ui.notify(f"Setting pose to {pose}", type='info')
-    robot.set_pose(pose)
+    robot.controller.set_pose(pose)
 
 async def demo_command():
     """Mock function for demo command"""
@@ -40,12 +49,12 @@ async def reset_offsets():
 async def handle_stop():
     """Mock function for stop command"""
     ui.notify("Stopping robot", type='warning')
-    robot.stop()
+    robot.controller.stop()
 
 async def handle_move(move_type: MoveTypes):
     """Mock function for move command"""
     ui.notify(f"Moving {move_type.value}", type='info')
-    robot.process_move(move_type)
+    robot.controller.process_move(move_type)
 
 def create_data_grid(data_dict: Dict, labels: List[str]):
     """Helper function to create data grids"""
@@ -71,28 +80,55 @@ def create_data_grid(data_dict: Dict, labels: List[str]):
                         .style('font-family: monospace; min-height:0.5em; line-height:1; padding:0;')
 
 
-@app.get('/api/stream')
-def video_stream():
-    return StreamingResponse(
-        robot.get_stream(),
-        media_type='multipart/x-mixed-replace; boundary=frame'
-    )
+def video_frame():
+    with ui.column().classes('video-column').style('width: 648px; max-width: 100vw; margin: 0 auto; padding: 0;'):
+        ui.html('''
+        <style>
+        .video-wrap {
+            width: 648px;
+            height: 368px;
+            max-width: 100vw;
+            position: relative;
+            background: #333;
+            overflow: hidden;
+            margin: 0 auto;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .video-wrap iframe {
+            width: 648px;
+            height: 368px;
+            border: 0;
+            display: block;
+            background: #333;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .capture-row {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        </style>
+        ''', sanitize=False)
+        with ui.element('div').classes('video-wrap'):
+            ui.html('<iframe src="https://orin1:8554" scrolling="no" allowfullscreen style="width:640px;height:360px"></iframe>', sanitize=False)
 
 @ui.page('/')
 async def main_page():
     ui.page_title('Vega Robot Control')
     
-    with ui.row().classes('gap-4 p-4 w-full flex-col md:flex-row'):
+    # Main container - side by side on wide screens, stacked on mobile
+    with ui.row().classes('gap-4 p-4 w-full flex-wrap'):
         # Left panel - Video stream, sliders, and controls
-        with ui.column().classes('w-full md:w-1/2 p-4 rounded bg-gray-900 text-white'):
-            # Video stream - full width on mobile
-            ui.html("""<div class="w-full aspect-video bg-gray-700 flex items-center justify-center text-white">
-                    <img src="api/stream" class="w-full h-full object-cover">
-                    </div>
-            """, sanitize=False)
+        with ui.column().classes('flex-1 min-w-[400px] max-w-[700px] p-4 rounded bg-gray-900 text-white items-center'):
+            # Video stream
+            video_frame()
             
             # Control panel - 3x3 movement buttons
-            with ui.grid(columns=3).classes('gap-2 my-4 w-full'):
+            with ui.grid(columns=3).classes('gap-2 my-4 w-full max-w-[400px]'):
                 # Top row
                 ui.button(icon="turn_slight_left", on_click=lambda: handle_move(MoveTypes.FORWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button(icon="arrow_upward", on_click=lambda: handle_move(MoveTypes.FORWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
@@ -108,7 +144,7 @@ async def main_page():
                 ui.button(icon="arrow_downward", on_click=lambda: handle_move(MoveTypes.BACKWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button(icon="turn_slight_right", on_click=lambda: handle_move(MoveTypes.BACKWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1').style('transform: scaleY(-1);')
             
-            # Sliders - horizontal layout under video
+            # Sliders
             with ui.row().classes('gap-4 my-4 w-full justify-center'):
                 with ui.row().classes('items-center'):
                     ui.label('Height (%)').classes('text-xs mb-2')
@@ -157,7 +193,8 @@ async def main_page():
                 angular_accel_display = ui.label('0.0')
         
         # Right panel - Commands and data
-        with ui.column().classes('w-full md:flex-grow p-4 border rounded gap-4'):
+        with ui.column().classes('flex-1 min-w-[300px] p-4 border rounded gap-4'):
+            # ... rest stays the same
             # Command buttons
             ui.label('Poses').classes('text-lg font-bold w-full')
             with ui.grid(columns=3).classes('gap-2 w-full'):
@@ -204,11 +241,11 @@ async def main_page():
             #await mock_get_stats()
 
             # Update main display values
-            heading_display.set_text(f"{robot.data.imu.heading:.2f}")
-            roll_display.set_text(f"{robot.data.imu.roll:.2f}")
-            pitch_display.set_text(f"{robot.data.imu.pitch:.2f}")
-            angular_vel_display.set_text(f"{robot.data.imu.angular_vel:.2f}")
-            angular_accel_display.set_text(f"{robot.data.imu.angular_accel:.2f}")
+            heading_display.set_text(f"{imu.imu_data.heading:.2f}")
+            roll_display.set_text(f"{imu.imu_data.roll:.2f}")
+            pitch_display.set_text(f"{imu.imu_data.pitch:.2f}")
+            angular_vel_display.set_text(f"{imu.imu_data.angular_vel:.2f}")
+            angular_accel_display.set_text(f"{imu.imu_data.angular_accel:.2f}")
 
             # Update data grids
             position_container.clear()
@@ -231,9 +268,16 @@ async def main_page():
 async def main():
     await asyncio.gather(
         robot.imu.spin(frequency=settings.imu_frequency),
-        robot.controller.spin(frequency=settings.controller_frequency),
-        robot.spin(frequency=settings.robot_frequency),
+        robot.controller.spin(frequency=settings.robot_frequency),
+        #agent.run_async(),
+        #robot.spin(frequency=settings.robot_frequency),
     )
+
+def start_video():
+    #VideoStream().run()
+    yolo_agent.run()
+    return
+
 
 def start_app():
     ui.run(
@@ -244,17 +288,25 @@ def start_app():
         show=True
     )
 
-
 if __name__ == "__main__":
     print("🤖 Starting Vega Robot Control Interface...")
     try:
         import threading
+
+        video_thread = threading.Thread(target=start_video)
+        video_thread.daemon = True
+        video_thread.start()
+        
         app_thread = threading.Thread(target=start_app)
         app_thread.daemon = True
         app_thread.start()    
 
         asyncio.run(main())
-    finally:
-        app_thread.join()
+    except KeyboardInterrupt:
+        print("\n🛑 Shutting down...")
+        if yolo_agent:
+            yolo_agent.stop()
+        import time
+        time.sleep(0.3)
 
     

@@ -1,6 +1,7 @@
 from blinker import signal
 
 class Topics:
-    imu_raw = signal('imu_raw')
-    pose_raw = signal('pose_raw')
+    raw_imu = signal('raw_imu')
+    raw_pose = signal('pose_raw')
+    raw_image = signal('raw_image')
     

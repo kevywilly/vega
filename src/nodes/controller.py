@@ -4,12 +4,21 @@ import time
 
 import numpy as np
 import serial
-
+from dataclasses import replace
 from settings import settings
 from src.interfaces.pose import Pose
+from src.model.types import MoveTypes
+from src.motion.gaits.gait import Gait
+from src.motion.gaits.trot import Trot
+from src.motion.gaits.turn import Turn
+from src.motion.gaits.simplified_gait import (
+    SimpleTrotWithLateral, SimpleSidestep
+)
 from src.motion.kinematics import QuadrupedKinematics
 from src.motion.servo_controller import ServoController
+from src.nodes.imu import IMUData
 from src.nodes.node import Node
+from src.signals import Topics
 
 logger = logging.getLogger("VEGA")
 
@@ -79,9 +88,15 @@ class Controller(Node):
     def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
         self.pose = Pose()
+        self.gait: Gait | None = None
+        self.move_type: MoveTypes = MoveTypes.STOP
+        self.moving: bool = False
         self._read_positions()
         self.set_targets(settings.position_ready)
         self.move_to(settings.position_ready, 400)
+        self.imu_data: IMUData = IMUData()
+
+        self.handle_subscriptions()
 
         atexit.register(self.shutdown)
 
@@ -91,6 +106,44 @@ class Controller(Node):
 
         if _sc:
             _sc.unload(settings.servo_ids)
+
+    def handle_subscriptions(self):
+        Topics.raw_imu.connect(self.on_raw_imu)
+
+    def on_raw_imu(self, sender, payload: IMUData):
+        # Use IMU data to adjust position offsets for leveling
+        imu_data = payload
+        self.imu_data = imu_data
+        self.logger.debug(f"IMU Euler: {payload.euler}")
+
+        return 
+        roll = np.radians(imu_data.euler[0])
+        pitch = np.radians(imu_data.euler[1])
+
+        roll_matrix = np.array([
+            [1, 0, 0],
+            [0, np.cos(roll), -np.sin(roll)],
+            [0, np.sin(roll), np.cos(roll)]
+        ])
+
+        pitch_matrix = np.array([
+            [np.cos(pitch), 0, np.sin(pitch)],
+            [0, 1, 0],
+            [-np.sin(pitch), 0, np.cos(pitch)]
+        ])
+
+        self.roll_offsets = np.zeros((4, 3))
+        self.pitch_offsets = np.zeros((4, 3))
+
+        for i in range(4):
+            leg_pos = self.pose.positions[i]
+            rolled_pos = np.dot(roll_matrix, leg_pos)
+            pitched_pos = np.dot(pitch_matrix, leg_pos)
+
+            self.roll_offsets[i] = rolled_pos - leg_pos
+            self.pitch_offsets[i] = pitched_pos - leg_pos
+
+        settings.position_offsets = self.roll_offsets + self.pitch_offsets  
 
     def set_targets(self, positions: np.ndarray):
         self.pose.target_positions = positions
@@ -114,6 +167,7 @@ class Controller(Node):
         self.pose.positions = positions
         self.pose.cmd = cmd
         logger.debug(self.pose)
+        Topics.raw_pose.send("pose", payload=self.pose)
         return cmd
 
     def _read_positions(self):
@@ -127,9 +181,95 @@ class Controller(Node):
         except:  # noqa: E722
             pass
 
+    def ready(self, millis=100):
+        self.move_to(settings.position_ready, millis)
+
+    def stop(self):
+        self.moving = False
+        self.move_type = MoveTypes.STOP
+        self.ready()
+        return {"moving": self.moving, "move_type": self.move_type}
+    
+    def trot_in_place(self):
+        gait = Trot(params=settings.trot_in_place_params)
+        self.ready(200)
+        self.logger.info("Trotting in place...")
+        for i in range(int(gait.shape[0] * 2)):
+            position = next(gait)
+            self.move_to(position, 10)
+        self.logger.info("Done trotting in place...")
+        time.sleep(0.1)
+
+    def process_move(self, move_type: MoveTypes):
+        if move_type == MoveTypes.FORWARD:
+            self.gait = SimpleTrotWithLateral(
+                p0=settings.position_trot + settings.position_forward_offsets,
+                params=settings.trot_params
+            )
+        elif move_type == MoveTypes.FORWARD_LT:
+            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1))
+        elif move_type == MoveTypes.FORWARD_RT:
+            self.gait = Turn(params=replace(settings.turn_params, turn_direction=-1))
+        elif move_type == MoveTypes.BACKWARD:
+            self.gait = SimpleTrotWithLateral(
+                p0=settings.position_trot + settings.position_backward_offsets,
+                params=settings.trot_reverse_params,
+            )
+        elif move_type == MoveTypes.BACKWARD_LT:
+            self.gait = Turn(
+                params=replace(settings.turn_params, turn_direction=-1, is_reversed=True)
+            )
+        elif move_type == MoveTypes.BACKWARD_RT:
+            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1, is_reversed=True))
+        elif move_type == MoveTypes.LEFT:
+            self.gait = SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True))
+        elif move_type == MoveTypes.RIGHT:
+            self.gait = SimpleSidestep(params=settings.sidestep_params)
+        elif move_type == MoveTypes.TROT_IN_PLACE:
+            self.gait = Trot(params=settings.trot_in_place_params)
+        elif move_type == MoveTypes.STOP:
+            return self.stop()
+
+        self.move_type = move_type
+
+        if self.move_type != MoveTypes.STOP:
+            self.moving = True
+
+        return {"moving": self.moving, "move_type": self.move_type}
+    
+    def set_pose(self, pose: str):
+        v = pose.lower()
+
+        p = None
+
+        if v == "ready":
+            p = settings.position_ready
+        elif v == "sit":
+            p = settings.position_sit
+        elif v == "crouch":
+            p = settings.position_crouch
+        elif v == "walking":
+            p = settings.position_walk
+        elif v == "trotting":
+            p = settings.position_trot
+        else:
+            return {"status": "error, unknown pose"}
+
+        if self.moving:
+            self.stop()
+            time.sleep(0.5)
+
+        self.set_targets(p)
+        self.move_to_targets()
+
     @staticmethod
     def voltage():
         return 0.0
 
     def spinner(self):
-        pass
+        if self.moving and self.gait is not None:
+            # Hot path: get next position and send to servos
+            # next() is already optimized in Gait class
+            position = next(self.gait)
+            # time=0 means immediate move, no interpolation delay
+            self.move_to(position, 0)

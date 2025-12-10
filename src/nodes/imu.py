@@ -94,7 +94,7 @@ class IMU(Node):
                 gyro=gyro
             )
 
-            Topics.imu_raw.send(self.imu_data)
+            Topics.raw_imu.send("imu", payload=self.imu_data)
 
             # Uncomment these only if actively needed (slows down gaits)
             #

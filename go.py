@@ -17,8 +17,8 @@ def demo():
     positions = [settings.position_ready, settings.position_crouch, settings.position_ready]
     print(positions)
     for p in positions:
-        robot.set_targets(p)
-        robot.move_to_targets()
+        robot.controller.set_targets(p)
+        robot.controller.move_to_targets()
         time.sleep(2)
 
 

@@ -1,9 +1,4 @@
 import cv2
-import traitlets
-
-
-class Image(traitlets.HasTraits):
-    value = traitlets.Any()
 
 
 class ImageUtils:
@@ -12,9 +7,9 @@ class ImageUtils:
     def bgr8_to_jpeg(value, quality=75):
         try:
             return bytes(cv2.imencode('.jpg', value)[1])
-        except:
+        except:  # noqa: E722
             return None
-
+        
     @staticmethod
     def bgr8_to_rgb8(cv2_img):
         return cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)

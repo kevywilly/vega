@@ -6,22 +6,14 @@ import numpy as np
 from settings import settings
 from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
-from src.motion.gaits.gait import Gait
-from src.motion.gaits.simplified_gait import (
-    SimpleTrotWithLateral, SimpleSidestep
-)
-from src.motion.gaits.trot import Trot
-from src.motion.gaits.turn import Turn
 
 # from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU, IMUData
 from src.nodes.node import Node
-#from src.vision.image import Image, ImageUtils
-from dataclasses import replace
+from src.signals import Topics
+from src.vision.image import ImageUtils
 
-class Image:
-    value = None
 
 def _array_to_dict(ar, label: str = "Leg"):
     return {
@@ -46,108 +38,41 @@ class RobotData:
 
 class Robot(Node):
 
-    def __init__(self, **kwargs):
+    def __init__(self, controller: Controller, imu: IMU, **kwargs):
         super(Robot, self).__init__(**kwargs)
 
         # initialize objects
         self.session_id = str(int(time.time()))
-        self.gait: Gait | None = None
-        self.image: Image = Image()
-        self.cmd_zero = True
-        self.moving: bool = False
-        self.move_type: MoveTypes = MoveTypes.STOP
+        self.image = None
         self.roll_offsets: np.ndarray = np.zeros((4, 3))
         self.pitch_offsets: np.ndarray = np.zeros((4, 3))
+        self.controller = controller
+        self.imu = imu
 
-        # initialize nodes
-        try:
-            print("skipping camera")
-            self.camera = None
-            #self.camera: Optional[Camera] = Camera()
-        except Exception as ex:
-            self.logger.error(ex.__str__())
-            self.camera = None
-
-        self.controller: Controller = Controller(frequency=30)
-
-        self.imu = IMU()
-
-        time.sleep(0.2)
-
-        self.auto_level()
+        Topics.raw_image.connect(self.handle_raw_image)
 
         self.loaded()
 
-    def _start_nodes(self):
-        pass
-        #self.imu.spin(frequency=5)
-        #self.controller.spin()
-        # if self.camera:
-        #    self.camera.spin()
-
+    def handle_raw_image(self, sender, payload):
+        self.image = ImageUtils.bgr8_to_jpeg(payload)
 
     def get_image(self):
-        return self.image.value
-
-    def set_targets(self, positions: np.ndarray):
-        return self.controller.set_targets(positions)
-
-    def move_to_targets(self, millis:int = 0):
-        return self.controller.move_to_targets(millis)
+        return self.image
 
     def get_stream(self):
         while True:
-            # ret, buffer = cv2.imencode('.jpg', frame)
             try:
-                yield (
-                    b"--frame\r\n"
-                    b"Content-Type: image/jpeg\r\n\r\n" + self.get_image() + b"\r\n"
-                )  # concat frame one by one and show result
+                image = self.get_image()
+                if image is not None:
+                    yield (
+                        b"--frame\r\n"
+                        b"Content-Type: image/jpeg\r\n\r\n" + image + b"\r\n"
+                    )
             except Exception:
                 pass
 
     def stop(self):
-        self.moving = False
-        self.move_type = MoveTypes.STOP
-        self.ready()
-        return {"moving": self.moving, "move_type": self.move_type}
-
-    def process_move(self, move_type: MoveTypes):
-        if move_type == MoveTypes.FORWARD:
-            self.gait = SimpleTrotWithLateral(
-                p0=settings.position_trot + settings.position_forward_offsets,
-                params=settings.trot_params
-            )
-        elif move_type == MoveTypes.FORWARD_LT:
-            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1))
-        elif move_type == MoveTypes.FORWARD_RT:
-            self.gait = Turn(params=replace(settings.turn_params, turn_direction=-1))
-        elif move_type == MoveTypes.BACKWARD:
-            self.gait = SimpleTrotWithLateral(
-                p0=settings.position_trot + settings.position_backward_offsets,
-                params=settings.trot_reverse_params,
-            )
-        elif move_type == MoveTypes.BACKWARD_LT:
-            self.gait = Turn(
-                params=replace(settings.turn_params, turn_direction=-1, is_reversed=True)
-            )
-        elif move_type == MoveTypes.BACKWARD_RT:
-            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1, is_reversed=True))
-        elif move_type == MoveTypes.LEFT:
-            self.gait = SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True))
-        elif move_type == MoveTypes.RIGHT:
-            self.gait = SimpleSidestep(params=settings.sidestep_params)
-        elif move_type == MoveTypes.TROT_IN_PLACE:
-            self.gait = Trot(params=settings.trot_in_place_params)
-        elif move_type == MoveTypes.STOP:
-            return self.stop()
-
-        self.move_type = move_type
-
-        if self.move_type != MoveTypes.STOP:
-            self.moving = True
-
-        return {"moving": self.moving, "move_type": self.move_type}
+        self.controller.stop()
 
     def demo(self):
         positions = [
@@ -158,19 +83,12 @@ class Robot(Node):
         ]
 
         for p in positions:
-            self.set_targets(p)
-            self.move_to_targets()
+            self.controller.set_targets(p)
+            self.controller.move_to_targets()
             time.sleep(2)
 
     def trot_in_place(self):
-        gait = Trot(params=settings.trot_in_place_params)
-        self.ready(200)
-        self.logger.info("Trotting in place...")
-        for i in range(int(gait.shape[0] * 2)):
-            position = next(gait)
-            self.controller.move_to(position, 10)
-        self.logger.info("Done trotting in place...")
-        time.sleep(0.1)
+        self.controller.trot_in_place()
 
     def auto_level(self):
         if settings.auto_level:
@@ -179,35 +97,11 @@ class Robot(Node):
                 if self.level():
                     return
 
-
-
     def ready(self, millis=200):
-        self.controller.move_to(settings.position_ready, millis)
+        self.controller.ready(millis)
 
     def set_pose(self, pose: str):
-        v = pose.lower()
-
-        p = None
-
-        if v == "ready":
-            p = settings.position_ready
-        elif v == "sit":
-            p = settings.position_sit
-        elif v == "crouch":
-            p = settings.position_crouch
-        elif v == "walking":
-            p = settings.position_walk
-        elif v == "trotting":
-            p = settings.position_trot
-        else:
-            return {"status": "error, unknown pose"}
-
-        if self.moving:
-            self.stop()
-            time.sleep(0.5)
-
-        self.set_targets(p)
-        self.move_to_targets()
+        self.controller.set_pose(pose)
 
     @property
     def data(self) -> RobotData:
@@ -226,18 +120,13 @@ class Robot(Node):
                 f"Leg {i}": {"x": offset[0], "y": offset[1], "z": offset[2]}
                 for i, offset in enumerate(settings.position_offsets)
             },
-            moving=self.moving,
-            move_type=self.move_type,
+            moving=self.controller.moving,
+            move_type=self.controller.move_type
         )
 
     def spinner(self):
         """Optimized main control loop - minimizes overhead in hot path."""
-        if self.moving and self.gait is not None:
-            # Hot path: get next position and send to servos
-            # next() is already optimized in Gait class
-            position = next(self.gait)
-            # time=0 means immediate move, no interpolation delay
-            self.controller.move_to(position, 0)
+        pass
 
     def level(self) -> bool:
         self.logger.info("**** Performing Level Calibration ***")
