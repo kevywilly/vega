@@ -36,7 +36,8 @@ RUN pip3 install --no-cache-dir --verbose --index-url https://pypi.org/simple \
   asyncio-atexit \
   adafruit-circuitpython-bno055 \
   click \
-  nicegui
+  nicegui \
+  onnxslim
 
 FROM stage1 AS stage2
 

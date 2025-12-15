@@ -6,7 +6,21 @@ from settings import settings
 import os
 
 #settings.update({'weights_dir': '/data/models/yolo'})
-model = YOLO("/data/models/yolo/yolo11s.pt")
+
+# cli
+# yolo export model=/data/models/yolo/yolo11m.pt format=engine imgsz=640
+
+def prepare_trt_model():
+    model = YOLO("/data/models/yolo/yolo11m.pt")
+    model.export(format="engine", imgsz=640)
+
+if not os.path.exists("/data/models/yolo/yolo11m.engine"):
+    print("*" * 50)
+    print("Preparing TensorRT model...this may take a while.")
+    print("*" * 50)
+    prepare_trt_model()
+
+model = YOLO("/data/models/yolo/yolo11m.engine")
 
 INPUT_WIDTH = 1280
 INPUT_HEIGHT = 720
@@ -14,7 +28,7 @@ INPUT_FRAMEWEIGHT = 60
 video_output_width = 960
 video_output_height = 540
 
-#model = YOLO("yolo11s.pt")
+
 
 class YoloAgent:
     def __init__(
@@ -66,6 +80,40 @@ class YoloAgent:
         cuda_img = cudaFromNumpy(annotated)
         self.output.Render(cuda_img)
 
+        self.handle_results(results)
+
+    def handle_results(self, results):
+        for r in results:
+            for box in r.boxes:
+                # Class and confidence
+                cls = int(box.cls[0])
+                conf = float(box.conf[0])
+                name = model.names[cls]
+                
+                # Bounding box (pixel coordinates)
+                x, y, w, h = box.xywh[0].tolist()
+                
+                # Normalized positions
+                x_norm = box.xywhn[0][0].item()
+                y_norm = box.xywhn[0][1].item()
+                
+                # Horizontal position (left/center/right)
+                if x_norm < 0.33:
+                    h_pos = "left"
+                elif x_norm > 0.66:
+                    h_pos = "right"
+                else:
+                    h_pos = "center"
+                
+                # Vertical position (top 33% / bottom 66%)
+                if y_norm < 0.33:
+                    v_pos = "top"
+                else:
+                    v_pos = "bottom"
+                
+                position = f"{h_pos}:{v_pos}"
+                
+                # print(f"{name}: conf={conf:.2f} x={x:.1f} y={y:.1f} w={w:.1f} h={h:.1f} [{position}]")
     
     def run(self):
         self.running = True
