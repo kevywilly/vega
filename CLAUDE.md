@@ -4,100 +4,85 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Vega is a quadruped robot control system built in Python using a modular architecture with real-time control capabilities. The system consists of motion control (kinematics, gaits), sensor integration (IMU, camera), and a web-based control interface.
+Vega is a quadruped robot control system built in Python. The system runs on Jetson/Pi hardware with servo-based leg control, IMU stabilization, and a web-based interface.
 
 ## Architecture
 
-### Core Components
+### Node System
+The robot uses an async node-based architecture (`src/nodes/node.py`). Each node inherits from `Node` and implements a `spinner()` method called at a configurable frequency. Nodes communicate via blinker signals defined in `src/signals.py`:
+- `Topics.raw_imu` - IMU sensor data
+- `Topics.raw_pose` - Robot pose updates
+- `Topics.raw_image` - Camera frames
 
-- **Motion System**: Inverse/forward kinematics for 4-legged robot with servo control
-- **Gait Engine**: Abstract gait system supporting trot, sidestep, turn, jump gaits
-- **Sensor Integration**: IMU (BNO055) for orientation, PiCamera2 for vision
-- **Control Interface**: NiceGUI-based web interface for robot control
-- **Node System**: Async node-based architecture using traitlets for communication
+### Control Flow
+```
+app.py (NiceGUI web UI)
+    └── Robot (orchestrator)
+            ├── Controller (servo control, gait execution)
+            │       └── QuadrupedKinematics (IK/FK math)
+            └── IMU (orientation sensing)
+```
 
-### Key Modules
+### Gait System
+Two gait implementations exist (see `GAITS.md` for details):
+1. **Current system** (`src/motion/gaits/gait.py`): Manual numpy array construction with `build_steps()`
+2. **Simplified system** (`src/motion/gaits/simplified_gait.py`): Declarative pattern-based approach with `define_leg_movements()`
 
-- `src/motion/kinematics.py` - Core inverse/forward kinematics (QuadrupedKinematics class)
-- `src/motion/gaits/` - Gait implementations extending abstract Gait class
-- `src/nodes/robot.py` - Main Robot class orchestrating all components
-- `src/nodes/controller.py` - Servo control and motion execution
-- `src/nodes/imu.py` - IMU sensor integration
-- `settings.py` - Configuration loading from settings.yml
-- `app.py` - NiceGUI web interface
-
-### Configuration
-
-Robot configuration is managed through:
-- `settings.yml` - Main configuration (dimensions, servo mappings, gait parameters)
-- `settings.py` - Configuration loader with Settings class
+Gaits are iterators - call `next(gait)` to get the next position array.
 
 ## Development Commands
 
-### Testing
 ```bash
 # Run all tests
 python3 -m pytest test/
 
 # Run specific test file
-python3 -m pytest test/test_kinematics.py
+python3 -m pytest test/test_kinematics.py -v
 
-# Run with verbose output
-python3 -m pytest -v test/
-```
-
-### Running the Robot
-
-```bash
-# Web interface (main control application)
+# Web interface (main application)
 python3 app.py
 
-# Direct gait execution
-python3 go.py
+# Test individual gaits (includes visualization)
+python3 src/motion/gaits/trot.py
 
-# IMU calibration
-python3 calibrate_imu.py
-```
-
-### Development Tools
-
-```bash
-# Deploy changes (commits and pushes)
+# Deploy changes
 ./deploy.sh
-
-# Monitor system (if available)
-./monitor.sh
 ```
 
-## Important Implementation Details
+## Configuration
 
-### Kinematics System
-- Uses standard DH parameters for 3-DOF legs (coxa, femur, tibia)
-- X-coordinate inversion for world coordinate positioning
-- Joint angles: [coxa_angle, femur_angle, tibia_angle]
-- **CRITICAL**: Do not modify the math in kinematics.py without extensive testing
+`settings.yml` contains all robot configuration. Key sections:
+- `servos`: 4x3 array of servo IDs per leg/joint
+- `dimensions`: leg segment lengths (coxa, femur, tibia in mm)
+- `positioning`: angle_flip, angle_zero calibration, offsets
+- `gait_params`: stride, clearance, step_size per gait type
 
-### Gait System
-- All gaits inherit from abstract `Gait` class
-- Step generation uses sinusoidal functions for smooth motion
-- Gait parameters configurable in settings.yml
-- Two-phase alternating leg movement (legs 0,2 vs legs 1,3)
+Environment variables: `VEGA_ENVIRONMENT`, `VEGA_CONFIG_FILE`, `SERIAL_PORT`
 
-### Settings Management
-- Configuration loaded from settings.yml into Settings singleton
-- Position offsets adjustable at runtime for leveling
-- Environment variables can override config values (VEGA_ENVIRONMENT, etc.)
+## Critical Implementation Details
 
-### Hardware Integration
-- Servo communication via serial port (/dev/serial0)
-- IMU calibration offsets stored in settings.yml
-- Camera calibration matrix for vision processing
-- Mock implementations available for development without hardware
+### Kinematics (`src/motion/kinematics.py`)
+- **CRITICAL**: Do not modify IK/FK math without extensive testing
+- X-coordinate is inverted for world coordinate positioning
+- Joint order: [coxa, femur, tibia]
+- Vectorized IK available: `inverse_kinematics_vectorized()` for 4x speedup
+
+### Leg Layout
+```
+L0---L1    (0=front-left, 1=front-right)
+   *
+L3---L2    (2=back-right, 3=back-left)
+```
+Diagonal pairs move together in trot: (0,3) and (1,2)
+
+### Hardware
+- Serial port: `/dev/ttyTHS1` (Jetson) or `/dev/serial0` (Pi)
+- IMU: BNO055 via I2C with calibration offsets in settings
+- Mock implementations in `src/mock/` for development without hardware
 
 ## Code Conventions
 
-- Use numpy arrays for positions/angles (shape: (4,3) for 4 legs, 3 joints)
-- Positions in millimeters, angles in radians (unless specified as degrees)
-- Leg numbering: 0=front-left, 1=front-right, 2=back-right, 3=back-left
-- Error handling with logging via self.logger
-- Async/await for non-blocking operations in nodes
+- Positions: numpy arrays shape (4,3), units in millimeters
+- Angles: radians internally, degrees in settings.yml
+- All nodes use `self.logger` for logging
+- Runtime offset adjustments via `settings.position_offsets` (not cached)
