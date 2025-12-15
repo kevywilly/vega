@@ -9,8 +9,6 @@ from src.model.types import MoveTypes
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU, IMUData
 from src.nodes.node import Node
-from src.signals import Topics
-from src.vision.image import ImageUtils
 
 
 def _array_to_dict(ar, label: str = "Leg"):
@@ -47,27 +45,7 @@ class Robot(Node):
         self.controller = controller
         self.imu = imu
 
-        Topics.raw_image.connect(self.handle_raw_image)
-
         self.loaded()
-
-    def handle_raw_image(self, sender, payload):
-        self.image = ImageUtils.bgr8_to_jpeg(payload)
-
-    def get_image(self):
-        return self.image
-
-    def get_stream(self):
-        while True:
-            try:
-                image = self.get_image()
-                if image is not None:
-                    yield (
-                        b"--frame\r\n"
-                        b"Content-Type: image/jpeg\r\n\r\n" + image + b"\r\n"
-                    )
-            except Exception:
-                pass
 
     def stop(self):
         self.controller.stop()
