@@ -1,22 +1,13 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from settings import settings
 from src.motion.gaits.gait_params import GaitParams
 
 
-"""
-(self, p0: np.ndarray = settings.position_ready, stride=60, clearance=60, step_size=15,
-                 turn_direction=1,
-                 is_reversed=False, hip_sway=8):
-"""
-
-    
 class Gait(ABC):
     """
     Abstract base class for defining different gaits for a quadruped robot.
@@ -151,26 +142,3 @@ class Gait(ABC):
         else:
             self.index = index
         return self.positions
-
-    def plotit(self):
-        print("leg 1")
-        plt.plot(self.steps1, label=["s1_x", "s1_y", "s1_z"])
-        plt.legend()
-        plt.show()
-
-        print("leg 2")
-        plt.plot(self.steps2, label=["s2_x", "s2_y", "s2_z"])
-        plt.legend()
-        plt.show()
-
-        if self.steps3 is not None:
-            print("leg 3")
-            plt.plot(self.steps3, label=["s3_x", "s3_y", "s3_z"])
-            plt.legend()
-            plt.show()
-
-        if self.steps4 is not None:
-            print("leg 4")
-            plt.plot(self.steps4, label=["s4_x", "s4_y", "s4_z"])
-            plt.legend()
-            plt.show()

@@ -111,39 +111,9 @@ class Controller(Node):
         Topics.raw_imu.connect(self.on_raw_imu)
 
     def on_raw_imu(self, sender, payload: IMUData):
-        # Use IMU data to adjust position offsets for leveling
-        imu_data = payload
-        self.imu_data = imu_data
-        self.logger.debug(f"IMU Euler: {payload.euler}")
-
-        return 
-        roll = np.radians(imu_data.euler[0])
-        pitch = np.radians(imu_data.euler[1])
-
-        roll_matrix = np.array([
-            [1, 0, 0],
-            [0, np.cos(roll), -np.sin(roll)],
-            [0, np.sin(roll), np.cos(roll)]
-        ])
-
-        pitch_matrix = np.array([
-            [np.cos(pitch), 0, np.sin(pitch)],
-            [0, 1, 0],
-            [-np.sin(pitch), 0, np.cos(pitch)]
-        ])
-
-        self.roll_offsets = np.zeros((4, 3))
-        self.pitch_offsets = np.zeros((4, 3))
-
-        for i in range(4):
-            leg_pos = self.pose.positions[i]
-            rolled_pos = np.dot(roll_matrix, leg_pos)
-            pitched_pos = np.dot(pitch_matrix, leg_pos)
-
-            self.roll_offsets[i] = rolled_pos - leg_pos
-            self.pitch_offsets[i] = pitched_pos - leg_pos
-
-        settings.position_offsets = self.roll_offsets + self.pitch_offsets  
+        """Handle IMU data updates."""
+        self.imu_data = payload
+        self.logger.debug(f"IMU Euler: {payload.euler}")  
 
     def set_targets(self, positions: np.ndarray):
         self.pose.target_positions = positions
@@ -200,66 +170,60 @@ class Controller(Node):
         self.logger.info("Done trotting in place...")
         time.sleep(0.1)
 
-    def process_move(self, move_type: MoveTypes):
-        if move_type == MoveTypes.FORWARD:
-            self.gait = SimpleTrotWithLateral(
+    def _get_gait_factory(self, move_type: MoveTypes):
+        """Return a gait instance for the given move type."""
+        factories = {
+            MoveTypes.FORWARD: lambda: SimpleTrotWithLateral(
                 p0=settings.position_trot + settings.position_forward_offsets,
                 params=settings.trot_params
-            )
-        elif move_type == MoveTypes.FORWARD_LT:
-            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1))
-        elif move_type == MoveTypes.FORWARD_RT:
-            self.gait = Turn(params=replace(settings.turn_params, turn_direction=-1))
-        elif move_type == MoveTypes.BACKWARD:
-            self.gait = SimpleTrotWithLateral(
+            ),
+            MoveTypes.BACKWARD: lambda: SimpleTrotWithLateral(
                 p0=settings.position_trot + settings.position_backward_offsets,
                 params=settings.trot_reverse_params,
-            )
-        elif move_type == MoveTypes.BACKWARD_LT:
-            self.gait = Turn(
-                params=replace(settings.turn_params, turn_direction=-1, is_reversed=True)
-            )
-        elif move_type == MoveTypes.BACKWARD_RT:
-            self.gait = Turn(params=replace(settings.turn_params, turn_direction=1, is_reversed=True))
-        elif move_type == MoveTypes.LEFT:
-            self.gait = SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True))
-        elif move_type == MoveTypes.RIGHT:
-            self.gait = SimpleSidestep(params=settings.sidestep_params)
-        elif move_type == MoveTypes.TROT_IN_PLACE:
-            self.gait = Trot(params=settings.trot_in_place_params)
-        elif move_type == MoveTypes.STOP:
+            ),
+            MoveTypes.FORWARD_LT: lambda: Turn(params=replace(settings.turn_params, turn_direction=1)),
+            MoveTypes.FORWARD_RT: lambda: Turn(params=replace(settings.turn_params, turn_direction=-1)),
+            MoveTypes.BACKWARD_LT: lambda: Turn(params=replace(settings.turn_params, turn_direction=-1, is_reversed=True)),
+            MoveTypes.BACKWARD_RT: lambda: Turn(params=replace(settings.turn_params, turn_direction=1, is_reversed=True)),
+            MoveTypes.LEFT: lambda: SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True)),
+            MoveTypes.RIGHT: lambda: SimpleSidestep(params=settings.sidestep_params),
+            MoveTypes.TROT_IN_PLACE: lambda: Trot(params=settings.trot_in_place_params),
+        }
+        factory = factories.get(move_type)
+        return factory() if factory else None
+
+    def process_move(self, move_type: MoveTypes):
+        """Process a movement command and set up the appropriate gait."""
+        if move_type == MoveTypes.STOP:
             return self.stop()
 
-        self.move_type = move_type
-
-        if self.move_type != MoveTypes.STOP:
+        gait = self._get_gait_factory(move_type)
+        if gait:
+            self.gait = gait
+            self.move_type = move_type
             self.moving = True
 
         return {"moving": self.moving, "move_type": self.move_type}
     
     def set_pose(self, pose: str):
-        v = pose.lower()
+        """Set the robot to a named pose."""
+        pose_map = {
+            "ready": settings.position_ready,
+            "sit": settings.position_sit,
+            "crouch": settings.position_crouch,
+            "walking": settings.position_walk,
+            "trotting": settings.position_trot,
+        }
 
-        p = None
-
-        if v == "ready":
-            p = settings.position_ready
-        elif v == "sit":
-            p = settings.position_sit
-        elif v == "crouch":
-            p = settings.position_crouch
-        elif v == "walking":
-            p = settings.position_walk
-        elif v == "trotting":
-            p = settings.position_trot
-        else:
+        position = pose_map.get(pose.lower())
+        if position is None:
             return {"status": "error, unknown pose"}
 
         if self.moving:
             self.stop()
             time.sleep(0.5)
 
-        self.set_targets(p)
+        self.set_targets(position)
         self.move_to_targets()
 
     @staticmethod

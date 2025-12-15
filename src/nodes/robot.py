@@ -6,8 +6,6 @@ import numpy as np
 from settings import settings
 from src.interfaces.pose import Pose
 from src.model.types import MoveTypes
-
-# from src.nodes.camera import Camera
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU, IMUData
 from src.nodes.node import Node
@@ -129,39 +127,30 @@ class Robot(Node):
         pass
 
     def level(self) -> bool:
+        """Perform automatic leveling calibration using IMU feedback."""
         self.logger.info("**** Performing Level Calibration ***")
         try:
             self.trot_in_place()
             self.ready(100)
             time.sleep(0.2)
 
-            
-            pitch_array = np.array([-1, -1, 1, 1])
+            # Offset adjustment arrays for roll correction
             roll_array = np.array([1, -1, -1, 1])
-            zeros = np.zeros(4)
-            
-            
-            
-            for i in range(10):
-                heading, roll, pitch = self.imu.sensor.euler
 
-                print(f"roll: {roll:.2f}, pitch: {pitch:.2f}")
+            for _ in range(10):
+                _, roll, pitch = self.imu.sensor.euler
+                self.logger.debug(f"roll: {roll:.2f}, pitch: {pitch:.2f}")
 
-
-                # Fix one axis at a time, prioritize the larger error
-                #if abs(pitch) > abs(roll) and abs(pitch) > settings.pitch_threshold:
-                #    offset = pitch_array if pitch >= 0 else -pitch_array
                 if roll is not None and abs(roll) > settings.roll_threshold:
                     offset = roll_array if roll >= 0 else -roll_array
                     settings.position_offsets[:, 2] += offset.astype(int)
-                    print(f"offset => {settings.position_offsets[:, 2].tolist()}")
+                    self.logger.debug(f"offset => {settings.position_offsets[:, 2].tolist()}")
                 else:
-                    print(f"leveling succeeded! roll: {roll:.2f}, pitch: {pitch:.2f}")
+                    self.logger.info(f"leveling succeeded! roll: {roll:.2f}, pitch: {pitch:.2f}")
                     return True
-                
+
                 self.ready(10)
                 time.sleep(0.3)
-
 
         except Exception as ex:
             self.ready(200)

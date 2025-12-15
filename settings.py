@@ -10,25 +10,10 @@ from src.model.tilt import Tilt
 from src.motion.gaits.gait_params import GaitParams
 from src.vision.sensors import CameraSensorMode
 
-"""
-    L1 - L0
-     |   |   
-    L2 - L3
-"""
-
-# BNO sensor axes remap values.  These are the parameters to the BNO.set_axis_remap
-# function.  Don't change these without consulting section 3.4 of the datasheet.
-# The default axes mapping below assumes the Adafruit BNO055 breakout is flat on
-# a table with the row of SDA, SCL, GND, VIN, etc. pins facing away from you.
-# BNO_AXIS_REMAP = { 'x': BNO055.AXIS_REMAP_X,
-#                    'y': BNO055.AXIS_REMAP_Y,
-#                    'z': BNO055.AXIS_REMAP_Z,
-#                    'x_sign': BNO055.AXIS_REMAP_POSITIVE,
-#                    'y_sign': BNO055.AXIS_REMAP_POSITIVE,
-#                    'z_sign': BNO055.AXIS_REMAP_POSITIVE
-#                    }
-
-# BNO_AXIS_REMAP = (0,1,2,0,0,0)
+# Leg layout:
+#   L0---L1  (front)
+#      *
+#   L3---L2  (back)
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE_PATH = os.environ.get(
@@ -84,15 +69,9 @@ class Settings:
         _imu = self.config.get("imu", {})
         _imu_offsets = _imu.get("offsets", {})
 
-        #self.bno_axis_remap: Optional[Tuple] = _imu.get(
-        #    "bno_axis_remap", None
-        #)  
-        # (0, 1, 2, 1, 0, 1)
-        #self.bno_axis_remap = (0, 1, 2, 0, 1, 0)
-        self.bno_axis_remap = (0, 1, 2, 1, 1, 0) #(rotate 180 around Z)
-
-        
-        # (x_axis, y_axis, z_axis, x_sign, y_sign, z_sign)
+        # BNO055 axis remap: (x_axis, y_axis, z_axis, x_sign, y_sign, z_sign)
+        # Current config rotates 180 degrees around Z axis
+        self.bno_axis_remap = (0, 1, 2, 1, 1, 0)
         self.imu_magnetic_offsets: Optional[Tuple[int, int, int]] = _imu_offsets.get(
             "magnetic"
         )

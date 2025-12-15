@@ -238,8 +238,6 @@ async def main_page():
 
     async def update_displays():
         while running:
-            #await mock_get_stats()
-
             # Update main display values
             heading_display.set_text(f"{imu.imu_data.heading:.2f}")
             roll_display.set_text(f"{imu.imu_data.roll:.2f}")
@@ -269,14 +267,10 @@ async def main():
     await asyncio.gather(
         robot.imu.spin(frequency=settings.imu_frequency),
         robot.controller.spin(frequency=settings.robot_frequency),
-        #agent.run_async(),
-        #robot.spin(frequency=settings.robot_frequency),
     )
 
 def start_video():
-    #VideoStream().run()
     yolo_agent.run()
-    return
 
 
 def start_app():
