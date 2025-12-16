@@ -65,6 +65,16 @@ gait_params:
     clearance: 40
     step_size: 25
     hip_sway: 0
+  prowl:
+    stride: 40
+    clearance: 35
+    step_size: 15
+    hip_sway: 8
+  prowl_reverse:
+    stride: -30
+    clearance: 30
+    step_size: 15
+    hip_sway: 8
 sensors:
   camera:
     matrix: [

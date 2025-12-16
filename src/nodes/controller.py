@@ -14,6 +14,7 @@ from src.motion.gaits.turn import Turn
 from src.motion.gaits.simplified_gait import (
     SimpleTrotWithLateral, SimpleSidestep
 )
+from src.motion.gaits.prowl import Prowl
 from src.motion.kinematics import QuadrupedKinematics
 from src.motion.servo_controller import ServoController
 from src.nodes.imu import IMUData
@@ -188,6 +189,14 @@ class Controller(Node):
             MoveTypes.LEFT: lambda: SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True)),
             MoveTypes.RIGHT: lambda: SimpleSidestep(params=settings.sidestep_params),
             MoveTypes.TROT_IN_PLACE: lambda: Trot(params=settings.trot_in_place_params),
+            MoveTypes.PROWL: lambda: Prowl(
+                p0=settings.position_prowl,
+                params=settings.prowl_params
+            ),
+            MoveTypes.PROWL_BACKWARD: lambda: Prowl(
+                p0=settings.position_prowl,
+                params=settings.prowl_reverse_params
+            ),
         }
         factory = factories.get(move_type)
         return factory() if factory else None

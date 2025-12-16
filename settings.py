@@ -141,6 +141,12 @@ class Settings:
         self.trot_in_place_params: GaitParams = GaitParams(**_gait_params.get(
             "trot_in_place", {"stride": 0, "clearance": 40, "step_size": 25}
         ))
+        self.prowl_params: GaitParams = GaitParams(**_gait_params.get(
+            "prowl", {"stride": 40, "clearance": 35, "step_size": 15, "hip_sway": 8}
+        ))
+        self.prowl_reverse_params: GaitParams = GaitParams(**_gait_params.get(
+            "prowl_reverse", {"stride": -30, "clearance": 30, "step_size": 15, "hip_sway": 8}
+        ))
 
         nodes: dict = self.config.get("nodes", {})
         self.robot_frequency = nodes.get("robot", {}).get("frequency", 50)
@@ -188,6 +194,13 @@ class Settings:
     def position_walk(self) -> np.ndarray:
         ar = self.position_ready.copy()
         ar[:, 2] *= [0.8, 0.8, 1, 1]
+        return ar.astype(int)
+
+    @cached_property
+    def position_prowl(self) -> np.ndarray:
+        """Crouched stance for prowl gait - lower and more stable."""
+        ar = self.position_ready.copy()
+        ar[:, 2] *= 0.75  # Lower overall height for crouched prowl
         return ar.astype(int)
 
     def adjust_offsets(self, x: int = 0, y: int = 0, z: int = 0, group=None):

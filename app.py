@@ -133,49 +133,54 @@ async def main_page():
                 ui.button(icon="turn_slight_left", on_click=lambda: handle_move(MoveTypes.FORWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button(icon="arrow_upward", on_click=lambda: handle_move(MoveTypes.FORWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button(icon="turn_slight_right", on_click=lambda: handle_move(MoveTypes.FORWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                
+
                 # Middle row
                 ui.button(icon="arrow_back", on_click=lambda: handle_move(MoveTypes.LEFT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button(icon="stop", on_click=lambda: handle_move(MoveTypes.STOP)).classes('bg-red-600 text-white text-sm px-2 py-1')
                 ui.button(icon="arrow_forward", on_click=lambda: handle_move(MoveTypes.RIGHT)).classes('bg-blue-600 text-white text-sm px-2 py-1')
-                
+
                 # Bottom row
                 ui.button(icon="turn_slight_left", on_click=lambda: handle_move(MoveTypes.BACKWARD_LT)).classes('bg-blue-600 text-white text-sm px-2 py-1').style('transform: scaleY(-1);')
                 ui.button(icon="arrow_downward", on_click=lambda: handle_move(MoveTypes.BACKWARD)).classes('bg-blue-600 text-white text-sm px-2 py-1')
                 ui.button(icon="turn_slight_right", on_click=lambda: handle_move(MoveTypes.BACKWARD_RT)).classes('bg-blue-600 text-white text-sm px-2 py-1').style('transform: scaleY(-1);')
+
+            # Prowl controls - stealthy movement
+            with ui.row().classes('gap-2 w-full max-w-[400px] justify-center'):
+                ui.button('Prowl', icon="arrow_upward", on_click=lambda: handle_move(MoveTypes.PROWL)).classes('bg-purple-700 text-white text-sm px-4 py-1')
+                ui.button('Prowl', icon="arrow_downward", on_click=lambda: handle_move(MoveTypes.PROWL_BACKWARD)).classes('bg-purple-700 text-white text-sm px-4 py-1')
             
-            # Sliders
-            with ui.row().classes('gap-4 my-4 w-full justify-center'):
-                with ui.row().classes('items-center'):
-                    ui.label('Height (%)').classes('text-xs mb-2')
-                    height_value_label = ui.label('65').classes('mb-1')
-                    def height_slider_change(e):
-                        height_value_label.set_text(str(e.value))
-                    height_slider = ui.slider(
-                        min=0, max=100, value=65, step=1, on_change=height_slider_change
-                    ).classes('w-24')
-                
-                with ui.row().classes('items-center'):
-                    ui.label('Tilt (roll)').classes('text-xs mb-2')
-                    yaw_value_label = ui.label('0').classes('mb-1')
-                    def yaw_slider_change(e):
-                        yaw_value_label.set_text(str(e.value))
-                        settings.tilt.yaw = int(e.value)
-                        robot.set_pose("ready")
-                    yaw_slider = ui.slider(
-                        min=-50, max=50, value=0, step=5, on_change=yaw_slider_change
-                    ).classes('w-24')
-                
-                with ui.row().classes('items-center'):
-                    ui.label('Tilt (pitch)').classes('text-xs mb-2')
-                    pitch_value_label = ui.label('0').classes('mb-1')
-                    def pitch_slider_change(e):
-                        pitch_value_label.set_text(str(e.value))
-                        settings.tilt.pitch = int(e.value)
-                        robot.set_pose("ready")
-                    pitch_slider = ui.slider(
-                        min=-50, max=50, value=0, step=5, on_change=pitch_slider_change
-                    ).classes('w-24')
+            # Sliders (commented out)
+            # with ui.row().classes('gap-4 my-4 w-full justify-center'):
+            #     with ui.row().classes('items-center'):
+            #         ui.label('Height (%)').classes('text-xs mb-2')
+            #         height_value_label = ui.label('65').classes('mb-1')
+            #         def height_slider_change(e):
+            #             height_value_label.set_text(str(e.value))
+            #         height_slider = ui.slider(
+            #             min=0, max=100, value=65, step=1, on_change=height_slider_change
+            #         ).classes('w-24')
+            #
+            #     with ui.row().classes('items-center'):
+            #         ui.label('Tilt (roll)').classes('text-xs mb-2')
+            #         yaw_value_label = ui.label('0').classes('mb-1')
+            #         def yaw_slider_change(e):
+            #             yaw_value_label.set_text(str(e.value))
+            #             settings.tilt.yaw = int(e.value)
+            #             robot.set_pose("ready")
+            #         yaw_slider = ui.slider(
+            #             min=-50, max=50, value=0, step=5, on_change=yaw_slider_change
+            #         ).classes('w-24')
+            #
+            #     with ui.row().classes('items-center'):
+            #         ui.label('Tilt (pitch)').classes('text-xs mb-2')
+            #         pitch_value_label = ui.label('0').classes('mb-1')
+            #         def pitch_slider_change(e):
+            #             pitch_value_label.set_text(str(e.value))
+            #             settings.tilt.pitch = int(e.value)
+            #             robot.set_pose("ready")
+            #         pitch_slider = ui.slider(
+            #             min=-50, max=50, value=0, step=5, on_change=pitch_slider_change
+            #         ).classes('w-24')
                     
             # Display values
             with ui.row().classes('justify-between w-full text-sm'):
