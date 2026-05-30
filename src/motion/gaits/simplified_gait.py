@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from typing import Callable, Dict
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.gait_params import GaitParams
+from src.motion.gaits.gait_spec import GaitSpec, LegSpec, compile_spec
+from src.motion.gaits import trajectories as T
 
 
 class LegPhase(Enum):
@@ -29,71 +31,53 @@ class LegPhase(Enum):
 
 
 class MovementPattern:
-    """Pre-built movement patterns that can be combined"""
+    """Pre-built movement patterns (scaled wrappers over the trajectories.py shape
+    library -- the single source of trajectory math). Retained for the legacy
+    declarative path and tests; new gaits should reference trajectories directly
+    via GaitSpec."""
 
     @staticmethod
     def lift(steps: int, height: float = 1.0) -> np.ndarray:
-        """Standard lift pattern - up and down"""
-        return np.sin(np.linspace(0, np.pi, steps)) * height
+        return T.lift(steps) * height
 
     @staticmethod
     def stride_forward(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Forward stride pattern - matches Gait.stride_forward()"""
-        return np.sin(np.radians(np.linspace(0, 90, steps))) * distance
+        return T.stride_forward(steps) * distance
 
     @staticmethod
     def stride_home(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Home stride pattern - matches Gait.stride_home()"""
-        return np.cos(np.radians(np.linspace(0, 90, steps))) * distance
+        return T.stride_home(steps) * distance
 
     @staticmethod
     def stride_back(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Backward return pattern - matches Gait.stride_back()"""
-        return np.cos(np.radians(np.linspace(90, 180, steps))) * distance
+        return T.stride_back(steps) * distance
 
     @staticmethod
     def downupdown(steps: int, clearance: float = 1.0) -> np.ndarray:
-        """Downupdown pattern - matches Gait.downupdown()"""
-        ns1 = int(steps/5)
-        ns2 = steps-ns1
-        return np.hstack([
-            np.sin(np.radians(np.linspace(-10, 0, ns1))),
-            np.sin(np.radians(np.linspace(45, 180, ns2)))
-        ]) * clearance
+        return T.downupdown(steps) * clearance
 
     @staticmethod
     def step_cycle(steps: int, distance: float = 1.0) -> np.ndarray:
-        """Complete forward-back cycle using original gait patterns"""
-        steps_per_part = steps // 4
-        return np.concatenate([
-            MovementPattern.stride_forward(steps_per_part, distance),
-            MovementPattern.stride_home(steps_per_part, distance),
-            MovementPattern.stride_back(steps_per_part * 2, distance)
-        ])
+        return T.step_cycle(steps) * distance
 
     @staticmethod
     def lateral_sway(steps: int, amplitude: float = 1.0) -> np.ndarray:
-        """Lateral swaying motion"""
-        return np.sin(np.linspace(0, 2*np.pi, steps)) * amplitude
+        return T.lateral_sway(steps) * amplitude
 
     @staticmethod
     def trot_lateral_pattern(num_steps: int, amplitude: float = 1.0) -> np.ndarray:
-        """Trot-specific hip sway pattern for natural movement"""
-        return np.hstack([
-            np.sin(np.linspace(0, np.pi, num_steps)) * 0.7,
-            np.sin(np.linspace(np.pi, 2*np.pi, num_steps)) * 0.3,
-            np.sin(np.linspace(0, np.pi, num_steps * 2)) * 0.2,
-        ]) * amplitude
+        return T.trot_lateral_pattern(num_steps) * amplitude
 
     @staticmethod
     def zero(steps: int) -> np.ndarray:
-        """No movement"""
-        return np.zeros(steps)
+        return T.zero(steps)
 
 
 @dataclass
 class LegMovement:
-    """Define movement for a single axis of a leg"""
+    """DEPRECATED -- superseded by gait_spec.LegSpec. Define movement for a single
+    axis of a leg. Retained only for the legacy SimplifiedGait path; new gaits use
+    GaitSpec/LegSpec."""
     x: Callable[[int], np.ndarray] | None = None  # Forward/back movement function
     y: Callable[[int], np.ndarray] | None = None  # Lateral movement function
     z: Callable[[int], np.ndarray] | None = None  # Up/down movement function
@@ -102,8 +86,14 @@ class LegMovement:
 
 class SimplifiedGait(Gait):
     """
-    Simplified gait that uses the proven Gait base class but allows
-    declarative movement pattern definitions.
+    DEPRECATED -- superseded by GaitSpec + compile_spec (gait_spec.py).
+
+    This declarative base only ever read legs 0 and 1 and welded the rest into
+    diagonal pairs, so a 4-independent-leg gait was inexpressible through it (the
+    ceiling the refactor removed). It has no production subclasses anymore --
+    trot/sidestep/turn build via GaitSpec, and prowl is the last imperative
+    holdout pending its rebuild (plan item 4). Kept for reference / graveyard
+    experiments only; do not author new gaits here.
     """
 
     def build_steps(self):
@@ -149,60 +139,67 @@ class SimpleTrotWithLateral(Gait):
     """
     Trot with lateral movement - PRODUCTION GAIT
 
-    Used for FORWARD and BACKWARD movement in the controller.
-    Properly inherits from the base Gait class.
+    Used for FORWARD and BACKWARD movement in the controller. Expressed
+    declaratively via GaitSpec: diagonal pairs {0,2} and {1,3} run a half-cycle
+    apart, with the lateral (y) hip-sway negated on the second pair -- the
+    deliberate compensation for the unmirrored coxa, kept in the gait layer.
+    See docs/plans/2026-05-30-001-refactor-gait-core-phasing-plan.md.
     """
 
     def build_steps(self):
-        # Forward/backward movement
-        x = np.hstack([
-            self.stride_forward(),
-            self.stride_home(),
-            self.stride_back(self.num_steps * 2),
-        ]) * int(self.stride)
+        self.steps = compile_spec(self._spec())
 
-        # Lateral movement using trot pattern
-        y = MovementPattern.trot_lateral_pattern(self.num_steps, self.hip_sway)
+    def _spec(self) -> GaitSpec:
+        num = self.num_steps
+        stride, clearance, hip_sway = int(self.stride), self.clearance, self.hip_sway
 
-        # Vertical movement
-        z = np.hstack([
-            self.downupdown(),
-            np.repeat(self.zeros, 3),
-        ]) * (-self.clearance)
+        def x(_n):
+            return np.hstack([
+                T.stride_forward(num), T.stride_home(num), T.stride_back(num * 2),
+            ]) * stride
 
-        # Build step sequences
-        self.steps1 = Gait.reshape_steps(np.array([x, y, z]), self.num_steps * 4)
+        def y(_n):
+            return T.trot_lateral_pattern(num) * hip_sway
 
-        # Phase shift for diagonal gait pattern, opposite lateral movement
-        steps2_x = np.roll(x, self.num_steps * 2)
-        steps2_y = -np.roll(y, self.num_steps * 2)
-        steps2_z = np.roll(z, self.num_steps * 2)
+        def z(_n):
+            return np.hstack([T.downupdown(num), T.zero(num * 3)]) * (-clearance)
 
-        self.steps2 = Gait.reshape_steps(np.array([steps2_x, steps2_y, steps2_z]), self.num_steps * 4)
+        a = LegSpec(x=x, y=y, z=z, phase_offset=0.0)                 # legs 0, 2
+        b = LegSpec(x=x, y=lambda n: -y(n), z=z, phase_offset=0.5)   # legs 1, 3: -y
+        return GaitSpec(period=num * 4, duty_factor=0.75, legs=[a, b, a, b])
 
 
-class SimpleSidestep(SimplifiedGait):
+class SimpleSidestep(Gait):
     """
-    Sidestep gait - PRODUCTION GAIT
+    Sidestep gait - PRODUCTION GAIT (LEFT / RIGHT).
 
-    Used for LEFT and RIGHT movement in the controller.
+    Diagonal pairs {0,2} and {1,3} step laterally a quarter-cycle apart, built via
+    GaitSpec. LEFT vs RIGHT is the sign of the stride (is_reversed), exactly as
+    before.
+
+    NOTE: this preserves the *realized* legacy behavior. The old define_leg_movements
+    dict nominally placed legs 2,3 at their own phases, but the previous
+    SimplifiedGait.build_steps only read legs 0,1 and welded the rest -- so legs 2,3
+    actually mirrored 0,1 (the diagonal weld). That is what runs today and what is
+    reproduced here. Honoring the dict's 4 distinct phases would be a behavior change,
+    deferred -- not part of this behavior-preserving refactor.
     """
 
-    def define_leg_movements(self) -> Dict[int, LegMovement]:
-        half_cycle = self.num_steps
+    def build_steps(self):
+        self.steps = compile_spec(self._spec())
 
-        def lateral_step(steps):
-            return MovementPattern.step_cycle(steps, self.stride)
+    def _spec(self) -> GaitSpec:
+        num = self.num_steps
+        stride, clearance = self.stride, self.clearance
 
-        def lift_pattern(steps):
-            pattern = np.zeros(steps)
-            lift_steps = self.num_steps
-            pattern[:lift_steps] = MovementPattern.lift(lift_steps, -self.clearance)
+        def y(_n):
+            return T.step_cycle(num * 4) * stride
+
+        def z(_n):
+            pattern = np.zeros(num * 4)
+            pattern[:num] = T.lift(num) * (-clearance)
             return pattern
 
-        return {
-            0: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=0),
-            1: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=half_cycle),
-            2: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=half_cycle),
-            3: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=0),
-        }
+        a = LegSpec(y=y, z=z, phase_offset=0.0)    # legs 0, 2
+        b = LegSpec(y=y, z=z, phase_offset=0.25)   # legs 1, 3 (quarter-cycle)
+        return GaitSpec(period=num * 4, duty_factor=0.75, legs=[a, b, a, b])

@@ -73,7 +73,8 @@ L0---L1    (0=front-left, 1=front-right)
    *
 L3---L2    (2=back-right, 3=back-left)
 ```
-Diagonal pairs move together in trot: (0,3) and (1,2)
+Diagonal pairs move together in trot: (0,2) and (1,3) — i.e. front-left+back-right
+and front-right+back-left. This is what `Gait.get_offsets` welds (`[s1,s2,s1,s2]`).
 
 ### Hardware
 - Serial port: `/dev/ttyTHS1` (Jetson) or `/dev/serial0` (Pi)
