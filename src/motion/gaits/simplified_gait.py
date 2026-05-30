@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from typing import Callable, Dict
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.gait_params import GaitParams
+from src.motion.gaits.gait_spec import GaitSpec, LegSpec, compile_spec
+from src.motion.gaits import trajectories as T
 
 
 class LegPhase(Enum):
@@ -149,36 +151,34 @@ class SimpleTrotWithLateral(Gait):
     """
     Trot with lateral movement - PRODUCTION GAIT
 
-    Used for FORWARD and BACKWARD movement in the controller.
-    Properly inherits from the base Gait class.
+    Used for FORWARD and BACKWARD movement in the controller. Expressed
+    declaratively via GaitSpec: diagonal pairs {0,2} and {1,3} run a half-cycle
+    apart, with the lateral (y) hip-sway negated on the second pair -- the
+    deliberate compensation for the unmirrored coxa, kept in the gait layer.
+    See docs/plans/2026-05-30-001-refactor-gait-core-phasing-plan.md.
     """
 
     def build_steps(self):
-        # Forward/backward movement
-        x = np.hstack([
-            self.stride_forward(),
-            self.stride_home(),
-            self.stride_back(self.num_steps * 2),
-        ]) * int(self.stride)
+        self.steps = compile_spec(self._spec())
 
-        # Lateral movement using trot pattern
-        y = MovementPattern.trot_lateral_pattern(self.num_steps, self.hip_sway)
+    def _spec(self) -> GaitSpec:
+        num = self.num_steps
+        stride, clearance, hip_sway = int(self.stride), self.clearance, self.hip_sway
 
-        # Vertical movement
-        z = np.hstack([
-            self.downupdown(),
-            np.repeat(self.zeros, 3),
-        ]) * (-self.clearance)
+        def x(_n):
+            return np.hstack([
+                T.stride_forward(num), T.stride_home(num), T.stride_back(num * 2),
+            ]) * stride
 
-        # Build step sequences
-        self.steps1 = Gait.reshape_steps(np.array([x, y, z]), self.num_steps * 4)
+        def y(_n):
+            return T.trot_lateral_pattern(num) * hip_sway
 
-        # Phase shift for diagonal gait pattern, opposite lateral movement
-        steps2_x = np.roll(x, self.num_steps * 2)
-        steps2_y = -np.roll(y, self.num_steps * 2)
-        steps2_z = np.roll(z, self.num_steps * 2)
+        def z(_n):
+            return np.hstack([T.downupdown(num), T.zero(num * 3)]) * (-clearance)
 
-        self.steps2 = Gait.reshape_steps(np.array([steps2_x, steps2_y, steps2_z]), self.num_steps * 4)
+        a = LegSpec(x=x, y=y, z=z, phase_offset=0.0)                 # legs 0, 2
+        b = LegSpec(x=x, y=lambda n: -y(n), z=z, phase_offset=0.5)   # legs 1, 3: -y
+        return GaitSpec(period=num * 4, duty_factor=0.75, legs=[a, b, a, b])
 
 
 class SimpleSidestep(SimplifiedGait):
