@@ -13,3 +13,9 @@ class MoveTypes(str, Enum):
     TROT_IN_PLACE = "TROT_IN_PLACE"
     PROWL = "PROWL"
     PROWL_BACKWARD = "PROWL_BACKWARD"
+    # Experimental turn gaits (A/B comparison vs legacy Turn) -- see
+    # docs/ideation/2026-05-30-better-turn-gait.md
+    SIMPLE_TURN_LT = "SIMPLE_TURN_LT"
+    SIMPLE_TURN_RT = "SIMPLE_TURN_RT"
+    ARC_TURN_LT = "ARC_TURN_LT"
+    ARC_TURN_RT = "ARC_TURN_RT"
