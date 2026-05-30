@@ -21,6 +21,8 @@ from typing import Callable, List, Optional
 
 import numpy as np
 
+from src.motion.gaits.phase import phase_to_ticks
+
 # A trajectory function maps a step count N to an (N,) array of offsets in mm for
 # one axis over the full cycle. Mirrors the `Callable[[int], np.ndarray]` shape of
 # the existing LegMovement fields in simplified_gait.py.
@@ -72,3 +74,30 @@ class GaitSpec:
             raise ValueError(
                 f"GaitSpec needs exactly 4 leg specs, got {len(self.legs)}"
             )
+
+
+def compile_spec(spec: GaitSpec) -> np.ndarray:
+    """Compile a GaitSpec into the canonical (4, N, 3) integer step array consumed
+    by the gait core (`Gait.steps`).
+
+    For each leg:
+      1. Build the base (N, 3) trajectory from its x/y/z callables; a None axis is
+         zeros.
+      2. Cast to int (matching `Gait.reshape_steps`, which truncates toward zero).
+      3. Roll along the time axis by `phase_to_ticks(phase_offset, N)` -- the same
+         integer roll the legacy gaits perform by hand, which is what makes
+         spec-based migration byte-identical.
+
+    The deliberate lateral y-sign flip is expressed by a leg declaring the negation
+    of its pair's y callable (KTD4). Because int truncation is symmetric and roll is
+    linear, `(-y)` compiled equals the legacy `-roll(y)` exactly.
+    """
+    n = spec.period
+    compiled = []
+    for leg in spec.legs:
+        x = leg.x(n) if leg.x is not None else np.zeros(n)
+        y = leg.y(n) if leg.y is not None else np.zeros(n)
+        z = leg.z(n) if leg.z is not None else np.zeros(n)
+        base = np.column_stack([x, y, z]).astype(int)
+        compiled.append(np.roll(base, phase_to_ticks(leg.phase_offset, n), axis=0))
+    return np.stack(compiled)
