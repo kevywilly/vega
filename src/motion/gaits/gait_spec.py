@@ -17,7 +17,7 @@ See docs/plans/2026-05-30-001-refactor-gait-core-phasing-plan.md.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 
@@ -27,6 +27,10 @@ from src.motion.gaits.phase import phase_to_ticks
 # one axis over the full cycle. Mirrors the `Callable[[int], np.ndarray]` shape of
 # the existing LegMovement fields in simplified_gait.py.
 TrajectoryFn = Callable[[int], np.ndarray]
+
+# A body trajectory is a shared (N, 3) offset added to EVERY leg -- the body/COM
+# translation for static gaits. Either an (N, 3) array or a callable N -> (N, 3).
+BodyTrajectory = Union[Callable[[int], np.ndarray], np.ndarray]
 
 
 @dataclass
@@ -62,6 +66,7 @@ class GaitSpec:
     period: int
     duty_factor: float
     legs: List[LegSpec]
+    body: Optional["BodyTrajectory"] = None
 
     def __post_init__(self):
         if self.period <= 0:
@@ -91,6 +96,11 @@ def compile_spec(spec: GaitSpec) -> np.ndarray:
     The deliberate lateral y-sign flip is expressed by a leg declaring the negation
     of its pair's y callable (KTD4). Because int truncation is symmetric and roll is
     linear, `(-y)` compiled equals the legacy `-roll(y)` exactly.
+
+    If `spec.body` is set, that shared (N, 3) offset (the body/COM translation) is
+    added to every leg AFTER the per-leg phase roll -- it is the same for all legs at
+    a given tick, not phase-shifted. `body=None` is a no-op, so gaits without a body
+    shift compile byte-identically.
     """
     n = spec.period
     compiled = []
@@ -100,4 +110,13 @@ def compile_spec(spec: GaitSpec) -> np.ndarray:
         z = leg.z(n) if leg.z is not None else np.zeros(n)
         base = np.column_stack([x, y, z]).astype(int)
         compiled.append(np.roll(base, phase_to_ticks(leg.phase_offset, n), axis=0))
-    return np.stack(compiled)
+    steps = np.stack(compiled)
+
+    if spec.body is not None:
+        body = spec.body(n) if callable(spec.body) else np.asarray(spec.body)
+        body = np.asarray(body, dtype=float)
+        if body.shape != (n, 3):
+            raise ValueError(f"body must be ({n}, 3), got {body.shape}")
+        steps = steps + body.astype(int)[None, :, :]
+
+    return steps

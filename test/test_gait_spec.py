@@ -140,3 +140,61 @@ def test_trajectories_scale_composes_like_originals():
     assert np.array_equal(T.lift(_N) * 7.0, MP.lift(_N, 7.0))
     assert np.array_equal(T.downupdown(_N) * 3.0, MP.downupdown(_N, 3.0))
     assert np.array_equal(T.trot_lateral_pattern(_N) * 4.0, MP.trot_lateral_pattern(_N, 4.0))
+
+
+# --- shared body offset (plan U2) -------------------------------------------
+
+def _simple_spec(n=24, body=None):
+    patt = lambda steps: np.linspace(0, 50, steps)
+    return GaitSpec(
+        period=n, duty_factor=0.75,
+        legs=[LegSpec(phase_offset=p, x=patt) for p in (0.0, 0.5, 0.0, 0.5)],
+        body=body,
+    )
+
+
+def test_body_none_is_byte_identical():
+    """body=None compiles exactly as if the field did not exist."""
+    no_body = compile_spec(_simple_spec(body=None))
+    # rebuild the same spec without ever setting body
+    bare = GaitSpec(period=24, duty_factor=0.75,
+                    legs=[LegSpec(phase_offset=p, x=lambda s: np.linspace(0, 50, s))
+                          for p in (0.0, 0.5, 0.0, 0.5)])
+    assert np.array_equal(no_body, compile_spec(bare))
+
+
+def test_body_constant_offset_shifts_all_legs_equally():
+    n = 24
+    shift = np.tile([10.0, -5.0, 3.0], (n, 1))  # constant per tick
+    base = compile_spec(_simple_spec(n))
+    shifted = compile_spec(_simple_spec(n, body=shift))
+    assert np.array_equal(shifted, base + np.array([10, -5, 3])[None, None, :])
+    # per-leg differences are preserved (only a common translation was added)
+    assert np.array_equal(shifted[1] - shifted[0], base[1] - base[0])
+
+
+def test_body_time_varying_added_per_tick():
+    n = 24
+    body = np.zeros((n, 3))
+    body[:, 1] = np.arange(n)  # ramp on y
+    base = compile_spec(_simple_spec(n))
+    out = compile_spec(_simple_spec(n, body=body))
+    for leg in range(4):
+        assert np.array_equal(out[leg], base[leg] + body.astype(int))
+
+
+def test_body_callable_is_evaluated():
+    n = 24
+    out_arr = compile_spec(_simple_spec(n, body=np.tile([7.0, 0, 0], (n, 1))))
+    out_fn = compile_spec(_simple_spec(n, body=lambda s: np.tile([7.0, 0, 0], (s, 1))))
+    assert np.array_equal(out_arr, out_fn)
+
+
+def test_body_wrong_shape_raises():
+    with pytest.raises(ValueError):
+        compile_spec(_simple_spec(24, body=np.zeros((10, 3))))
+
+
+def test_body_output_is_integer():
+    out = compile_spec(_simple_spec(24, body=np.tile([2.9, 0, 0], (24, 1))))
+    assert np.issubdtype(out.dtype, np.integer)
