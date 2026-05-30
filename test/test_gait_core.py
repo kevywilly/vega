@@ -45,8 +45,9 @@ GAITS = {
 GAIT_NAMES = list(GAITS)
 
 # Gaits that weld diagonal pairs (legs 2,3 mirror 0,1) vs. true 4-independent legs.
-WELDED = ["trot_fwd", "trot_in_place", "sidestep_R", "sidestep_L", "prowl"]
-INDEPENDENT = ["turn_L", "turn_R"]
+# prowl is now the static wave gait -- four independently-phased legs, not welded.
+WELDED = ["trot_fwd", "trot_in_place", "sidestep_R", "sidestep_L"]
+INDEPENDENT = ["turn_L", "turn_R", "prowl"]
 
 
 @pytest.mark.parametrize("name", GAIT_NAMES)

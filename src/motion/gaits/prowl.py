@@ -1,182 +1,112 @@
 """
-Prowl Gait - Stealthy, deliberate movement for the quadruped robot.
+Prowl - static wave gait.
 
-This gait mimics the stalking movement of big cats:
-- Lower to the ground (crouched posture)
-- Longer ground contact phases (more stable)
-- Diagonal leg coordination (proven stable from trot)
-- Subtle hip sway for natural weight shifting
+A statically stable, one-leg-at-a-time crawl. The cycle has 8 equal segments
+alternating a body-shift with a single-leg swing:
 
-Based on the proven trot pattern with modifications for slower,
-more deliberate movement.
+    shift · swing L0 · shift · swing L2 · shift · swing L1 · shift · swing L3
+
+so each leg is airborne for only 1/8 of the cycle (duty factor 7/8 -- McGhee's
+"intermittent" wave gait, well above the 3/4 static-stability minimum) and three
+feet are always planted. The lift sequence is LF -> RH -> RF -> LH (legs
+0 -> 2 -> 1 -> 3), the canonical lateral-sequence walk.
+
+Before each leg lifts, a shared body offset moves the COM toward the incenter of
+the standing three-foot triangle (the point that maximizes the minimum distance to
+the triangle's edges), so the COM projection stays comfortably inside the support
+polygon throughout -- verified offline by the static-margin gate in
+test/test_prowl_wave.py. Backward prowl is the same wave with negated stride.
+
+This replaces the old diagonal-trot-coupled prowl that lifted two opposite feet at
+once. See docs/plans/2026-05-30-002-feat-prowl-wave-gait-plan.md.
 """
 
 import numpy as np
 
-from settings import settings
 from src.motion.gaits.gait import Gait
-from src.motion.gaits.gait_params import GaitParams
+from src.motion.gaits.gait_spec import GaitSpec, LegSpec, compile_spec
+from src.motion.gaits import trajectories as T
+from src.motion import stability
+
+# Of the 8 segments, the index in which each leg swings. Lift sequence
+# LF -> RH -> RF -> LH = legs 0 -> 2 -> 1 -> 3 at the four odd (swing) segments.
+_SWING_SEGMENT = {0: 1, 2: 3, 1: 5, 3: 7}
+
+# How far toward the support-triangle incenter to shift the COM (1.0 = all the way,
+# maximum margin; lower trades margin for less body motion). Tuned to 0.4: SSM stays
+# ~22 mm (comfortably positive) while planted-foot per-step motion stays ~12 mm,
+# under the 15 mm skid target. Gated by the static-margin + skid tests.
+_SHIFT_FRACTION = 0.4
 
 
 class Prowl(Gait):
-    """
-    Stealthy prowling gait with diagonal leg coordination.
+    """Static wave gait with a per-lift body shift. Drop-in for the controller's
+    PROWL / PROWL_BACKWARD (same Gait(p0, params) constructor)."""
 
-    Key differences from Trot:
-    - Lower clearance (crouched movement)
-    - Modified lift pattern with longer ground contact
-    - Subtle hip sway for weight shifting
-    - Smoother stride transitions
-    """
+    SEGMENTS = 8
 
     def build_steps(self):
-        # Forward/backward movement - same smooth pattern as trot
-        # but the physical effect is slower due to longer ground contact
-        x = np.hstack([
-            self.stride_forward(),
-            self.stride_home(),
-            self.stride_back(self.num_steps * 2),
-        ]) * int(self.stride)
+        self.steps = compile_spec(self._spec())
 
-        # Hip sway for natural weight shifting during prowl
-        # Amplitude varies through the cycle:
-        # - Higher during swing phase (weight shift to standing legs)
-        # - Lower during stance phase
-        y = self._prowl_hip_sway()
+    def _spec(self) -> GaitSpec:
+        num = self.num_steps
+        stride, clearance = self.stride, self.clearance
+        segs = self.SEGMENTS
 
-        # Vertical movement - prowl-specific pattern
-        # Key: longer ground contact, quick but low lift
-        z = self._prowl_lift_pattern() * (-self.clearance)
+        def base_x(_n):
+            # place the foot forward while airborne (segment 0), then drag it back
+            # smoothly over the seven stance segments -> net forward travel, no skid.
+            swing = np.linspace(-stride / 2, stride / 2, num)
+            drag = np.linspace(stride / 2, -stride / 2, num * (segs - 1))
+            return np.hstack([swing, drag])
 
-        # Build step sequences for diagonal pair 1 (legs 0, 2)
-        self.steps1 = Gait.reshape_steps(np.array([x, y, z]), self.num_steps * 4)
+        def base_z(_n):
+            # clean symmetric lift in the swing segment only (no downupdown press).
+            return np.hstack([T.lift(num) * (-clearance), T.zero(num * (segs - 1))])
 
-        # Diagonal pair 2 (legs 1, 3) - 50% phase offset, opposite hip sway
-        steps2_x = np.roll(x, self.num_steps * 2)
-        steps2_y = -np.roll(y, self.num_steps * 2)  # Opposite for balance
-        steps2_z = np.roll(z, self.num_steps * 2)
-
-        self.steps2 = Gait.reshape_steps(
-            np.array([steps2_x, steps2_y, steps2_z]),
-            self.num_steps * 4
+        legs = [
+            LegSpec(x=base_x, z=base_z, phase_offset=_SWING_SEGMENT[i] / segs)
+            for i in range(4)
+        ]
+        return GaitSpec(
+            period=num * segs,
+            duty_factor=(segs - 1) / segs,   # 7/8
+            legs=legs,
+            body=self._body_shift(num),
         )
 
-    def _prowl_lift_pattern(self) -> np.ndarray:
-        """
-        Create a prowl-specific lift pattern.
+    def _body_shift(self, num) -> np.ndarray:
+        """Shared (N, 3) body offset. For each upcoming swing, target the incenter of
+        the three standing feet; transition between targets during the shift segments
+        and hold during the swing segments. Smooth (small per-step) so planted feet
+        do not skid."""
+        feet = stability.body_frame_feet(np.asarray(self.p0, dtype=float))  # nominal = corners
+        # body offset that lands the COM near the standing triangle's incenter:
+        # adding -incenter to every foot puts the COM (body origin) at the incenter.
+        target = {}
+        for leg in range(4):
+            others = [j for j in range(4) if j != leg]
+            inc = stability.incenter(feet[others[0]], feet[others[1]], feet[others[2]])
+            target[leg] = -inc * _SHIFT_FRACTION
 
-        Unlike trot which lifts during the first num_steps then stays down,
-        prowl has a quicker, lower lift to keep the robot crouched and stable.
-
-        Pattern breakdown (total = num_steps * 4):
-        - Phase 1 (num_steps): Quick lift and return - the "step"
-        - Phase 2-4 (num_steps * 3): On ground - long stance phase
-
-        This gives ~75% ground contact vs trot's ~75%, but the lift
-        is shaped differently for smoother, more deliberate movement.
-        """
-        # Quick lift phase - use a compressed sine for snappier foot placement
-        lift_steps = self.num_steps
-
-        # Modified lift: start from ground, quick up, controlled down
-        # Using a sine curve from 0 to pi for smooth up-and-down
-        lift = np.sin(np.linspace(0, np.pi, lift_steps))
-
-        # Scale the lift to be lower than normal (prowl is crouched)
-        # The clearance parameter is already reduced, but we can further
-        # modify the curve shape for a "sneakier" feel
-        lift = lift * 0.85  # Slightly lower peak
-
-        # Long ground contact phase
-        ground = np.zeros(self.num_steps * 3)
-
-        return np.hstack([lift, ground])
-
-    def _prowl_hip_sway(self) -> np.ndarray:
-        """
-        Create hip sway pattern for weight shifting during prowl.
-
-        The sway helps shift weight to the standing diagonal pair
-        when the other pair is lifted. This improves stability
-        during the slow, deliberate movement.
-
-        Pattern:
-        - During swing (lift): shift weight away from lifting legs
-        - During stance: subtle sway for natural movement
-        """
-        # During lift phase: stronger sway to shift weight
-        swing_sway = np.sin(np.linspace(0, np.pi, self.num_steps)) * 0.6
-
-        # During first part of stance: return to center
-        return_sway = np.sin(np.linspace(np.pi, 2*np.pi, self.num_steps)) * 0.3
-
-        # During rest of stance: minimal movement for stability
-        stance_sway = np.sin(np.linspace(0, np.pi, self.num_steps * 2)) * 0.15
-
-        return np.hstack([swing_sway, return_sway, stance_sway]) * self.hip_sway
-
-
-class ProwlParams(GaitParams):
-    """
-    Recommended parameters for prowl gait.
-
-    Compared to default trot params:
-    - Lower clearance (crouched)
-    - Smaller stride (deliberate steps)
-    - Same step_size (controls speed via controller frequency)
-    """
-    stride: int = 40  # Shorter steps for deliberate movement
-    clearance: int = 35  # Lower to ground (vs 65 for trot)
-    step_size: int = 15  # Same timing resolution
-    hip_sway: int = 8  # Slightly more sway for weight shifting
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    # Test visualization
-    params = ProwlParams()
-    gait = Prowl(
-        p0=settings.position_ready,
-        params=params
-    )
-
-    print(f"Prowl gait created:")
-    print(f"  - Stride: {params.stride}mm")
-    print(f"  - Clearance: {params.clearance}mm")
-    print(f"  - Steps per cycle: {gait.num_steps * 4}")
-    print(f"  - Hip sway: {params.hip_sway}mm")
-
-    # Plot step sequences
-    print("\nDiagonal pair 1 (legs 0, 2):")
-    plt.figure(figsize=(12, 4))
-    plt.plot(gait.steps1, label=["x (forward)", "y (lateral)", "z (lift)"])
-    plt.legend()
-    plt.title("Prowl - Diagonal Pair 1 (legs 0, 2)")
-    plt.xlabel("Step index")
-    plt.ylabel("Offset (mm)")
-    plt.grid(True, alpha=0.3)
-    plt.show()
-
-    print("\nDiagonal pair 2 (legs 1, 3):")
-    plt.figure(figsize=(12, 4))
-    plt.plot(gait.steps2, label=["x (forward)", "y (lateral)", "z (lift)"])
-    plt.legend()
-    plt.title("Prowl - Diagonal Pair 2 (legs 1, 3)")
-    plt.xlabel("Step index")
-    plt.ylabel("Offset (mm)")
-    plt.grid(True, alpha=0.3)
-    plt.show()
-
-    # Show phase relationship
-    print("\nPhase comparison (z-axis lift):")
-    plt.figure(figsize=(12, 4))
-    plt.plot(gait.steps1[:, 2], label="Pair 1 (legs 0,2)", linewidth=2)
-    plt.plot(gait.steps2[:, 2], label="Pair 2 (legs 1,3)", linewidth=2)
-    plt.legend()
-    plt.title("Prowl - Lift Phase Relationship (50% offset)")
-    plt.xlabel("Step index")
-    plt.ylabel("Z offset (mm)")
-    plt.grid(True, alpha=0.3)
-    plt.axhline(y=0, color='k', linestyle='-', linewidth=0.5)
-    plt.show()
+        order = [0, 2, 1, 3]                       # lift sequence
+        b = [target[i] for i in order]             # target held during each swing
+        # per-segment (start, end) XY: shift segments interpolate, swing segments hold
+        seg_pts = [
+            (b[3], b[0]),  # 0 shift -> L0
+            (b[0], b[0]),  # 1 swing L0
+            (b[0], b[1]),  # 2 shift -> L2
+            (b[1], b[1]),  # 3 swing L2
+            (b[1], b[2]),  # 4 shift -> L1
+            (b[2], b[2]),  # 5 swing L1
+            (b[2], b[3]),  # 6 shift -> L3
+            (b[3], b[3]),  # 7 swing L3
+        ]
+        xs, ys = [], []
+        for start, end in seg_pts:
+            xs.append(np.linspace(start[0], end[0], num))
+            ys.append(np.linspace(start[1], end[1], num))
+        x = np.hstack(xs)
+        y = np.hstack(ys)
+        z = np.zeros(num * self.SEGMENTS)
+        return np.column_stack([x, y, z])
