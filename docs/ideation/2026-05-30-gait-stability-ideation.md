@@ -41,9 +41,15 @@ the rest), which reorders the goals into a forced sequence.
 
 ## Assessment per goal
 
-### Goal 2 — Kinematics sufficiency (the linchpin) — VERIFIED
+### Goal 2 — Kinematics sufficiency (the linchpin) — ✅ DONE (implemented & verified 2026-05-30)
 **Verdict: the coxa convention is correct & intentional; there is exactly ONE real IK defect
 (z vs √(y²+z²)), plus an incomplete FK. Trot-safe to fix.**
+
+> **Implemented & verified.** IK now uses `radial = hypot(y,z)` in both solve paths; FK is a true
+> 3-DOF inverse (`[-x, rad·sin(q3), rad·cos(q3)]`); scalar `cos_q2` clamped; `apply_body_tilt` float
+> cast; `validate_position` uses full 3D distance. `test/test_kinematics.py` rewritten (round-trip
+> at y≠0, vectorized==scalar, trot-unchanged-at-y=0, large-lateral accuracy, reachability):
+> **22/22 pass** via `python3 -m pytest`. ROBOT.md reconciled. Working tree uncommitted as of this note.
 
 **Coxa topology (reverse-engineered + numerically verified).** Coxa axis points forward (+x)
 and rotates the leg in the y–z plane; femur/tibia 2-link swings in the (x, radial) plane.
@@ -124,12 +130,28 @@ rotation (`foot=[-xin, rad·sin(q3), rad·cos(q3)]`, kinematics.py:123). Guard w
 tests at y≠0. Verified: round-trips to 0.000mm and is identical to current code at y=0 (trot-safe).
 Do NOT touch the coxa convention (uniform unmirrored — intentional) or add coxa_length to the reach.
 **Basis:** `direct:` numeric probe (true-FK error 5–30mm for y≠0, 0 at y=0). **Complexity:** Low–Medium.
-**Confidence:** 92%. **Status:** Unexplored.
+**Confidence:** 92%. **Status:** ✅ DONE (2026-05-30) — see Goal 2 note above.
 
 ### 2. Offline test harness over existing gaits — Axis 5 (Goal 4)
 **Description:** Install pytest; add continuity / reachability / round-trip invariants over the
 *current* gaits to lock in behavior before refactoring; seed docs/solutions. **Basis:** `direct:`
-2 trivial tests, no pytest. **Complexity:** Medium. **Confidence:** 85%. **Status:** Unexplored.
+2 trivial tests, no pytest. **Complexity:** Medium. **Confidence:** 85%.
+**Status:** ✅ DONE (2026-05-30). pytest installed (PyPI index override; the box's `PIP_INDEX_URL`
+points at a dead Jetson mirror). `test/test_gaits.py` added: invariants over every production gait
+config — frame contract, full-cycle reachability, periodicity (returns to start after `max_index`
+steps), bounded per-step delta — plus a characterization test pinning per-gait load-bearing skid,
+and one `xfail` encoding the prowl-rebuild target. **35 passed, 1 xfailed.**
+
+> **Finding surfaced by the harness (feeds Goals 1 & 3).** The "planted-foot horizontal reset" is
+> **systemic, not prowl-specific**: a load-bearing foot jumps ~one stride in a single step in trot
+> (55mm), sidestep (30mm), and turn (70mm) too — it's an artifact of the `build_steps` construction
+> (the `downupdown` lift starts with a slight downward press, so the foot resets horizontally while
+> still loaded). `trot_in_place` is the only translating-free gait with 0 skid. Trot/sidestep/turn
+> tolerate it (fast, statically/diagonally supported); prowl (slow, two feet down) does not — which
+> is exactly why prowl reads as unstable. The general fix is foot-trajectory shaping (the deferred
+> Bezier swing survivor, Axis 2) + the phase model, applied in the Goal 1 refactor; prowl also needs
+> the static wave rebuild (Goal 4). All current values are pinned in `SKID_CEILING_MM` as
+> regression guards.
 
 ### 3. Refactor the gait core — Axis 3/5 (Goal 1)
 **Description:** Enable 4-independent-leg movement (use/extend steps3/steps4) + an explicit
