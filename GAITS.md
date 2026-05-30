@@ -63,8 +63,8 @@ Gaits are integrated into the robot control system via `MoveTypes` in `app.py`:
 
 As of the gait-core refactor (`docs/plans/2026-05-30-001-refactor-gait-core-phasing-plan.md`),
 gaits are defined **declaratively** with a `GaitSpec` and compiled into the canonical
-per-leg step array. This supersedes the two older systems below (kept for reference;
-only `prowl` still uses the legacy imperative path, pending its rebuild).
+per-leg step array. This supersedes the two older systems below (kept for reference).
+Every production gait now builds this way.
 
 ### The model
 
@@ -115,11 +115,36 @@ Left/right "outward" is the **sign of y in the gait**, not in the kinematics (th
 coxa is deliberately unmirrored — see ROBOT.md). A diagonal pair's second leg
 declares `-y` of the first; never push this into the kinematics layer.
 
+### Prowl — static wave gait
+
+Prowl (`src/motion/gaits/prowl.py`) is a **statically stable wave gait** — the one
+gait that uses the body-shift and stability machinery. Its cycle has 8 segments
+alternating a body-shift with a single-leg swing:
+
+```
+shift · swing L0 · shift · swing L2 · shift · swing L1 · shift · swing L3
+```
+
+- One leg airborne at a time (duty factor 7/8); three feet always planted.
+- Lift sequence **LF → RH → RF → LH** (legs `0 → 2 → 1 → 3`), the canonical
+  lateral-sequence walk.
+- A shared **body offset** (`GaitSpec.body`, see below) shifts the COM toward the
+  incenter of the standing 3-foot triangle before each lift, so the COM projection
+  stays inside the support polygon. Verified offline by the static-margin gate in
+  `test/test_prowl_wave.py` using `src/motion/stability.py`.
+- Backward prowl is the same wave with negated stride.
+
+The **`body` field** on `GaitSpec` is an optional shared `(N,3)` offset added to
+every leg by `compile_spec` (the COM translation; `None` for gaits without a body
+shift). It is how a body-sway is expressed separately from the per-leg swing.
+
+See `docs/plans/2026-05-30-002-feat-prowl-wave-gait-plan.md` and the body-frame /
+support-polygon convention in `ROBOT.md` and `docs/solutions/`.
+
 ### Status
 
-- **trot / trot-in-place, sidestep, turn** — on GaitSpec.
-- **prowl** — still imperative (`prowl.py`), the last legacy holdout; rebuilt as a
-  static wave gait in a follow-up (plan item 4).
+- **trot / trot-in-place, sidestep, turn** — diagonal/segmented GaitSpec gaits.
+- **prowl** — static wave gait with body-shift + support-polygon stability (above).
 - The two sections below are **legacy**, retained for reference only.
 
 ---

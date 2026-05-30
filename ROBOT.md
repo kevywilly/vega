@@ -221,11 +221,40 @@ system and the declarative `simplified_gait.py` pattern system.
 ### Gait files (`src/motion/gaits/`)
 
 - `trot.py` — diagonal-pair trot (forward / reverse / in-place)
-- `prowl.py` — low, slow stalking gait with ~75% stance (ground-contact) phase
+- `prowl.py` — **static wave gait**: one leg lifts at a time (duty factor 7/8) in
+  sequence LF→RH→RF→LH, each lift preceded by a body shift into the standing
+  triangle. Replaced the old diagonal-coupled prowl.
 - `turn.py` — in-place / arc turning, per-leg phased
-- `simplified_gait.py` — `SimpleTrotWithLateral`, `SimpleSidestep`, reusable
-  `MovementPattern` primitives (lift, stride, sway, …)
+- `gait_spec.py` / `phase.py` / `trajectories.py` — the declarative gait core
+  (`GaitSpec` + `compile_spec`, phase model, trajectory shapes); see `GAITS.md`
+- `stability.py` — support polygon + static stability margin (used by prowl)
+- `simplified_gait.py` — legacy declarative path (deprecated; reference only)
 - `gait.py` / `gait_params.py` — base class and `GaitParams` dataclass
+
+### Body frame & support polygon (`src/motion/stability.py`)
+
+> **Foot positions are per-leg, not body-frame.** Each gait `(4,3)` position and
+> each `position_*` pose is measured from **that leg's own femur pivot** — they are
+> *not* in a common body frame. `position_prowl` is `[0,0,113]` for all four legs,
+> yet those feet are physically ~width/length apart. Two feet at the same per-leg
+> coordinate are NOT at the same place.
+
+A support polygon / center-of-mass check therefore must first **compose the feet
+into one body frame** by adding each leg's hip-mount corner offset. The corners
+(femur pivots), from the leg map `0=FL,1=FR,2=BR,3=BL`:
+
+| Leg | Corner (X fwd, Y right) |
+|---|---|
+| 0 FL | `(+length/2, −width/2)` |
+| 1 FR | `(+length/2, +width/2)` |
+| 2 BR | `(−length/2, +width/2)` |
+| 3 BL | `(−length/2, −width/2)` |
+
+`stability.body_frame_feet(positions)` does this; `support_margin(...)` then forms
+the convex hull of the stance feet and returns the signed distance from the COM
+projection (body geometric center, optional static offset) to the nearest edge —
+positive = COM inside = statically stable. COM projection suffices for the slow
+(quasi-static) prowl; ZMP is not needed.
 
 ---
 

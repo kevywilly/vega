@@ -1,6 +1,6 @@
 ---
 title: "feat: Prowl static wave gait + support-polygon stability"
-status: active
+status: completed
 date: 2026-05-30
 type: feat
 origin: docs/ideation/2026-05-30-gait-stability-ideation.md
