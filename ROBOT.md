@@ -122,12 +122,23 @@ servo_value = (angle - angle_zero) * angle_flip * _SERVO_SCALE + 500
 | Field | Value | Meaning |
 |---|---|---|
 | `angle_zero` | `[[0,90,33], …]` (deg) | Neutral joint angles; subtracted before scaling |
-| `angle_flip` | `[[-1,1,1], [-1,-1,-1], [-1,-1,-1], [-1,1,1]]` | Per-joint direction (±1) to correct mirrored mounting |
+| `angle_flip` | `[[-1,1,1], [-1,-1,-1], [-1,-1,-1], [-1,1,1]]` | Per-joint servo direction (±1) — see note below |
 | `offsets` | `[[10,0,0],[10,0,0],[0,-10,16],[0,10,16]]` | Per-leg XYZ position trim (mm), applied during IK |
 | `ready_height_pct` | `0.70` | Standing height as a fraction of max reach |
 
-The `angle_flip` pattern reflects the physical mirroring of legs: left and right
-sides rotate in opposite directions for the same commanded motion.
+**`angle_flip` is not uniformly a left/right mirror.** Read by column (`[coxa, femur, tibia]`):
+
+- **Femur & tibia** = `[+1, −1, −1, +1]` — mirrored left↔right, as expected for legs that are
+  physical mirror images.
+- **Coxa** = `[−1, −1, −1, −1]` — **uniform**. All four coxa servos are mounted in the *same*
+  physical orientation (they are **not** mirrored). Consequently the kinematics applies an
+  identical coxa rotation (`q3 = atan2(y, z)`) to every leg, and the left/right "which way is
+  outward" distinction is carried by the **sign of the `Y` offset** in the gaits
+  (`steps2_y = -steps1_y`) and in the stance `offsets` above — *not* by the coxa math.
+
+> ⚠️ Do **not** "fix" the uniform coxa flip or add per-leg coxa sign flips — it correctly matches
+> the hardware. Prior edits that mistook this for a bug and thrashed coxa signs degraded the
+> (working) trot.
 
 ---
 
@@ -143,7 +154,10 @@ without extensive round-trip testing** (see `CLAUDE.md`).
 - **IK** (`inverse_kinematics_vectorized`): law-of-cosines for the knee (`q2`),
   two-link geometry for the shoulder (`q1`), `atan2(y, z)` for the coxa (`q3`).
   Processes all 4 legs at once — **~4× faster** than the per-leg loop.
-- **FK** (`forward_kinematics`): reconstructs `[x, y, z]` from joint angles.
+- **FK** (`forward_kinematics`): returns `[-x, y, z]` — a **true 3-DOF inverse of IK**.
+  It reconstructs the femur/tibia plane (`rad = f·sin(q1)+t·sin(q1+q2)`, `xin = f·cos(q1)+t·cos(q1+q2)`)
+  and then rotates the radial component back through the coxa angle: `y = rad·sin(q3)`,
+  `z = rad·cos(q3)`. Round-trips to ~0 mm for any lateral offset (`y ≠ 0`).
 - **Body tilt** (`apply_body_tilt`): applies pitch/yaw by offsetting each leg's Z:
   - positive **yaw** = nose up, scaled by `length/2 · sin(yaw)`
   - positive **pitch** = roll clockwise, scaled by `width/2 · sin(pitch)`
@@ -151,6 +165,31 @@ without extensive round-trip testing** (see `CLAUDE.md`).
 
 Positions throughout the system are numpy arrays of shape `(4, 3)` in
 **millimeters**; angles are **radians** internally, **degrees** in `settings.yml`.
+Note `Z` is **positive** at stance (≈ 151 mm at `ready`); larger `Z` = more extended leg.
+
+### Coxa topology & radial-reach convention
+
+The leg model is: **coxa axis points forward (+X) and rotates the leg in the Y–Z plane**; the
+femur/tibia 2-link then swings in the `(X, radial)` plane, where `radial = √(y²+z²)`. This is why
+`q3 = atan2(y, z)` is the correct coxa angle and why `coxa_length` is **not** used in the IK reach
+— foot coordinates are measured from the femur pivot, so the coxa link is body-frame metadata only
+(verified by IK→FK round-trip = 0 mm without it).
+
+Two earlier defects in this math were diagnosed and **fixed** (2026-05-30); recorded here so they
+are not reintroduced:
+
+1. **IK now reaches the in-plane radial `√(y²+z²)`, not `z`** (in the `cos_q2` numerator and the
+   `q1` `atan2`). The pre-fix `z`-only reach was exact at `y=0` but under-reached with lateral
+   offset (≈ 5 mm at `y=40`, ≈ 30 mm at `y=90`), degrading sidestep, prowl, and lateral
+   body-shift gaits. Because `radial == z` at `y=0`, the fix is **trot-safe** (trot is bit-for-bit
+   unchanged).
+2. **FK is now a true 3-DOF inverse**: `foot = [-xin, rad·sin(q3), rad·cos(q3)]` with
+   `xin = f·cos(q1)+t·cos(q1+q2)`, `rad = f·sin(q1)+t·sin(q1+q2)`. The old `[-x, 0, z]` dropped the
+   coxa rotation and could not reconstruct lateral foot position.
+
+Both are guarded by IK→FK round-trip tests at `y ≠ 0` in `test/test_kinematics.py` (the suite was
+previously `y ≈ 0` only). Full analysis:
+`docs/ideation/2026-05-30-gait-stability-ideation.md`.
 
 ---
 

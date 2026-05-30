@@ -30,6 +30,7 @@ RUN pip3 install --no-cache-dir --verbose --index-url https://pypi.org/simple \
   PyYAML \
   blinker \
   pyserial \
+  pytest \
   pandas \
   numpy \
   matplotlib \
