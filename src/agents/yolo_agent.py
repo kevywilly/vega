@@ -3,7 +3,11 @@ from jetson_utils import videoSource, videoOutput, cudaFromNumpy, cudaToNumpy
 import atexit
 import asyncio
 from settings import settings
+from src.signals import Topics
 import os
+
+OBSTACLE_CONFIDENCE_THRESHOLD = 0.5
+OBSTACLE_MIN_SIZE = 0.1  # Minimum normalized size to count as obstacle
 
 #settings.update({'weights_dir': '/data/models/yolo'})
 
@@ -83,20 +87,36 @@ class YoloAgent:
         self.handle_results(results)
 
     def handle_results(self, results):
+        # Aggregate obstacles by region for navigation
+        obstacles = {
+            'upper_left': 0, 'upper_center': 0, 'upper_right': 0,
+            'lower_left': 0, 'lower_center': 0, 'lower_right': 0,
+        }
+
         for r in results:
             for box in r.boxes:
                 # Class and confidence
                 cls = int(box.cls[0])
                 conf = float(box.conf[0])
                 name = model.names[cls]
-                
+
+                # Skip low confidence detections
+                if conf < OBSTACLE_CONFIDENCE_THRESHOLD:
+                    continue
+
                 # Bounding box (pixel coordinates)
                 x, y, w, h = box.xywh[0].tolist()
-                
-                # Normalized positions
+
+                # Normalized positions and size
                 x_norm = box.xywhn[0][0].item()
                 y_norm = box.xywhn[0][1].item()
-                
+                w_norm = box.xywhn[0][2].item()
+                h_norm = box.xywhn[0][3].item()
+
+                # Skip tiny objects (likely distant or noise)
+                if w_norm < OBSTACLE_MIN_SIZE and h_norm < OBSTACLE_MIN_SIZE:
+                    continue
+
                 # Horizontal position (left/center/right)
                 if x_norm < 0.33:
                     h_pos = "left"
@@ -104,16 +124,18 @@ class YoloAgent:
                     h_pos = "right"
                 else:
                     h_pos = "center"
-                
-                # Vertical position (top 33% / bottom 66%)
+
+                # Vertical position (upper/lower)
                 if y_norm < 0.33:
-                    v_pos = "top"
+                    v_pos = "upper"
                 else:
-                    v_pos = "bottom"
-                
-                position = f"{h_pos}:{v_pos}"
-                
-                # print(f"{name}: conf={conf:.2f} x={x:.1f} y={y:.1f} w={w:.1f} h={h:.1f} [{position}]")
+                    v_pos = "lower"
+
+                region = f"{v_pos}_{h_pos}"
+                obstacles[region] += 1
+
+        # Broadcast obstacle data for navigation
+        Topics.obstacles.send("yolo", payload=obstacles)
     
     def run(self):
         self.running = True

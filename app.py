@@ -12,6 +12,7 @@ from src.agents.yolo_agent import YoloAgent
 from src.model.types import MoveTypes
 from src.nodes.controller import Controller
 from src.nodes.imu import IMU
+from src.nodes.navigator import Navigator
 from src.nodes.robot import Robot
 from settings import settings
 
@@ -20,6 +21,7 @@ logging.basicConfig(level=logging.INFO)
 controller = Controller()
 imu = IMU()
 yolo_agent = YoloAgent()
+navigator = Navigator(controller=controller)
 
 robot: Robot = Robot(controller=controller, imu=imu)
 
@@ -50,6 +52,15 @@ async def handle_stop():
     """Mock function for stop command"""
     ui.notify("Stopping robot", type='warning')
     robot.controller.stop()
+
+async def toggle_navigation(enabled: bool):
+    """Toggle autonomous navigation mode"""
+    if enabled:
+        navigator.start_navigation()
+        ui.notify("Navigation mode ON - Robot will avoid obstacles", type='positive')
+    else:
+        navigator.stop_navigation()
+        ui.notify("Navigation mode OFF", type='warning')
 
 async def handle_move(move_type: MoveTypes):
     """Mock function for move command"""
@@ -148,6 +159,11 @@ async def main_page():
             with ui.row().classes('gap-2 w-full max-w-[400px] justify-center'):
                 ui.button('Prowl', icon="arrow_upward", on_click=lambda: handle_move(MoveTypes.PROWL)).classes('bg-purple-700 text-white text-sm px-4 py-1')
                 ui.button('Prowl', icon="arrow_downward", on_click=lambda: handle_move(MoveTypes.PROWL_BACKWARD)).classes('bg-purple-700 text-white text-sm px-4 py-1')
+
+            # Navigation mode toggle
+            with ui.row().classes('gap-2 w-full max-w-[400px] justify-center items-center mt-4'):
+                ui.label('Auto Navigate:').classes('text-sm')
+                ui.switch(on_change=lambda e: toggle_navigation(e.value)).classes('text-green-500')
             
             # Sliders (commented out)
             # with ui.row().classes('gap-4 my-4 w-full justify-center'):
@@ -272,6 +288,7 @@ async def main():
     await asyncio.gather(
         robot.imu.spin(frequency=settings.imu_frequency),
         robot.controller.spin(frequency=settings.robot_frequency),
+        navigator.spin(frequency=10),  # Navigation decisions at 10Hz
     )
 
 def start_video():
