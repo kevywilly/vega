@@ -11,6 +11,8 @@ from src.model.types import MoveTypes
 from src.motion.gaits.gait import Gait
 from src.motion.gaits.trot import Trot
 from src.motion.gaits.turn import Turn
+from src.motion.gaits.simple_turn import SimpleTurn
+from src.motion.gaits.arc_turn import ArcTurn
 from src.motion.gaits.simplified_gait import (
     SimpleTrotWithLateral, SimpleSidestep
 )
@@ -92,6 +94,8 @@ class Controller(Node):
         self.gait: Gait | None = None
         self.move_type: MoveTypes = MoveTypes.STOP
         self.moving: bool = False
+        # Live-tunable ICR for ArcTurn (0.5 = spin in place; offset = curving arc).
+        self.arc_pivot_ratio: float = 0.5
         self._read_positions()
         self.set_targets(settings.position_ready)
         self.move_to(settings.position_ready, 400)
@@ -186,6 +190,12 @@ class Controller(Node):
             MoveTypes.FORWARD_RT: lambda: Turn(params=replace(settings.turn_params, turn_direction=-1)),
             MoveTypes.BACKWARD_LT: lambda: Turn(params=replace(settings.turn_params, turn_direction=-1, is_reversed=True)),
             MoveTypes.BACKWARD_RT: lambda: Turn(params=replace(settings.turn_params, turn_direction=1, is_reversed=True)),
+            # Experimental turns for A/B comparison vs legacy Turn (same direction
+            # convention: LT -> turn_direction=1, RT -> -1).
+            MoveTypes.SIMPLE_TURN_LT: lambda: SimpleTurn(params=replace(settings.turn_params, turn_direction=1)),
+            MoveTypes.SIMPLE_TURN_RT: lambda: SimpleTurn(params=replace(settings.turn_params, turn_direction=-1)),
+            MoveTypes.ARC_TURN_LT: lambda: ArcTurn(params=replace(settings.turn_params, turn_direction=1, pivot_ratio=self.arc_pivot_ratio)),
+            MoveTypes.ARC_TURN_RT: lambda: ArcTurn(params=replace(settings.turn_params, turn_direction=-1, pivot_ratio=self.arc_pivot_ratio)),
             MoveTypes.LEFT: lambda: SimpleSidestep(params=replace(settings.sidestep_params, is_reversed=True)),
             MoveTypes.RIGHT: lambda: SimpleSidestep(params=settings.sidestep_params),
             MoveTypes.TROT_IN_PLACE: lambda: Trot(params=settings.trot_in_place_params),
@@ -200,6 +210,14 @@ class Controller(Node):
         }
         factory = factories.get(move_type)
         return factory() if factory else None
+
+    def set_arc_pivot_ratio(self, value: float):
+        """Update ArcTurn's ICR live. If an arc turn is already running, rebuild
+        the gait in place so the slider sweeps spin <-> arc without stopping."""
+        self.arc_pivot_ratio = float(value)
+        if self.moving and self.move_type in (MoveTypes.ARC_TURN_LT, MoveTypes.ARC_TURN_RT):
+            self.gait = self._get_gait_factory(self.move_type)
+        return {"arc_pivot_ratio": self.arc_pivot_ratio}
 
     def process_move(self, move_type: MoveTypes):
         """Process a movement command and set up the appropriate gait."""

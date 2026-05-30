@@ -160,6 +160,24 @@ async def main_page():
                 ui.button('Prowl', icon="arrow_upward", on_click=lambda: handle_move(MoveTypes.PROWL)).classes('bg-purple-700 text-white text-sm px-4 py-1')
                 ui.button('Prowl', icon="arrow_downward", on_click=lambda: handle_move(MoveTypes.PROWL_BACKWARD)).classes('bg-purple-700 text-white text-sm px-4 py-1')
 
+            # Experimental turn gaits - A/B comparison vs the legacy turn buttons above.
+            with ui.row().classes('gap-2 w-full max-w-[400px] justify-center items-center mt-4'):
+                ui.label('Simple Turn:').classes('text-sm w-20')
+                ui.button(icon="rotate_left", on_click=lambda: handle_move(MoveTypes.SIMPLE_TURN_LT)).classes('bg-green-700 text-white text-sm px-2 py-1')
+                ui.button(icon="stop", on_click=lambda: handle_move(MoveTypes.STOP)).classes('bg-red-600 text-white text-sm px-2 py-1')
+                ui.button(icon="rotate_right", on_click=lambda: handle_move(MoveTypes.SIMPLE_TURN_RT)).classes('bg-green-700 text-white text-sm px-2 py-1')
+            with ui.row().classes('gap-2 w-full max-w-[400px] justify-center items-center'):
+                ui.label('Arc Turn:').classes('text-sm w-20')
+                ui.button(icon="rotate_left", on_click=lambda: handle_move(MoveTypes.ARC_TURN_LT)).classes('bg-teal-700 text-white text-sm px-2 py-1')
+                ui.button(icon="stop", on_click=lambda: handle_move(MoveTypes.STOP)).classes('bg-red-600 text-white text-sm px-2 py-1')
+                ui.button(icon="rotate_right", on_click=lambda: handle_move(MoveTypes.ARC_TURN_RT)).classes('bg-teal-700 text-white text-sm px-2 py-1')
+            # Arc Turn ICR sweep: 0.5 = spin in place, toward 0/1 = wider curving arc.
+            with ui.row().classes('gap-2 w-full max-w-[400px] justify-center items-center'):
+                ui.label('pivot').classes('text-sm w-20')
+                pivot_slider = ui.slider(min=0.0, max=1.0, step=0.05, value=0.5,
+                    on_change=lambda e: robot.controller.set_arc_pivot_ratio(e.value)).classes('flex-grow')
+                ui.label().bind_text_from(pivot_slider, 'value', lambda v: f'{v:.2f}').classes('text-sm w-10 text-right')
+
             # Navigation mode toggle
             with ui.row().classes('gap-2 w-full max-w-[400px] justify-center items-center mt-4'):
                 ui.label('Auto Navigate:').classes('text-sm')
