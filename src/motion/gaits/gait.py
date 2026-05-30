@@ -42,12 +42,18 @@ class Gait(ABC):
         self.steps2 = np.zeros(self.num_steps * 2)
         self.steps3 = None
         self.steps4 = None
+        # Canonical per-leg step array, shape (4, N, 3). build_steps() may set this
+        # directly (a 4-independent-leg / GaitSpec gait); otherwise it is assembled
+        # below from the legacy steps1..steps4 authoring attributes.
+        self.steps: np.ndarray | None = None
 
         self.build_steps()
+        if self.steps is None:
+            self.steps = self._assemble_steps()
         self.positions = self.p0
         self.index = 0
         self.phase = 0
-        self.max_index = self.steps1.shape[0]
+        self.max_index = self.steps.shape[1]
 
     def updown(self, num_steps=None, mode: UpdownMode = UpdownMode.fast):
         if mode == self.UpdownMode.fast:
@@ -81,11 +87,11 @@ class Gait(ABC):
 
     @property
     def size(self):
-        return self.steps1.size
+        return self.steps[0].size
 
     @property
     def shape(self):
-        return self.steps1.shape
+        return self.steps[0].shape
 
     @staticmethod
     def reshape_steps(step: np.ndarray, total_steps: int) -> np.ndarray:
@@ -108,12 +114,23 @@ class Gait(ABC):
         """
         pass
 
-    def get_offsets(self, index) -> np.ndarray:
+    def _assemble_steps(self) -> np.ndarray:
+        """Assemble the canonical (4, N, 3) per-leg step array from the legacy
+        steps1..steps4 authoring attributes.
 
+        Legs 2 and 3 mirror legs 0 and 1 (the diagonal weld, {0,2} / {1,3}) unless
+        steps3/steps4 were populated -- the true 4-independent-leg path used by
+        Turn. This reproduces exactly what the previous get_offsets branch emitted.
+        """
         if self.steps3 is not None and self.steps4 is not None:
-            return np.array([self.steps1[index], self.steps2[index], self.steps3[index], self.steps4[index]])
-        else:
-            return np.array([self.steps1[index], self.steps2[index], self.steps1[index], self.steps2[index]])
+            return np.stack([self.steps1, self.steps2, self.steps3, self.steps4])
+        return np.stack([self.steps1, self.steps2, self.steps1, self.steps2])
+
+    def get_offsets(self, index) -> np.ndarray:
+        """Per-leg (4, 3) offsets at the given cycle index, indexed straight from
+        the canonical step array. 4-leg independence is intrinsic to self.steps --
+        there is no steps3-is-None special-casing in the hot path."""
+        return self.steps[:, index]
 
     def get_positions(self, phase: int = 0, index: int = 0):
         return self.p0 + self.get_offsets(index)
