@@ -181,28 +181,37 @@ class SimpleTrotWithLateral(Gait):
         return GaitSpec(period=num * 4, duty_factor=0.75, legs=[a, b, a, b])
 
 
-class SimpleSidestep(SimplifiedGait):
+class SimpleSidestep(Gait):
     """
-    Sidestep gait - PRODUCTION GAIT
+    Sidestep gait - PRODUCTION GAIT (LEFT / RIGHT).
 
-    Used for LEFT and RIGHT movement in the controller.
+    Diagonal pairs {0,2} and {1,3} step laterally a quarter-cycle apart, built via
+    GaitSpec. LEFT vs RIGHT is the sign of the stride (is_reversed), exactly as
+    before.
+
+    NOTE: this preserves the *realized* legacy behavior. The old define_leg_movements
+    dict nominally placed legs 2,3 at their own phases, but the previous
+    SimplifiedGait.build_steps only read legs 0,1 and welded the rest -- so legs 2,3
+    actually mirrored 0,1 (the diagonal weld). That is what runs today and what is
+    reproduced here. Honoring the dict's 4 distinct phases would be a behavior change,
+    deferred -- not part of this behavior-preserving refactor.
     """
 
-    def define_leg_movements(self) -> Dict[int, LegMovement]:
-        half_cycle = self.num_steps
+    def build_steps(self):
+        self.steps = compile_spec(self._spec())
 
-        def lateral_step(steps):
-            return MovementPattern.step_cycle(steps, self.stride)
+    def _spec(self) -> GaitSpec:
+        num = self.num_steps
+        stride, clearance = self.stride, self.clearance
 
-        def lift_pattern(steps):
-            pattern = np.zeros(steps)
-            lift_steps = self.num_steps
-            pattern[:lift_steps] = MovementPattern.lift(lift_steps, -self.clearance)
+        def y(_n):
+            return T.step_cycle(num * 4) * stride
+
+        def z(_n):
+            pattern = np.zeros(num * 4)
+            pattern[:num] = T.lift(num) * (-clearance)
             return pattern
 
-        return {
-            0: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=0),
-            1: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=half_cycle),
-            2: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=half_cycle),
-            3: LegMovement(y=lateral_step, z=lift_pattern, phase_shift=0),
-        }
+        a = LegSpec(y=y, z=z, phase_offset=0.0)    # legs 0, 2
+        b = LegSpec(y=y, z=z, phase_offset=0.25)   # legs 1, 3 (quarter-cycle)
+        return GaitSpec(period=num * 4, duty_factor=0.75, legs=[a, b, a, b])
