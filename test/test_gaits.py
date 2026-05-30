@@ -92,7 +92,7 @@ SKID_CEILING_MM = {
     "sidestep_L": 35.0,     # measured 30
     "turn_L": 75.0,         # measured 70
     "turn_R": 75.0,         # measured 70
-    "prowl": 45.0,          # measured 40 -- the Goal-3 teleport
+    "prowl": 15.0,          # measured 11.7 -- static wave gait, smooth body-shift (was 40, the old teleport)
 }
 
 # No foot should translate more than this in a single controller step, for any
@@ -161,16 +161,9 @@ def test_load_bearing_skid_characterization(name):
     )
 
 
-@pytest.mark.xfail(
-    reason="Goal 3: prowl is a slow, two-feet-down gait, so its ~40mm planted-foot "
-    "reset (inherited from the trot build_steps construction) is not dynamically "
-    "rescued and reads as a skid/teleport. The rebuild as a static wave gait with a "
-    "body-shift sub-phase should drop load-bearing skid to a smooth stride drag. "
-    "When that lands this xpasses. (Trot/sidestep share the artifact but tolerate it.)",
-    strict=False,
-)
 def test_prowl_planted_feet_do_not_skid():
-    """TARGET for the prowl rebuild: a planted foot should only drag smoothly as
-    the body advances (~stride/num_steps per step), never reset a full stride."""
+    """The static-wave prowl moves planted feet only via the smooth body-shift, so a
+    loaded foot never resets a full stride. (Was an xfail target during the gait-core
+    refactor; the wave-gait rebuild in plan 002 made it pass.)"""
     skid = _load_bearing_horizontal_skid(GAITS["prowl"]())
     assert skid <= 15.0, f"prowl planted foot skids {skid:.1f}mm/step (target <=15)"

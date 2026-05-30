@@ -10,8 +10,12 @@ xfail live in test/test_prowl_wave_stability (added in U4) and test/test_gaits.p
 import numpy as np
 from dataclasses import replace
 
+import pytest
+
 from settings import settings
 from src.motion.gaits.prowl import Prowl
+from src.motion import stability
+from src.motion.kinematics import QuadrupedKinematics
 
 
 def _prowl(params=None):
@@ -92,3 +96,53 @@ def test_body_shift_is_smooth():
     planted = offz.T >= -2
     max_planted_skid = np.nanmax(np.where(planted, dh, np.nan))
     assert max_planted_skid <= 15.0
+
+
+# --- static stability gate (plan U4) ----------------------------------------
+# The geometric invariant the ideation calls testable without hardware: the COM
+# projection stays inside the support polygon with positive margin at every tick.
+
+_km = QuadrupedKinematics(
+    settings.coxa_length, settings.femur_length, settings.tibia_length,
+    settings.robot_width, settings.robot_length,
+)
+
+# Conservative positive margin; the gait achieves ~22 mm min, so this has headroom.
+SSM_THRESHOLD_MM = 10.0
+
+_DIRECTIONS = [("forward", settings.prowl_params), ("backward", settings.prowl_reverse_params)]
+
+
+def _stance(offsets_z_at_t):
+    # a leg is in stance when its foot is on the ground (not notably lifted)
+    return [leg for leg in range(4) if offsets_z_at_t[leg] >= -2]
+
+
+@pytest.mark.parametrize("name,params", _DIRECTIONS)
+def test_static_margin_positive_every_tick(name, params):
+    g = _prowl(params)
+    frames = _cycle(g)
+    offz = g.steps[:, :, 2]
+    worst = np.inf
+    for t in range(g.max_index):
+        stance = _stance(offz[:, t])
+        feet_xy = stability.body_frame_feet(frames[t])
+        worst = min(worst, stability.support_margin(feet_xy, stance, com_xy=(0.0, 0.0)))
+    assert worst >= SSM_THRESHOLD_MM, f"{name}: min SSM {worst:.1f}mm < {SSM_THRESHOLD_MM}"
+
+
+@pytest.mark.parametrize("name,params", _DIRECTIONS)
+def test_at_least_three_feet_planted_every_tick(name, params):
+    g = _prowl(params)
+    offz = g.steps[:, :, 2]
+    for t in range(g.max_index):
+        assert len(_stance(offz[:, t])) >= 3, f"{name}: <3 feet down at t={t}"
+
+
+@pytest.mark.parametrize("name,params", _DIRECTIONS)
+def test_all_feet_reachable_through_cycle(name, params):
+    g = _prowl(params)
+    frames = _cycle(g)
+    for t in range(g.max_index):
+        for leg in range(4):
+            assert _km.validate_position(frames[t, leg]), f"{name}: leg {leg} unreachable at t={t}"
