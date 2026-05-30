@@ -59,10 +59,78 @@ Gaits are integrated into the robot control system via `MoveTypes` in `app.py`:
 - **LEFT/RIGHT**: Uses sidestep gait
 - **FORWARD_LT/RT**: Uses turn gait
 
-## Current Gait System
+## Gait Core: GaitSpec (current system)
+
+As of the gait-core refactor (`docs/plans/2026-05-30-001-refactor-gait-core-phasing-plan.md`),
+gaits are defined **declaratively** with a `GaitSpec` and compiled into the canonical
+per-leg step array. This supersedes the two older systems below (kept for reference;
+only `prowl` still uses the legacy imperative path, pending its rebuild).
+
+### The model
+
+A gait is `(period, duty_factor, 4 × LegSpec)`:
+
+- **period** `N` — ticks in one full cycle.
+- **duty_factor** `β` — fraction of the cycle each foot is in stance (~0.75 for the
+  current gaits; ≥0.75 for a statically stable wave gait).
+- **LegSpec** per leg — a `phase_offset φ ∈ [0,1)` plus `x`/`y`/`z` trajectory
+  callables (`N → (N,)` mm offsets; a `None` axis is zeros).
+
+Timing (phase) is separate from trajectory shape, following the MIT Cheetah /
+Stanford Pupper gait-scheduler model. Phase math lives in `phase.py`
+(`local_phase`, `in_stance`, `swing_phase`, `phase_to_ticks`); trajectory shapes
+live in `trajectories.py` — the **single source** of shape math (`stride_forward`,
+`downupdown`, `lift`, `trot_lateral_pattern`, …).
+
+### Authoring a gait
+
+```python
+import numpy as np
+from src.motion.gaits.gait import Gait
+from src.motion.gaits.gait_spec import GaitSpec, LegSpec, compile_spec
+from src.motion.gaits import trajectories as T
+
+class MyGait(Gait):
+    def build_steps(self):
+        self.steps = compile_spec(self._spec())
+
+    def _spec(self):
+        num = self.num_steps
+        def z(_n):
+            return np.hstack([T.downupdown(num), T.zero(num * 3)]) * (-self.clearance)
+        a = LegSpec(z=z, phase_offset=0.0)    # legs 0, 2
+        b = LegSpec(z=z, phase_offset=0.5)    # legs 1, 3 (diagonal half-cycle)
+        return GaitSpec(period=num * 4, duty_factor=0.75, legs=[a, b, a, b])
+```
+
+`compile_spec` builds each leg's `(N,3)` base from its callables and realizes the
+phase offset as an integer `np.roll` (`phase_to_ticks(φ, N)`). Set `self.steps`
+directly; the base `Gait` iterator indexes it. For a one-leg-at-a-time **wave gait**,
+give all four legs distinct phase offsets (e.g. `[0, .25, .5, .75]` with `β=0.75`) —
+see `test/test_wave_gait_expressibility.py`.
+
+### Lateral (y) sign convention
+
+Left/right "outward" is the **sign of y in the gait**, not in the kinematics (the
+coxa is deliberately unmirrored — see ROBOT.md). A diagonal pair's second leg
+declares `-y` of the first; never push this into the kinematics layer.
+
+### Status
+
+- **trot / trot-in-place, sidestep, turn** — on GaitSpec.
+- **prowl** — still imperative (`prowl.py`), the last legacy holdout; rebuilt as a
+  static wave gait in a follow-up (plan item 4).
+- The two sections below are **legacy**, retained for reference only.
+
+---
+
+## Current Gait System (legacy)
+
+> **Legacy.** Superseded by GaitSpec above. Only `prowl` still builds this way.
 
 ### Structure
-All gaits inherit from the `Gait` base class and implement `build_steps()`:
+Legacy gaits inherit from the `Gait` base class and implement `build_steps()`,
+building the step arrays imperatively:
 
 ```python
 class MyGait(Gait):
@@ -87,7 +155,7 @@ The `Gait` class provides helper methods:
 ### Current Implementations
 
 **Trot** (`src/motion/gaits/trot.py`):
-- Diagonal leg pairs (0,3) and (1,2)
+- Diagonal leg pairs (0,2) and (1,3)
 - Phase offset of half-cycle between pairs
 - Standard forward locomotion
 
@@ -108,9 +176,13 @@ The `Gait` class provides helper methods:
 - All legs move together
 - Vertical movement only
 
-## Simplified Gait System
+## Simplified Gait System (legacy)
 
-A new, more intuitive system is available in `src/motion/gaits/simplified_gait.py`.
+> **Legacy.** This `SimplifiedGait`/`LegMovement` system only ever read legs 0 and
+> 1 and welded the rest, so it could not express a 4-independent-leg gait. It is
+> superseded by GaitSpec and has no production users. Use GaitSpec instead.
+
+An older declarative system in `src/motion/gaits/simplified_gait.py`.
 
 ### Key Benefits
 - **Declarative**: Define what each leg should do, not how

@@ -1,6 +1,6 @@
 ---
 title: "refactor: Gait core — 4-independent-leg phasing model"
-status: active
+status: completed
 date: 2026-05-30
 type: refactor
 origin: docs/ideation/2026-05-30-gait-stability-ideation.md

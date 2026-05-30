@@ -6,6 +6,7 @@ import numpy as np
 
 from settings import settings
 from src.motion.gaits.gait_params import GaitParams
+from src.motion.gaits import trajectories
 
 
 class Gait(ABC):
@@ -55,29 +56,27 @@ class Gait(ABC):
         self.phase = 0
         self.max_index = self.steps.shape[1]
 
+    # Trajectory-shape helpers. These now delegate to the single source in
+    # trajectories.py (the math lives in one place). They remain on Gait because
+    # the prowl gait still authors its steps imperatively via these methods; they
+    # retire once prowl migrates to GaitSpec (plan item 4).
     def updown(self, num_steps=None, mode: UpdownMode = UpdownMode.fast):
-        if mode == self.UpdownMode.fast:
-            return np.sin(np.radians(np.linspace(45, 180, num_steps or self.num_steps)))
-        else:
-            return np.sin(np.radians(np.linspace(0, 180, num_steps or self.num_steps)))
+        return trajectories.updown(num_steps or self.num_steps, fast=(mode == self.UpdownMode.fast))
 
     def downupdown(self, num_steps=None):
-        ns = num_steps or self.num_steps
-        ns1 = int(ns/5)
-        ns2 = ns-ns1
-        return np.hstack([np.sin(np.radians(np.linspace(-10, 0, ns1))),np.sin(np.radians(np.linspace(45, 180, ns2)))])
+        return trajectories.downupdown(num_steps or self.num_steps)
 
     def stride_forward(self, num_steps=None):
-        return np.sin(np.radians(np.linspace(0, 90, num_steps or self.num_steps)))
+        return trajectories.stride_forward(num_steps or self.num_steps)
 
     def stride_home(self, num_steps=None):
-        return np.cos(np.radians(np.linspace(0, 90, num_steps or self.num_steps)))
+        return trajectories.stride_home(num_steps or self.num_steps)
 
     def stride_back(self, num_steps=None):
-        return np.cos(np.radians(np.linspace(90, 180, num_steps or self.num_steps)))
+        return trajectories.stride_back(num_steps or self.num_steps)
 
     def stride_front_to_back(self, num_steps=None):
-        return np.cos(np.radians(np.linspace(0, 180, num_steps or self.num_steps)))
+        return trajectories.stride_front_to_back(num_steps or self.num_steps)
 
     @cached_property
     def zeros(self):
